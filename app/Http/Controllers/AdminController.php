@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Course;
 use App\Models\Category;
+use App\Models\Role;
 use App\Models\CourseEnrollment;
 use App\Models\Payment;
 use App\Models\CourseSection;
@@ -14,6 +15,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use App\Models\Setting;
 
 class AdminController extends Controller
 {
@@ -33,6 +35,10 @@ class AdminController extends Controller
 
             // Recent activities
             $recentUsers = User::latest()->take(5)->get();
+            $recentActivities = \App\Models\Activity::with(['user','course','lesson'])
+                ->orderBy('created_at','desc')
+                ->take(5)
+                ->get();
             $recentCourses = Course::with('instructor')->latest()->take(5)->get();
             $recentEnrollments = CourseEnrollment::with(['user', 'course'])
                 ->latest()->take(10)->get();
@@ -61,7 +67,8 @@ class AdminController extends Controller
                 'recentCourses',
                 'recentEnrollments',
                 'monthlyStats',
-                'topCourses'
+                'topCourses',
+                'recentActivities'
             ));
         } catch (\Exception $e) {
             Log::error('Error in admin dashboard: ' , [
@@ -183,10 +190,60 @@ class AdminController extends Controller
         }
     }
 
+    // Admin Profile
+    public function profile()
+    {
+        try {
+            $user = auth()->user();
+            if (!$user->isAdmin()) {
+                abort(403);
+            }
+            return view('admin.profile.index', compact('user'));
+        } catch (\Exception $e) {
+            Log::error('Error in admin profile: ', [
+                'user_id' => auth()->id(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->back()->with('error', 'حدث خطأ أثناء تحميل صفحة الملف الشخصي.');
+        }
+    }
+
+    public function updateProfile(Request $request)
+    {
+        try {
+            $user = auth()->user();
+            if (!$user->isAdmin()) {
+                abort(403);
+            }
+
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+                'password' => 'nullable|string|min:8|confirmed',
+            ]);
+
+            $user->name = $validated['name'];
+            $user->email = $validated['email'];
+            if (!empty($validated['password'])) {
+                $user->password = \Hash::make($validated['password']);
+            }
+            $user->save();
+
+            return redirect()->route('admin.profile')->with('success', 'تم تحديث الملف الشخصي بنجاح');
+        } catch (\Exception $e) {
+            Log::error('Error in update admin profile: ', [
+                'user_id' => auth()->id(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->back()->with('error', 'حدث خطأ أثناء تحديث الملف الشخصي.');
+        }
+    }
+
     public function createUser()
     {
         try {
-            return view('admin.users.create');
+            $roles = Role::orderBy('id')->get();
+            return view('admin.users.create', compact('roles'));
         } catch (\Exception $e) {
             Log::error('Error in create user form: ' , [
                 'user_id' => auth()->id(),
@@ -204,15 +261,19 @@ class AdminController extends Controller
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users',
                 'password' => 'required|string|min:8|confirmed',
-                'role' => 'required|in:student,instructor,admin',
+                'role_id' => 'required|exists:roles,id',
                 'is_active' => 'boolean'
             ]);
+
+            $role = Role::find($validated['role_id']);
 
             $user = User::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'password' => Hash::make($validated['password']),
-                'role' => $validated['role'],
+                // keep legacy role string for now
+                'role' => $role?->slug,
+                'role_id' => $validated['role_id'],
                 'is_active' => $validated['is_active'] ?? true,
                 'email_verified_at' => now()
             ]);
@@ -608,6 +669,7 @@ class AdminController extends Controller
                 'file_path' => 'nullable|string|max:500',
                 'file_type' => 'required|in:video,pdf,document,quiz,image',
                 'order_index' => 'nullable|integer|min:0',
+                'price' => 'nullable|numeric|min:0',
                 'is_free' => 'boolean',
                 'is_active' => 'boolean',
                 'lesson_file' => 'nullable|file|max:102400' // 100MB max - removed mimes validation for now
@@ -697,6 +759,7 @@ class AdminController extends Controller
                 'file_path' => 'nullable|string|max:500',
                 'file_type' => 'required|in:video,pdf,document,quiz,image',
                 'order_index' => 'nullable|integer|min:0',
+                'price' => 'nullable|numeric|min:0',
                 'is_free' => 'boolean',
                 'is_active' => 'boolean',
                 'lesson_file' => 'nullable|file|max:102400' // 100MB max - removed mimes validation for now
@@ -994,11 +1057,37 @@ class AdminController extends Controller
         }
     }
 
+    // Activities list
+    public function activities()
+    {
+        try {
+            $activities = \App\Models\Activity::with(['user','course','lesson'])
+                ->orderBy('created_at','desc')
+                ->paginate(25);
+            return view('admin.activities.index', compact('activities'));
+        } catch (\Exception $e) {
+            Log::error('Error in admin activities: ' , [
+                'user_id' => auth()->id(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()->with('error', 'حدث خطأ أثناء تحميل الأنشطة. يرجى المحاولة مرة أخرى.');
+        }
+    }
+
     // Settings
     public function settings()
     {
         try {
-            return view('admin.settings.index');
+            try {
+                $settings = Setting::getCached();
+            } catch (\Throwable $e) {
+                $settings = (object) [
+                    'block_devtools' => false,
+                    'block_copy_text' => false,
+                ];
+            }
+            return view('admin.settings.index', compact('settings'));
         } catch (\Exception $e) {
             Log::error('Error in admin settings: ' , [
                 'user_id' => auth()->id(),
@@ -1012,7 +1101,18 @@ class AdminController extends Controller
     public function updateSettings(Request $request)
     {
         try {
-            // Implementation for updating system settings
+            $validated = $request->validate([
+                'block_devtools' => 'nullable|boolean',
+                'block_copy_text' => 'nullable|boolean',
+            ]);
+
+            $settings = Setting::query()->first() ?? new Setting();
+            $settings->block_devtools = (bool) $request->input('block_devtools', false);
+            $settings->block_copy_text = (bool) $request->input('block_copy_text', false);
+            $settings->save();
+
+            cache()->forget('app_settings_singleton');
+
             return back()->with('success', 'تم تحديث الإعدادات بنجاح');
         } catch (\Exception $e) {
             Log::error('Error in update settings: ' , [

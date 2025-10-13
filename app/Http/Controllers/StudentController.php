@@ -283,6 +283,20 @@ class StudentController extends Controller
             $averageRating = $course->reviews()->avg('rating') ?? 0;
             $totalReviews = $course->reviews()->count();
 
+            // Compute paid lesson IDs for this student in this course
+            $paidLessonIds = \App\Models\LessonPayment::where('student_id', $user->id)
+                ->where('course_id', $course->id)
+                ->where('status', 1)
+                ->get()
+                ->flatMap(function ($p) {
+                    return collect(explode(',', (string) $p->lessons_ids))
+                        ->filter()
+                        ->map(fn($id) => (int) $id);
+                })
+                ->unique()
+                ->values()
+                ->all();
+
             return view('student.courses.show', compact(
                 'course',
                 'isEnrolled',
@@ -292,7 +306,8 @@ class StudentController extends Controller
                 'totalLessons',
                 'reviews',
                 'averageRating',
-                'totalReviews'
+                'totalReviews',
+                'paidLessonIds'
             ));
         } catch (\Exception $e) {
             Log::error('Error in show course: ' , [
@@ -320,17 +335,43 @@ class StudentController extends Controller
                 ->where('course_id', $course->id)
                 ->exists();
 
-            if (!$enrollment && !$hasSectionAccess) {
+            // Compute paid lesson IDs for this student in this course (accepted payments only)
+            $paidLessonIds = \App\Models\LessonPayment::where('student_id', $user->id)
+                ->where('course_id', $course->id)
+                ->where('status', 1)
+                ->get()
+                ->flatMap(function ($p) {
+                    return collect(explode(',', (string) $p->lessons_ids))
+                        ->filter()
+                        ->map(fn($id) => (int) $id);
+                })
+                ->unique()
+                ->values()
+                ->all();
+
+            if (!$enrollment && !$hasSectionAccess && count($paidLessonIds) === 0) {
                 return redirect()->route('student.courses.show', $course)
-                    ->with('error', 'يجب التسجيل في الكورس أولاً أو شراء قسم منفصل');
+                    ->with('error', 'يجب شراء الكورس أولاً أو اختيار دروس مدفوعة');
             }
 
             $course->load(['sections.lessons' => function($query) {
                 $query->orderBy('order_index');
             }]);
 
-            // Get accessible sections
-            $accessibleSections = $this->sectionAccessService->getAccessibleSections($user, $course);
+            // Get accessible sections: if enrolled or has section access, use service; otherwise restrict to paid lessons
+            if ($enrollment || $hasSectionAccess) {
+                $accessibleSections = $this->sectionAccessService->getAccessibleSections($user, $course);
+            } else {
+                // Build sections containing only paid lessons
+                $accessibleSections = $course->sections->map(function ($section) use ($paidLessonIds) {
+                    $section->setRelation('lessons', $section->lessons->filter(function ($lesson) use ($paidLessonIds) {
+                        return in_array($lesson->id, $paidLessonIds);
+                    })->values());
+                    return $section;
+                })->filter(function ($section) {
+                    return $section->lessons->count() > 0;
+                })->values();
+            }
 
             // Get current lesson or first accessible lesson
             $currentLesson = null;
@@ -338,8 +379,9 @@ class StudentController extends Controller
             if (request('lesson')) {
                 $currentLesson = Lesson::findOrFail(request('lesson'));
 
-                // Check if user has access to this lesson's section
-                if (!$this->sectionAccessService->hasLessonAccess($user, $currentLesson->id)) {
+                // Check if user has access to this lesson (section access or paid lesson)
+                $hasLessonAccess = $this->sectionAccessService->hasLessonAccess($user, $currentLesson->id) || in_array($currentLesson->id, $paidLessonIds);
+                if (!$hasLessonAccess) {
                     return redirect()->route('student.courses.show', $course)
                         ->with('error', 'You do not have access to this lesson.');
                 }
@@ -545,7 +587,7 @@ class StudentController extends Controller
                 'next_lesson' => $nextLesson ? [
                     'id' => $nextLesson->id,
                     'title' => $nextLesson->title,
-                    'url' => route('student.courses.learn', $course, ['lesson' => $nextLesson->id])
+                    'url' => route('student.courses.learn', ['course' => $course->id, 'lesson' => $nextLesson->id])
                 ] : null,
                 'is_course_completed' => $this->isCourseCompleted($user, $course)
             ]);
@@ -590,7 +632,7 @@ class StudentController extends Controller
                 'next_lesson' => [
                     'id' => $nextLesson->id,
                     'title' => $nextLesson->title,
-                    'url' => route('student.courses.learn', $course, ['lesson' => $nextLesson->id])
+                    'url' => route('student.courses.learn', ['course' => $course->id, 'lesson' => $nextLesson->id])
                 ]
             ]);
         } catch (\Exception $e) {

@@ -83,7 +83,7 @@
         <div class="filters-section mb-4" data-aos="fade-up">
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
-                    <form method="GET" action="{{ route('admin.payments.index') }}" class="row g-3">
+                    <form method="GET" action="{{ route('admin.lesson-payments.index') }}" class="row g-3">
                         <div class="col-md-3">
                             <label class="form-label">حالة الدفع</label>
                             <select class="form-select" name="status">
@@ -112,7 +112,7 @@
                                     <i class="fas fa-search me-2"></i>
                                     بحث
                                 </button>
-                                <a href="{{ route('admin.payments.index') }}" class="btn btn-outline-secondary">
+                                <a href="{{ route('admin.lesson-payments.index') }}" class="btn btn-outline-secondary">
                                     <i class="fas fa-times me-2"></i>
                                     مسح
                                 </a>
@@ -281,7 +281,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form method="GET" action="{{ route('admin.payments.index') }}">
+                <form method="GET" action="{{ route('admin.lesson-payments.index') }}">
                     <div class="mb-3">
                         <label class="form-label">نوع التصدير</label>
                         <select class="form-select" name="export_type">

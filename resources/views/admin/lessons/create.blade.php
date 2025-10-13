@@ -174,6 +174,19 @@
                                     @enderror
                                 </div>
 
+                                <!-- Price -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="price" class="form-label">
+                                        <i class="fas fa-dollar-sign me-1"></i>
+                                        سعر الدرس
+                                    </label>
+                                    <input type="number" step="0.01" min="0" class="form-control @error('price') is-invalid @enderror"
+                                           id="price" name="price" value="{{ old('price') }}">
+                                    @error('price')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
                                 <!-- Video URL -->
                                 <div class="col-md-6 mb-3">
                                     <label for="video_url" class="form-label">

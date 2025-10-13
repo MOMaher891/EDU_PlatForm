@@ -146,7 +146,7 @@
                                 </a>
                             </div>
                             <div class="col-lg-2 col-md-4 col-6">
-                                <a href="{{ route('admin.payments.index') }}" class="quick-action-btn btn btn-outline-info w-100 py-3">
+                                <a href="{{ route('admin.lesson-payments.index') }}" class="quick-action-btn btn btn-outline-info w-100 py-3">
                                     <i class="fas fa-credit-card fa-2x mb-2"></i>
                                     <div class="fw-semibold">المدفوعات</div>
                                 </a>
@@ -179,65 +179,27 @@
                                 <i class="fas fa-clock me-2"></i>
                                 الأنشطة الأخيرة
                             </h5>
-                            <a href="#" class="btn btn-sm btn-outline-primary">عرض الكل</a>
+                            <a href="{{ route('admin.activities.index') }}" class="btn btn-sm btn-outline-primary">عرض المزيد</a>
                         </div>
                     </div>
                     <div class="card-body p-0">
                         <div class="activity-list">
-                            <div class="activity-item d-flex align-items-center p-4 border-bottom">
-                                <div class="activity-icon bg-success bg-opacity-10 rounded-circle p-2 me-3">
-                                    <i class="fas fa-user-plus text-success"></i>
+                            @forelse($recentActivities as $activity)
+                                <div class="activity-item d-flex align-items-center p-4 border-bottom">
+                                    <div class="activity-icon bg-light rounded-circle p-2 me-3">
+                                        <i class="fas fa-bolt text-primary"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">{{ $activity->description }}</h6>
+                                        <small class="text-muted">
+                                            {{ $activity->user->name ?? 'نظام' }} · {{ $activity->type }}
+                                        </small>
+                                    </div>
+                                    <small class="text-muted">{{ $activity->created_at->diffForHumans() }}</small>
                                 </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">مستخدم جديد انضم للمنصة</h6>
-                                    <small class="text-muted">أحمد محمد سجل كطالب</small>
-                                </div>
-                                <small class="text-muted">منذ 5 دقائق</small>
-                            </div>
-                            
-                            <div class="activity-item d-flex align-items-center p-4 border-bottom">
-                                <div class="activity-icon bg-primary bg-opacity-10 rounded-circle p-2 me-3">
-                                    <i class="fas fa-book text-primary"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">كورس جديد تم نشره</h6>
-                                    <small class="text-muted">كورس "تطوير المواقع" من المدرب سارة أحمد</small>
-                                </div>
-                                <small class="text-muted">منذ 15 دقيقة</small>
-                            </div>
-                            
-                            <div class="activity-item d-flex align-items-center p-4 border-bottom">
-                                <div class="activity-icon bg-warning bg-opacity-10 rounded-circle p-2 me-3">
-                                    <i class="fas fa-shopping-cart text-warning"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">عملية شراء جديدة</h6>
-                                    <small class="text-muted">محمد علي اشترى كورس "البرمجة للمبتدئين"</small>
-                                </div>
-                                <small class="text-muted">منذ 30 دقيقة</small>
-                            </div>
-                            
-                            <div class="activity-item d-flex align-items-center p-4 border-bottom">
-                                <div class="activity-icon bg-info bg-opacity-10 rounded-circle p-2 me-3">
-                                    <i class="fas fa-star text-info"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">تقييم جديد</h6>
-                                    <small class="text-muted">فاطمة أحمد قيمت كورس "التصميم الجرافيكي" بـ 5 نجوم</small>
-                                </div>
-                                <small class="text-muted">منذ ساعة</small>
-                            </div>
-                            
-                            <div class="activity-item d-flex align-items-center p-4">
-                                <div class="activity-icon bg-danger bg-opacity-10 rounded-circle p-2 me-3">
-                                    <i class="fas fa-exclamation-triangle text-danger"></i>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">تقرير مشكلة</h6>
-                                    <small class="text-muted">مستخدم أبلغ عن مشكلة في تشغيل الفيديو</small>
-                                </div>
-                                <small class="text-muted">منذ ساعتين</small>
-                            </div>
+                            @empty
+                                <div class="p-4 text-center text-muted">لا توجد أنشطة بعد</div>
+                            @endforelse
                         </div>
                     </div>
                 </div>
@@ -275,7 +237,7 @@
                                 </div>
                                 <span class="badge bg-success">متصل</span>
                             </div>
-                            
+
                             <div class="status-item d-flex justify-content-between align-items-center mb-3">
                                 <div class="d-flex align-items-center">
                                     <div class="status-dot bg-success me-2"></div>
@@ -283,7 +245,7 @@
                                 </div>
                                 <span class="badge bg-success">متصلة</span>
                             </div>
-                            
+
                             <div class="status-item d-flex justify-content-between align-items-center mb-3">
                                 <div class="d-flex align-items-center">
                                     <div class="status-dot bg-warning me-2"></div>
@@ -291,7 +253,7 @@
                                 </div>
                                 <span class="badge bg-warning">75% مستخدم</span>
                             </div>
-                            
+
                             <div class="status-item d-flex justify-content-between align-items-center">
                                 <div class="d-flex align-items-center">
                                     <div class="status-dot bg-success me-2"></div>
@@ -318,7 +280,7 @@
                                 ->take(5)
                                 ->get();
                         @endphp
-                        
+
                         @foreach($topCourses as $index => $course)
                             <div class="course-item d-flex align-items-center mb-3">
                                 <div class="course-rank bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 30px; height: 30px;">
@@ -347,17 +309,17 @@
                                 <span class="text-muted">الطلاب النشطين اليوم</span>
                                 <span class="fw-bold text-primary">{{ rand(150, 300) }}</span>
                             </div>
-                            
+
                             <div class="stat-row d-flex justify-content-between align-items-center mb-3">
                                 <span class="text-muted">الكورسات المنشورة هذا الشهر</span>
                                 <span class="fw-bold text-success">{{ rand(5, 15) }}</span>
                             </div>
-                            
+
                             <div class="stat-row d-flex justify-content-between align-items-center mb-3">
                                 <span class="text-muted">متوسط التقييم</span>
                                 <span class="fw-bold text-warning">4.8 ⭐</span>
                             </div>
-                            
+
                             <div class="stat-row d-flex justify-content-between align-items-center">
                                 <span class="text-muted">معدل إكمال الكورسات</span>
                                 <span class="fw-bold text-info">78%</span>
@@ -458,7 +420,7 @@
             min-height: 100px;
             font-size: 0.875rem;
         }
-        
+
         .quick-action-btn i {
             font-size: 1.5rem !important;
         }
@@ -479,19 +441,19 @@
         });
         document.getElementById('current-time').textContent = timeString;
     }
-    
+
     updateTime();
     setInterval(updateTime, 1000);
 
     // Counter Animation
     function animateCounters() {
         const counters = document.querySelectorAll('.counter');
-        
+
         counters.forEach(counter => {
             const target = parseInt(counter.getAttribute('data-target'));
             const increment = target / 100;
             let current = 0;
-            
+
             const updateCounter = () => {
                 if (current < target) {
                     current += increment;
@@ -501,7 +463,7 @@
                     counter.textContent = target;
                 }
             };
-            
+
             updateCounter();
         });
     }

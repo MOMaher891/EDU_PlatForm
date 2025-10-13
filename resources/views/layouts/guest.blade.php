@@ -12,6 +12,7 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
         <!-- Global Security Measures -->
+        @if(($appSettings->block_devtools ?? false) || ($appSettings->block_copy_text ?? false))
         <script>
             // Global Security System for Guest Users
             (function() {
@@ -52,9 +53,12 @@
                 }
 
                 // Check every 100ms
+                @if($appSettings->block_devtools ?? false)
                 setInterval(detectDevTools, 100);
+                @endif
 
                 // Block common developer tools shortcuts
+                @if($appSettings->block_devtools ?? false)
                 document.addEventListener('keydown', function(e) {
                     // F12
                     if (e.key === 'F12') {
@@ -105,20 +109,26 @@
                         return false;
                     }
                 });
+                @endif
 
                 // Disable right-click context menu
+                @if($appSettings->block_copy_text ?? false)
                 document.addEventListener('contextmenu', function(e) {
                     e.preventDefault();
                     return false;
                 });
+                @endif
 
                 // Disable text selection
+                @if($appSettings->block_copy_text ?? false)
                 document.addEventListener('selectstart', function(e) {
                     e.preventDefault();
                     return false;
                 });
+                @endif
 
                 // Disable copy/paste
+                @if($appSettings->block_copy_text ?? false)
                 document.addEventListener('copy', function(e) {
                     e.preventDefault();
                     return false;
@@ -133,8 +143,10 @@
                     e.preventDefault();
                     return false;
                 });
+                @endif
 
                 // Disable drag and drop
+                @if($appSettings->block_copy_text ?? false)
                 document.addEventListener('dragstart', function(e) {
                     e.preventDefault();
                     return false;
@@ -144,6 +156,7 @@
                     e.preventDefault();
                     return false;
                 });
+                @endif
 
                 // Prevent iframe embedding
                 if (window.top !== window.self) {
@@ -156,7 +169,9 @@
 
             })();
         </script>
+        @endif
 
+        @if($appSettings->block_copy_text ?? false)
         <style>
             /* Global Security CSS */
             * {
@@ -176,6 +191,7 @@
                 user-select: text !important;
             }
         </style>
+        @endif
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])

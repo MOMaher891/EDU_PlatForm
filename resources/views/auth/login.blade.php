@@ -16,7 +16,7 @@
                                     <div class="text-center text-white p-5" data-aos="fade-right">
                                         <h3 class="fw-bold mb-4">مرحباً بعودتك!</h3>
                                         <p class="lead mb-4">استمر في رحلة التعلم من حيث توقفت</p>
-                                        
+
                                         <div class="stats-grid row g-3">
                                             <div class="col-6">
                                                 <div class="stat-card text-center p-3 rounded-3" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);">
@@ -61,16 +61,16 @@
 
                                 <form method="POST" action="{{ route('login') }}" data-aos="fade-up" data-aos-delay="100">
                                     @csrf
-                                    
+
                                     <!-- Email Field -->
                                     <div class="form-floating mb-3">
-                                        <input type="email" 
-                                               class="form-control @error('email') is-invalid @enderror" 
-                                               id="email" 
-                                               name="email" 
-                                               value="{{ old('email') }}" 
+                                        <input type="email"
+                                               class="form-control @error('email') is-invalid @enderror"
+                                               id="email"
+                                               name="email"
+                                               value="{{ old('email') }}"
                                                placeholder="البريد الإلكتروني"
-                                               required 
+                                               required
                                                autofocus>
                                         <label for="email">
                                             <i class="fas fa-envelope me-2"></i>
@@ -83,10 +83,10 @@
 
                                     <!-- Password Field -->
                                     <div class="form-floating mb-3">
-                                        <input type="password" 
-                                               class="form-control @error('password') is-invalid @enderror" 
-                                               id="password" 
-                                               name="password" 
+                                        <input type="password"
+                                               class="form-control @error('password') is-invalid @enderror"
+                                               id="password"
+                                               name="password"
                                                placeholder="كلمة المرور"
                                                required>
                                         <label for="password">
@@ -141,7 +141,7 @@
                                     <!-- Register Link -->
                                     <div class="text-center">
                                         <p class="text-muted">
-                                            ليس لديك حساب؟ 
+                                            ليس لديك حساب؟
                                             <a href="{{ route('register') }}" class="text-primary text-decoration-none fw-semibold">
                                                 أنشئ حساباً جديداً
                                             </a>
@@ -208,7 +208,7 @@
     }
 
     .auth-image {
-        background: linear-gradient(135deg, rgba(99, 102, 241, 0.9), rgba(139, 69, 19, 0.9)), 
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.9), rgba(139, 69, 19, 0.9)),
                     url('https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80');
         background-size: cover;
         background-position: center;
@@ -252,11 +252,42 @@
         background: rgba(99, 102, 241, 0.05) !important;
     }
 
+    /* Position eye icon on the left inside floating inputs */
+    .form-floating {
+        position: relative;
+    }
+
+    .form-floating .form-control {
+        padding: 1rem 1rem 1rem 3rem; /* leave space on the left for the icon */
+        height: auto;
+    }
+
+    .form-floating label {
+        padding: 1rem 1rem 1rem 3rem;
+    }
+
+    .password-toggle {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #6b7280;
+        cursor: pointer;
+        z-index: 10;
+        transition: color 0.3s ease;
+    }
+
+    .password-toggle:hover {
+        color: var(--primary-color);
+    }
+
     @media (max-width: 992px) {
         .auth-card {
             margin: 1rem;
         }
-        
+
         .auth-form {
             border-radius: 20px;
         }
@@ -270,7 +301,7 @@
         const field = document.getElementById(fieldId);
         const toggle = field.nextElementSibling.nextElementSibling;
         const icon = toggle.querySelector('i');
-        
+
         if (field.type === 'password') {
             field.type = 'text';
             icon.classList.remove('fa-eye');
@@ -285,7 +316,7 @@
     function fillDemoAccount(type) {
         const emailField = document.getElementById('email');
         const passwordField = document.getElementById('password');
-        
+
         if (type === 'admin') {
             emailField.value = 'admin@example.com';
             passwordField.value = 'password';
@@ -293,11 +324,11 @@
             emailField.value = 'student@example.com';
             passwordField.value = 'password';
         }
-        
+
         // Add visual feedback
         emailField.classList.add('is-valid');
         passwordField.classList.add('is-valid');
-        
+
         setTimeout(() => {
             emailField.classList.remove('is-valid');
             passwordField.classList.remove('is-valid');

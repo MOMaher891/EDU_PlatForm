@@ -22,14 +22,14 @@
 
                                 <form method="POST" action="{{ route('register') }}" data-aos="fade-up" data-aos-delay="100">
                                     @csrf
-                                    
+
                                     <!-- Name Field -->
                                     <div class="form-floating mb-3">
-                                        <input type="text" 
-                                               class="form-control @error('name') is-invalid @enderror" 
-                                               id="name" 
-                                               name="name" 
-                                               value="{{ old('name') }}" 
+                                        <input type="text"
+                                               class="form-control @error('name') is-invalid @enderror"
+                                               id="name"
+                                               name="name"
+                                               value="{{ old('name') }}"
                                                placeholder="الاسم الكامل"
                                                required>
                                         <label for="name">
@@ -43,11 +43,11 @@
 
                                     <!-- Email Field -->
                                     <div class="form-floating mb-3">
-                                        <input type="email" 
-                                               class="form-control @error('email') is-invalid @enderror" 
-                                               id="email" 
-                                               name="email" 
-                                               value="{{ old('email') }}" 
+                                        <input type="email"
+                                               class="form-control @error('email') is-invalid @enderror"
+                                               id="email"
+                                               name="email"
+                                               value="{{ old('email') }}"
                                                placeholder="البريد الإلكتروني"
                                                required>
                                         <label for="email">
@@ -90,10 +90,10 @@
 
                                     <!-- Password Field -->
                                     <div class="form-floating mb-3">
-                                        <input type="password" 
-                                               class="form-control @error('password') is-invalid @enderror" 
-                                               id="password" 
-                                               name="password" 
+                                        <input type="password"
+                                               class="form-control @error('password') is-invalid @enderror"
+                                               id="password"
+                                               name="password"
                                                placeholder="كلمة المرور"
                                                required>
                                         <label for="password">
@@ -110,10 +110,10 @@
 
                                     <!-- Confirm Password Field -->
                                     <div class="form-floating mb-3">
-                                        <input type="password" 
-                                               class="form-control" 
-                                               id="password_confirmation" 
-                                               name="password_confirmation" 
+                                        <input type="password"
+                                               class="form-control"
+                                               id="password_confirmation"
+                                               name="password_confirmation"
                                                placeholder="تأكيد كلمة المرور"
                                                required>
                                         <label for="password_confirmation">
@@ -129,7 +129,7 @@
                                     <div class="form-check mb-4">
                                         <input class="form-check-input" type="checkbox" id="terms" name="terms" required>
                                         <label class="form-check-label" for="terms">
-                                            أوافق على 
+                                            أوافق على
                                             <a href="#" class="text-primary text-decoration-none">الشروط والأحكام</a>
                                             و
                                             <a href="#" class="text-primary text-decoration-none">سياسة الخصوصية</a>
@@ -166,7 +166,7 @@
                                     <!-- Login Link -->
                                     <div class="text-center">
                                         <p class="text-muted">
-                                            لديك حساب بالفعل؟ 
+                                            لديك حساب بالفعل؟
                                             <a href="{{ route('login') }}" class="text-primary text-decoration-none fw-semibold">
                                                 سجل دخولك هنا
                                             </a>
@@ -255,7 +255,7 @@
     }
 
     .auth-image {
-        background: linear-gradient(135deg, rgba(99, 102, 241, 0.9), rgba(139, 69, 19, 0.9)), 
+        background: linear-gradient(135deg, rgba(99, 102, 241, 0.9), rgba(139, 69, 19, 0.9)),
                     url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80');
         background-size: cover;
         background-position: center;
@@ -287,7 +287,7 @@
 
     .password-toggle {
         position: absolute;
-        right: 15px;
+        left: 15px;
         top: 50%;
         transform: translateY(-50%);
         background: none;
@@ -343,7 +343,7 @@
         .auth-card {
             margin: 1rem;
         }
-        
+
         .auth-form {
             border-radius: 20px;
         }
@@ -357,7 +357,7 @@
         const field = document.getElementById(fieldId);
         const toggle = field.nextElementSibling.nextElementSibling;
         const icon = toggle.querySelector('i');
-        
+
         if (field.type === 'password') {
             field.type = 'text';
             icon.classList.remove('fa-eye');
@@ -373,13 +373,13 @@
     document.querySelector('form').addEventListener('submit', function(e) {
         const password = document.getElementById('password').value;
         const confirmPassword = document.getElementById('password_confirmation').value;
-        
+
         if (password !== confirmPassword) {
             e.preventDefault();
             alert('كلمات المرور غير متطابقة');
             return false;
         }
-        
+
         if (password.length < 8) {
             e.preventDefault();
             alert('كلمة المرور يجب أن تكون 8 أحرف على الأقل');

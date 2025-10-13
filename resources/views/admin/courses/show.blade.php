@@ -265,11 +265,11 @@
                             </div>
                             <div class="info-item mb-3">
                                 <div class="info-label">تاريخ الإنشاء:</div>
-                                <div class="info-value">{{ $course->created_at->format('Y/m/d') }}</div>
+                                <div class="info-value">{{ optional($course->created_at)->format('Y/m/d') ?? '-' }}</div>
                             </div>
                             <div class="info-item">
                                 <div class="info-label">آخر تحديث:</div>
-                                <div class="info-value">{{ $course->updated_at->format('Y/m/d') }}</div>
+                                <div class="info-value">{{ optional($course->updated_at)->format('Y/m/d') ?? '-' }}</div>
                             </div>
                         </div>
                     </div>
@@ -351,7 +351,7 @@
                                              alt="{{ $enrollment->user->name }}" class="rounded-circle me-2">
                                         <div class="enrollment-info">
                                             <div class="enrollment-name">{{ $enrollment->user->name }}</div>
-                                            <small class="text-muted">{{ $enrollment->created_at->format('Y/m/d') }}</small>
+                                            <small class="text-muted">{{ optional($enrollment->created_at)->format('Y/m/d') ?? '-' }}</small>
                                         </div>
                                     </div>
                                 @endforeach

@@ -22,6 +22,7 @@ class Lesson extends Model
         'file_size',
         'mime_type',
         'order_index',
+        'price',
         'is_free',
         'is_active'
     ];
@@ -30,7 +31,8 @@ class Lesson extends Model
         'is_free' => 'boolean',
         'is_active' => 'boolean',
         'video_duration' => 'integer',
-        'file_size' => 'integer'
+        'file_size' => 'integer',
+        'price' => 'decimal:2'
     ];
 
     public function section()
@@ -59,7 +61,7 @@ class Lesson extends Model
     public function getFileUrlAttribute()
     {
         if ($this->file_path && Storage::disk('public')->exists($this->file_path)) {
-            return Storage::disk('public')->url($this->file_path);
+            return asset('storage/' . ltrim($this->file_path, '/'));
         }
         return null;
     }

@@ -16,7 +16,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role',
+        'role', // kept for backward compatibility in forms/validation
+        'role_id',
         'avatar',
         'bio',
         'phone',
@@ -36,20 +37,25 @@ class User extends Authenticatable
         'date_of_birth' => 'date'
     ];
 
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
+    }
+
     // Role checking methods
     public function isAdmin()
     {
-        return $this->role === 'admin';
+        return optional($this->role)->slug === 'admin' || $this->attributes['role'] === 'admin';
     }
 
     public function isInstructor()
     {
-        return $this->role === 'instructor';
+        return optional($this->role)->slug === 'instructor' || $this->attributes['role'] === 'instructor';
     }
 
     public function isStudent()
     {
-        return $this->role === 'student';
+        return optional($this->role)->slug === 'student' || $this->attributes['role'] === 'student';
     }
 
     // Relationships

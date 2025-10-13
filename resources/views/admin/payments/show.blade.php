@@ -17,7 +17,7 @@
                 </div>
                 <div class="col-md-6 text-end">
                     <div class="d-flex justify-content-end gap-2">
-                        <a href="{{ route('admin.payments.index') }}" class="btn btn-outline-secondary">
+                        <a href="{{ route('admin.lesson-payments.index') }}" class="btn btn-outline-secondary">
                             <i class="fas fa-arrow-right me-2"></i>
                             العودة للقائمة
                         </a>

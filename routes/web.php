@@ -7,6 +7,7 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\InstructorController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\LessonPaymentController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 /*
@@ -103,13 +104,25 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Payments Management
     Route::get('/payments', [AdminController::class, 'payments'])->name('payments.index');
     Route::get('/payments/{payment}', [AdminController::class, 'showPayment'])->name('payments.show');
+    // Lesson payments status update (accept/reject)
+    Route::post('/lesson-payments/{payment}/status', [LessonPaymentController::class, 'updateStatus'])->name('lesson-payments.status');
+    // Lesson payments listing/show for admin
+    Route::get('/lesson-payments', [LessonPaymentController::class, 'indexAdmin'])->name('lesson-payments.index');
+    Route::get('/lesson-payments/{payment}', [LessonPaymentController::class, 'showAdmin'])->name('lesson-payments.show');
 
     // Reports
     Route::get('/reports', [AdminController::class, 'reports'])->name('reports.index');
 
+    // Activities
+    Route::get('/activities', [AdminController::class, 'activities'])->name('activities.index');
+
     // Settings
     Route::get('/settings', [AdminController::class, 'settings'])->name('settings.index');
     Route::put('/settings', [AdminController::class, 'updateSettings'])->name('settings.update');
+
+    // Admin Profile
+    Route::get('/profile', [AdminController::class, 'profile'])->name('profile');
+    Route::put('/profile', [AdminController::class, 'updateProfile'])->name('profile.update');
 });
 
 // Student Routes
@@ -118,6 +131,9 @@ Route::middleware(['auth', 'student'])->prefix('student')->name('student.')->gro
     Route::get('/courses', [StudentController::class, 'courses'])->name('courses.index');
     Route::get('/courses/{course}', [StudentController::class, 'showCourse'])->name('courses.show');
     Route::get('/courses/{course}/learn', [StudentController::class, 'learnCourse'])->name('courses.learn');
+    // Select lessons and create manual payment
+    Route::get('/courses/{course}/lessons/pay', [LessonPaymentController::class, 'create'])->name('courses.lessons.pay.create');
+    Route::post('/courses/{course}/lessons/pay', [LessonPaymentController::class, 'store'])->name('courses.lessons.pay.store');
     Route::post('/courses/{course}/enroll', [StudentController::class, 'enrollCourse'])->name('courses.enroll');
     Route::get('/enrolled-courses', [StudentController::class, 'enrolledCourses'])->name('enrolled-courses.index');
     Route::get('/lessons/{lesson}/download', [StudentController::class, 'downloadLessonFile'])->name('lessons.download');
@@ -146,7 +162,18 @@ Route::middleware(['auth', 'student'])->prefix('student')->name('student.')->gro
             ->where('course_id', $lesson->section->course_id)
             ->exists();
 
-        if (!$enrollment && !$hasSectionAccess) {
+        // Check if user has paid for this individual lesson
+        $hasPaidLesson = \App\Models\LessonPayment::where('student_id', $user->id)
+            ->where('course_id', $lesson->section->course_id)
+            ->where('status', 1)
+            ->get()
+            ->flatMap(function ($p) {
+                return collect(explode(',', (string) $p->lessons_ids));
+            })
+            ->filter()
+            ->contains((string) $lesson->id);
+
+        if (!$enrollment && !$hasSectionAccess && !$hasPaidLesson) {
             abort(403, 'Access denied');
         }
 
@@ -211,6 +238,10 @@ Route::middleware(['auth', 'instructor'])->prefix('instructor')->name('instructo
 
     // Earnings
     Route::get('/earnings', [InstructorController::class, 'earnings'])->name('earnings.index');
+
+    // Lesson payments listing/show for instructor (only own courses)
+    Route::get('/lesson-payments', [LessonPaymentController::class, 'indexInstructor'])->name('lesson-payments.index');
+    Route::get('/lesson-payments/{payment}', [LessonPaymentController::class, 'showInstructor'])->name('lesson-payments.show');
 });
 
 // Public Course Routes
@@ -264,7 +295,10 @@ Route::middleware(['auth', 'section.access'])->group(function () {
     })->name('sections.show');
 
     Route::get('/lessons/{lesson}', function ($lesson) {
-        return redirect()->route('student.courses.learn', $lesson->section->course_id, ['lesson' => $lesson->id]);
+        return redirect()->route('student.courses.learn', [
+            'course' => $lesson->section->course_id,
+            'lesson' => $lesson->id,
+        ]);
     })->name('lessons.show');
 });
 

@@ -66,21 +66,25 @@
                     </div>
                     <div class="card-body">
                     @if(session('success'))
-                        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
                             {{ session('success') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
                     @endif
 
                     @if(session('error'))
-                        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
                             {{ session('error') }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
                     @endif
 
                     @if($sections->count() > 0)
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle min-w-full divide-y divide-gray-200">
+                                <thead class="table-light bg-gray-50">
                                     <tr>
                                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             العنوان
@@ -131,18 +135,18 @@
                                                 </span>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                <div class="flex space-x-2 space-x-reverse">
-                                                    <a href="{{ route('admin.lessons.index', $section) }}" class="text-blue-600 hover:text-blue-900">
-                                                        الدروس
+                                                <div class="btn-group btn-group-sm" role="group">
+                                                    <a href="{{ route('admin.lessons.index', $section) }}" class="btn btn-outline-primary">
+                                                        <i class="fas fa-play me-1"></i>الدروس
                                                     </a>
-                                                    <a href="{{ route('admin.sections.edit', $section) }}" class="text-indigo-600 hover:text-indigo-900">
-                                                        تعديل
+                                                    <a href="{{ route('admin.sections.edit', $section) }}" class="btn btn-outline-secondary">
+                                                        <i class="fas fa-edit me-1"></i>تعديل
                                                     </a>
-                                                    <form action="{{ route('admin.sections.destroy', $section) }}" method="POST" class="inline">
+                                                    <form action="{{ route('admin.sections.destroy', $section) }}" method="POST" class="d-inline">
                                                         @csrf
                                                         @method('DELETE')
-                                                        <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('هل أنت متأكد من حذف هذا القسم؟')">
-                                                            حذف
+                                                        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('هل أنت متأكد من حذف هذا القسم؟')">
+                                                            <i class="fas fa-trash me-1"></i>حذف
                                                         </button>
                                                     </form>
                                                 </div>
@@ -227,6 +231,21 @@
         margin-top: 1rem;
         text-align: center !important;
     }
+}
+</style>
+<style>
+/* Improve spacing and visual separation between columns */
+.admin-sections-index-page table.table td,
+.admin-sections-index-page table.table th {
+    padding: .75rem 1rem;
+}
+.admin-sections-index-page table.table thead th {
+    white-space: nowrap;
+}
+/* subtle vertical separators between columns (RTL-friendly) */
+.admin-sections-index-page table.table tbody td + td,
+.admin-sections-index-page table.table thead th + th {
+    border-right: 1px solid #edf2f7;
 }
 </style>
 @endsection

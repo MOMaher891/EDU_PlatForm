@@ -93,24 +93,20 @@
                                 </div>
 
                                 <div class="col-md-6 mb-3">
-                                    <label for="role" class="form-label">
+                                    <label for="role_id" class="form-label">
                                         <i class="fas fa-user-tag me-1"></i>
                                         الدور
                                         <span class="text-danger">*</span>
                                     </label>
-                                    <select class="form-select @error('role') is-invalid @enderror" id="role" name="role" required>
+                                    <select class="form-select @error('role_id') is-invalid @enderror" id="role_id" name="role_id" required>
                                         <option value="">اختر الدور</option>
-                                        <option value="student" {{ old('role') === 'student' ? 'selected' : '' }}>
-                                            طالب
-                                        </option>
-                                        <option value="instructor" {{ old('role') === 'instructor' ? 'selected' : '' }}>
-                                            مدرب
-                                        </option>
-                                        <option value="admin" {{ old('role') === 'admin' ? 'selected' : '' }}>
-                                            مدير
-                                        </option>
+                                        @foreach(($roles ?? []) as $role)
+                                            <option value="{{ $role->id }}" {{ old('role_id') == $role->id ? 'selected' : '' }}>
+                                                {{ $role->name }}
+                                            </option>
+                                        @endforeach
                                     </select>
-                                    @error('role')
+                                    @error('role_id')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>

@@ -1,69 +1,132 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('تعديل الدرس') }} - {{ $lesson->title }}
-        </h2>
-    </x-slot>
+@extends('layouts.app')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+@section('title', 'تعديل الدرس - ' . $lesson->title)
+
+@section('content')
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white d-flex align-items-center">
+                    <i class="fas fa-edit me-2"></i>
+                    <h5 class="mb-0">تعديل الدرس - {{ $lesson->title }}</h5>
+                </div>
+                <div class="card-body">
+                    @php
+                        $initialVideoSrc = null;
+                        $initialEmbedSrc = null;
+                        if ($lesson->file_type === 'video') {
+                            $url = $lesson->video_url;
+                            if ($url) {
+                                $isYouTube = \Illuminate\Support\Str::contains($url, 'youtube.com') || \Illuminate\Support\Str::contains($url, 'youtu.be');
+                                $isVimeo = \Illuminate\Support\Str::contains($url, 'vimeo.com');
+                                if ($isYouTube) {
+                                    if (preg_match('~youtu\\.be/([\\w-]+)~', $url, $m)) {
+                                        $initialEmbedSrc = 'https://www.youtube.com/embed/' . $m[1];
+                                    } elseif (preg_match('~v=([\\w-]+)~', $url, $m)) {
+                                        $initialEmbedSrc = 'https://www.youtube.com/embed/' . $m[1];
+                                    }
+                                } elseif ($isVimeo) {
+                                    if (preg_match('~vimeo\\.com/(\\d+)~', $url, $m)) {
+                                        $initialEmbedSrc = 'https://player.vimeo.com/video/' . $m[1];
+                                    }
+                                } else {
+                                    $initialVideoSrc = $url;
+                                }
+                            }
+                            if (!$initialEmbedSrc && !$initialVideoSrc) {
+                                $path = ltrim((string) $lesson->file_path, '/');
+                                if ($path) {
+                                    if (\Illuminate\Support\Str::startsWith($path, ['http://', 'https://'])) {
+                                        $initialVideoSrc = $path;
+                                    } elseif (\Illuminate\Support\Str::startsWith($path, 'public/storage/')) {
+                                        $initialVideoSrc = asset(substr($path, strlen('public/')));
+                                    } elseif (\Illuminate\Support\Str::startsWith($path, 'storage/')) {
+                                        $initialVideoSrc = asset($path);
+                                    } else {
+                                        $initialVideoSrc = asset('storage/' . $path);
+                                    }
+                                }
+                            }
+                        }
+                    @endphp
+
+                    @if($lesson->file_type === 'video' && ($initialEmbedSrc || $initialVideoSrc))
+                    <div class="mb-4">
+                        <h6 class="fw-semibold mb-2">معاينة الفيديو</h6>
+                        <div class="ratio ratio-16x9 rounded overflow-hidden" id="videoPreviewWrapper">
+                            @if($initialEmbedSrc)
+                            <iframe id="videoPreviewIframe" src="{{ $initialEmbedSrc }}" title="preview" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                            @else
+                            <video id="videoPreview" class="w-100 h-100" controls playsinline preload="metadata" style="object-fit: cover;">
+                                <source id="videoPreviewSource" src="{{ $initialVideoSrc }}" type="video/mp4">
+                                متصفحك لا يدعم تشغيل الفيديو.
+                            </video>
+                            @endif
+                        </div>
+                    </div>
+                    @endif
                     <form action="{{ route('admin.lessons.update', $lesson) }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
 
-                        <div class="grid grid-cols-1 gap-6">
+                        <div class="row g-4">
                             <!-- Title -->
-                            <div>
-                                <x-input-label for="title" :value="__('عنوان الدرس')" />
-                                <x-text-input id="title" class="block mt-1 w-full" type="text" name="title" :value="old('title', $lesson->title)" required autofocus />
-                                <x-input-error :messages="$errors->get('title')" class="mt-2" />
+                            <div class="col-12">
+                                <label for="title" class="form-label">عنوان الدرس</label>
+                                <input id="title" type="text" name="title" value="{{ old('title', $lesson->title) }}" required autofocus class="form-control @error('title') is-invalid @enderror">
+                                @error('title')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <!-- Content -->
-                            <div>
-                                <x-input-label for="content" :value="__('محتوى الدرس')" />
-                                <textarea id="content" name="content" rows="6" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full">{{ old('content', $lesson->content) }}</textarea>
-                                <x-input-error :messages="$errors->get('content')" class="mt-2" />
+                            <div class="col-12">
+                                <label for="content" class="form-label">محتوى الدرس</label>
+                                <textarea id="content" name="content" rows="6" class="form-control @error('content') is-invalid @enderror">{{ old('content', $lesson->content) }}</textarea>
+                                @error('content')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <!-- File Type -->
-                            <div>
-                                <x-input-label for="file_type" :value="__('نوع الملف')" />
-                                <select id="file_type" name="file_type" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm block mt-1 w-full">
+                            <div class="col-md-6">
+                                <label for="file_type" class="form-label">نوع الملف</label>
+                                <select id="file_type" name="file_type" class="form-select">
                                     <option value="video" {{ old('file_type', $lesson->file_type) == 'video' ? 'selected' : '' }}>فيديو</option>
                                     <option value="pdf" {{ old('file_type', $lesson->file_type) == 'pdf' ? 'selected' : '' }}>PDF</option>
                                     <option value="document" {{ old('file_type', $lesson->file_type) == 'document' ? 'selected' : '' }}>مستند</option>
                                     <option value="image" {{ old('file_type', $lesson->file_type) == 'image' ? 'selected' : '' }}>صورة</option>
                                     <option value="quiz" {{ old('file_type', $lesson->file_type) == 'quiz' ? 'selected' : '' }}>اختبار</option>
                                 </select>
-                                <x-input-error :messages="$errors->get('file_type')" class="mt-2" />
+                                @error('file_type')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <!-- Current File -->
                             @if($lesson->hasFile())
-                            <div class="bg-gray-50 p-4 rounded-lg">
-                                <h4 class="font-semibold text-gray-700 mb-2">الملف الحالي</h4>
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center">
-                                        <i class="{{ $lesson->file_icon }} text-2xl text-gray-500 mr-3"></i>
+                            <div class="bg-light p-3 rounded">
+                                <h6 class="fw-semibold text-muted mb-2">الملف الحالي</h6>
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center">
+                                        <i class="{{ $lesson->file_icon }} fs-4 text-secondary me-2"></i>
                                         <div>
-                                            <p class="font-medium">{{ $lesson->file_name ?? basename($lesson->file_path) }}</p>
+                                            <p class="mb-0 fw-medium">{{ $lesson->file_name ?? basename($lesson->file_path) }}</p>
                                             @if($lesson->file_size)
-                                                <p class="text-sm text-gray-500">{{ $lesson->file_size_human }}</p>
+                                                <small class="text-muted">{{ $lesson->file_size_human }}</small>
                                             @endif
                                         </div>
                                     </div>
-                                    <div class="flex space-x-2">
+                                    <div class="d-flex gap-2">
                                         @if($lesson->file_url)
-                                            <a href="{{ $lesson->file_url }}" target="_blank" class="bg-blue-500 hover:bg-blue-700 text-white text-xs font-bold py-2 px-3 rounded">
-                                                <i class="fas fa-eye mr-1"></i>
+                                            <a href="{{ $lesson->file_url }}" target="_blank" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-eye me-1"></i>
                                                 عرض
                                             </a>
                                         @endif
-                                        <a href="{{ route('admin.lessons.download', $lesson) }}" class="bg-green-500 hover:bg-green-700 text-white text-xs font-bold py-2 px-3 rounded">
-                                            <i class="fas fa-download mr-1"></i>
+                                        <a href="{{ route('admin.lessons.download', $lesson) }}" class="btn btn-sm btn-success">
+                                            <i class="fas fa-download me-1"></i>
                                             تحميل
                                         </a>
                                     </div>
@@ -72,8 +135,8 @@
                             @endif
 
                             <!-- File Upload -->
-                            <div>
-                                <x-input-label for="lesson_file" :value="__('رفع ملف جديد (اختياري)')" />
+                            <div class="col-12">
+                                <label for="lesson_file" class="form-label">رفع ملف جديد (اختياري)</label>
                                 <div class="upload-area mt-1" id="fileUpload">
                                     <div class="upload-content">
                                         <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
@@ -99,50 +162,65 @@
                             </div>
 
                             <!-- Video URL -->
-                            <div>
-                                <x-input-label for="video_url" :value="__('رابط الفيديو')" />
-                                <x-text-input id="video_url" class="block mt-1 w-full" type="url" name="video_url" :value="old('video_url', $lesson->video_url)" />
-                                <p class="text-sm text-gray-500 mt-1">يمكن أن يكون رابط YouTube أو Vimeo أو أي منصة فيديو أخرى</p>
-                                <x-input-error :messages="$errors->get('video_url')" class="mt-2" />
+                            <div class="col-md-6">
+                                <label for="video_url" class="form-label">رابط الفيديو</label>
+                                <input id="video_url" type="url" name="video_url" value="{{ old('video_url', $lesson->video_url) }}" class="form-control @error('video_url') is-invalid @enderror">
+                                <small class="text-muted">يمكن أن يكون رابط YouTube أو Vimeo أو أي منصة فيديو أخرى</small>
+                                @error('video_url')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <!-- Video Duration -->
-                            <div>
-                                <x-input-label for="video_duration" :value="__('مدة الفيديو (بالثواني)')" />
-                                <x-text-input id="video_duration" class="block mt-1 w-full" type="number" name="video_duration" :value="old('video_duration', $lesson->video_duration)" min="0" />
-                                <x-input-error :messages="$errors->get('video_duration')" class="mt-2" />
+                            <div class="col-md-6">
+                                <label for="video_duration" class="form-label">مدة الفيديو (بالثواني)</label>
+                                <input id="video_duration" type="number" name="video_duration" value="{{ old('video_duration', $lesson->video_duration) }}" min="0" class="form-control @error('video_duration') is-invalid @enderror">
+                                @error('video_duration')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <!-- Order Index -->
-                            <div>
-                                <x-input-label for="order_index" :value="__('ترتيب الدرس')" />
-                                <x-text-input id="order_index" class="block mt-1 w-full" type="number" name="order_index" :value="old('order_index', $lesson->order_index)" min="0" />
-                                <p class="text-sm text-gray-500 mt-1">اتركه فارغاً ليتم ترتيبه تلقائياً</p>
-                                <x-input-error :messages="$errors->get('order_index')" class="mt-2" />
+                            <div class="col-md-6">
+                                <label for="order_index" class="form-label">ترتيب الدرس</label>
+                                <input id="order_index" type="number" name="order_index" value="{{ old('order_index', $lesson->order_index) }}" min="0" class="form-control @error('order_index') is-invalid @enderror">
+                                <small class="text-muted">اتركه فارغاً ليتم ترتيبه تلقائياً</small>
+                                @error('order_index')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <!-- Price -->
+                            <div class="col-md-6">
+                                <label for="price" class="form-label">سعر الدرس</label>
+                                <input id="price" type="number" step="0.01" min="0" name="price" value="{{ old('price', $lesson->price) }}" class="form-control @error('price') is-invalid @enderror">
+                                @error('price')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <!-- Is Free -->
-                            <div class="flex items-center">
-                                <input id="is_free" type="checkbox" name="is_free" value="1" {{ old('is_free', $lesson->is_free) ? 'checked' : '' }} class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                                <x-input-label for="is_free" :value="__('درس مجاني')" class="mr-2" />
-                                <x-input-error :messages="$errors->get('is_free')" class="mt-2" />
+                            <div class="col-md-6 d-flex align-items-center gap-2">
+                                <input id="is_free" type="checkbox" name="is_free" value="1" {{ old('is_free', $lesson->is_free) ? 'checked' : '' }} class="form-check-input">
+                                <label for="is_free" class="form-check-label">درس مجاني</label>
+                                @error('is_free')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <!-- Is Active -->
-                            <div class="flex items-center">
-                                <input id="is_active" type="checkbox" name="is_active" value="1" {{ old('is_active', $lesson->is_active) ? 'checked' : '' }} class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                                <x-input-label for="is_active" :value="__('درس نشط')" class="mr-2" />
-                                <x-input-error :messages="$errors->get('is_active')" class="mt-2" />
+                            <div class="col-md-6 d-flex align-items-center gap-2">
+                                <input id="is_active" type="checkbox" name="is_active" value="1" {{ old('is_active', $lesson->is_active) ? 'checked' : '' }} class="form-check-input">
+                                <label for="is_active" class="form-check-label">درس نشط</label>
+                                @error('is_active')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
 
-                        <div class="flex items-center justify-end mt-6">
-                            <a href="{{ route('admin.lessons.index', $lesson->section) }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mr-2">
-                                إلغاء
-                            </a>
-                            <x-primary-button>
-                                {{ __('تحديث الدرس') }}
-                            </x-primary-button>
+                        <div class="d-flex justify-content-end mt-4 gap-2">
+                            <a href="{{ route('admin.lessons.index', $lesson->section) }}" class="btn btn-secondary">إلغاء</a>
+                            <button type="submit" class="btn btn-primary">تحديث الدرس</button>
                         </div>
                     </form>
                 </div>
@@ -200,6 +278,10 @@
         const input = document.getElementById('lesson_file');
         const preview = document.getElementById('filePreview');
         const fileName = document.getElementById('fileName');
+        const videoPreview = document.getElementById('videoPreview');
+        const videoPreviewSource = document.getElementById('videoPreviewSource');
+        const videoPreviewIframe = document.getElementById('videoPreviewIframe');
+        const videoUrlInput = document.getElementById('video_url');
 
         if (!uploadArea || !input) return;
 
@@ -226,7 +308,55 @@
 
         input.addEventListener('change', (e) => {
             handleFileSelect(input, preview, fileName);
+            const file = input.files && input.files[0];
+            if (file && file.type.startsWith('video/')) {
+                // Switch to HTML5 video preview for local file
+                if (videoPreviewIframe) {
+                    videoPreviewIframe.parentElement.innerHTML = '<video id="videoPreview" class="w-100 h-100" controls playsinline preload="metadata" style="object-fit: cover;"><source id="videoPreviewSource" type="video/mp4"></video>';
+                }
+                const blobUrl = URL.createObjectURL(file);
+                const dynVideo = document.getElementById('videoPreview');
+                const dynSource = document.getElementById('videoPreviewSource');
+                if (dynVideo && dynSource) {
+                    dynSource.src = blobUrl;
+                    dynVideo.load();
+                }
+            }
         });
+
+        if (videoUrlInput) {
+            videoUrlInput.addEventListener('input', function() {
+                const url = this.value.trim();
+                if (!url) return;
+                const isYouTube = url.includes('youtube.com') || url.includes('youtu.be');
+                const isVimeo = url.includes('vimeo.com');
+                let embedSrc = null;
+                if (isYouTube) {
+                    const short = url.match(/youtu\.be\/([\w-]+)/);
+                    const long = url.match(/[?&]v=([\w-]+)/);
+                    const id = short ? short[1] : (long ? long[1] : null);
+                    if (id) embedSrc = 'https://www.youtube.com/embed/' + id;
+                } else if (isVimeo) {
+                    const m = url.match(/vimeo\.com\/(\d+)/);
+                    if (m) embedSrc = 'https://player.vimeo.com/video/' + m[1];
+                }
+                const wrapper = document.getElementById('videoPreviewWrapper');
+                if (!wrapper) return;
+                if (embedSrc) {
+                    wrapper.innerHTML = '<iframe id="videoPreviewIframe" title="preview" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>';
+                    const ifr = document.getElementById('videoPreviewIframe');
+                    if (ifr) ifr.src = embedSrc;
+                } else {
+                    wrapper.innerHTML = '<video id="videoPreview" class="w-100 h-100" controls playsinline preload="metadata" style="object-fit: cover;"><source id="videoPreviewSource" type="video/mp4"></video>';
+                    const dynVideo = document.getElementById('videoPreview');
+                    const dynSource = document.getElementById('videoPreviewSource');
+                    if (dynVideo && dynSource) {
+                        dynSource.src = url;
+                        dynVideo.load();
+                    }
+                }
+            });
+        }
     }
 
     function handleFileSelect(input, preview, fileName) {
@@ -264,4 +394,5 @@
         document.getElementById('filePreview').style.display = 'none';
     }
     </script>
-</x-app-layout>
+</div>
+@endsection

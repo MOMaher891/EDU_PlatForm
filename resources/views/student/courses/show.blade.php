@@ -267,7 +267,7 @@
                                                                     <h6 class="fw-bold mb-1">شراء هذا القسم فقط</h6>
                                                                     <small class="text-muted">احصل على وصول فوري لهذا القسم</small>
                                                                 </div>
-                                                                <a href="{{ route('payment.section.checkout', ['course' => $course, 'section' => $section]) }}" 
+                                                                <a href="{{ route('payment.section.checkout', ['course' => $course, 'section' => $section]) }}"
                                                                    class="btn btn-primary btn-sm">
                                                                     <i class="fas fa-shopping-cart me-1"></i>
                                                                     شراء القسم - ${{ $section->getEffectivePrice() }}
@@ -275,7 +275,7 @@
                                                             </div>
                                                         </div>
                                                     @endif
-                                                    
+
                                                     @foreach($section->lessons as $lesson)
                                                         <div class="lesson-item d-flex justify-content-between align-items-center py-3 border-bottom">
                                                             <div class="d-flex align-items-center">
@@ -290,6 +290,14 @@
                                                                 </div>
                                                                 <div>
                                                                     <h6 class="mb-1">{{ $lesson->title }}</h6>
+                                                                    @if(!$lesson->is_free && !$hasAccess)
+                                                                        @php $isPaid = isset($paidLessonIds) && in_array($lesson->id, $paidLessonIds); @endphp
+                                                                        @if($isPaid)
+                                                                            <span class="badge bg-primary">مدفوع</span>
+                                                                        @else
+                                                                            <small class="text-primary">السعر: {{ number_format($lesson->price ?? 0, 2) }}</small>
+                                                                        @endif
+                                                                    @endif
                                                                     @if($lesson->is_free)
                                                                         <span class="badge bg-success">مجاني</span>
                                                                     @elseif($hasAccess)
@@ -306,14 +314,17 @@
                                                                         {{ gmdate('i:s', $lesson->video_duration) }}
                                                                     </small>
                                                                 @endif
-                                                                @if($lesson->is_free || $hasAccess)
-                                                                    <a href="{{ route('student.courses.learn', $course, ['lesson' => $lesson->id]) }}" 
+                                                                @php $isPaid = isset($paidLessonIds) && in_array($lesson->id, $paidLessonIds); @endphp
+                                                                @if($lesson->is_free || $hasAccess || $isPaid)
+                                                                    <a href="{{ route('student.courses.learn', ['course' => $course->id, 'lesson' => $lesson->id]) }}"
                                                                        class="btn btn-sm btn-outline-primary mt-1">
                                                                         <i class="fas fa-play me-1"></i>
                                                                         مشاهدة
                                                                     </a>
                                                                 @else
-                                                                    <i class="fas fa-lock text-muted"></i>
+                                                                    <div>
+                                                                        <input type="checkbox" class="form-check-input lesson-select" value="{{ $lesson->id }}" data-price="{{ $lesson->price ?? 0 }}">
+                                                                    </div>
                                                                 @endif
                                                             </div>
                                                         </div>
@@ -509,6 +520,10 @@
                                     <a href="{{ route('payment.checkout', $course) }}" class="btn btn-primary btn-lg">
                                         <i class="fas fa-shopping-cart me-2"></i>
                                         {{ $course->getEffectivePrice() == 0 ? 'التسجيل المجاني' : 'شراء الكورس الآن' }}
+                                    </a>
+                                    <a href="#" id="proceedLessonsBtn" class="btn btn-outline-success btn-lg">
+                                        <i class="fas fa-list-check me-2"></i>
+                                        شراء دروس محددة
                                     </a>
                                     <button class="btn btn-outline-primary">
                                         <i class="fas fa-heart me-2"></i>
@@ -779,6 +794,16 @@
     document.getElementById('previewModal').addEventListener('hidden.bs.modal', function() {
         const iframe = this.querySelector('iframe');
         iframe.src = iframe.src.replace('?autoplay=1', '');
+    });
+
+    // Collect selected lessons and go to lessons pay page with query
+    document.getElementById('proceedLessonsBtn')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        const checkboxes = document.querySelectorAll('.lesson-select');
+        const selected = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
+        const url = new URL(`{{ route('student.courses.lessons.pay.create', $course) }}`);
+        selected.forEach(id => url.searchParams.append('lessons[]', id));
+        window.location.href = url.toString();
     });
 </script>
 @endpush

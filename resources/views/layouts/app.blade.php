@@ -20,6 +20,7 @@
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
     <!-- Global Security Measures -->
+    @if(($appSettings->block_devtools ?? false) || ($appSettings->block_copy_text ?? false))
     <script>
         // Global Security System
         (function() {
@@ -60,9 +61,12 @@
             }
 
             // Check every 100ms
+            @if($appSettings->block_devtools ?? false)
             setInterval(detectDevTools, 100);
+            @endif
 
             // Block common developer tools shortcuts
+            @if($appSettings->block_devtools ?? false)
             document.addEventListener('keydown', function(e) {
                 // F12
                 if (e.key === 'F12') {
@@ -113,20 +117,26 @@
                     return false;
                 }
             });
+            @endif
 
             // Disable right-click context menu
+            @if($appSettings->block_copy_text ?? false)
             document.addEventListener('contextmenu', function(e) {
                 e.preventDefault();
                 return false;
             });
+            @endif
 
             // Disable text selection
+            @if($appSettings->block_copy_text ?? false)
             document.addEventListener('selectstart', function(e) {
                 e.preventDefault();
                 return false;
             });
+            @endif
 
             // Disable copy/paste
+            @if($appSettings->block_copy_text ?? false)
             document.addEventListener('copy', function(e) {
                 e.preventDefault();
                 return false;
@@ -141,8 +151,10 @@
                 e.preventDefault();
                 return false;
             });
+            @endif
 
             // Disable drag and drop
+            @if($appSettings->block_copy_text ?? false)
             document.addEventListener('dragstart', function(e) {
                 e.preventDefault();
                 return false;
@@ -152,6 +164,7 @@
                 e.preventDefault();
                 return false;
             });
+            @endif
 
             // Prevent iframe embedding
             if (window.top !== window.self) {
@@ -164,39 +177,10 @@
 
         })();
     </script>
+    @endif
 
+    <!-- App UI Styles (always on) -->
     <style>
-        /* Global Security CSS */
-        * {
-            -webkit-user-select: none !important;
-            -moz-user-select: none !important;
-            -ms-user-select: none !important;
-            user-select: none !important;
-            -webkit-touch-callout: none !important;
-            -webkit-user-drag: none !important;
-        }
-
-        /* Allow text selection for specific elements */
-        .learning-interface,
-        .content-section,
-        .lesson-content,
-        .notes-content,
-        .security-alert,
-        .danger-content {
-            -webkit-user-select: text !important;
-            -moz-user-select: text !important;
-            -ms-user-select: text !important;
-            user-select: text !important;
-        }
-
-        /* Disable text selection for video and sensitive areas */
-        video, .video-container, .enhanced-video-player {
-            -webkit-user-select: none !important;
-            -moz-user-select: none !important;
-            -ms-user-select: none !important;
-            user-select: none !important;
-        }
-
         :root {
             --primary-color: #6366f1;
             --primary-dark: #4f46e5;
@@ -212,9 +196,7 @@
             --box-shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
 
-        * {
-            font-family: 'Cairo', sans-serif;
-        }
+        * { font-family: 'Cairo', sans-serif; }
 
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -228,7 +210,6 @@
             margin-top: 80px;
         }
 
-        /* Modern Navbar */
         .navbar {
             backdrop-filter: blur(20px);
             background: rgba(255, 255, 255, 0.95) !important;
@@ -261,178 +242,60 @@
         .nav-link::after {
             content: '';
             position: absolute;
-            width: 0;
-            height: 2px;
-            bottom: -5px;
-            left: 50%;
+            width: 0; height: 2px; bottom: -5px; left: 50%;
             background: var(--primary-color);
             transition: all 0.3s ease;
             transform: translateX(-50%);
         }
 
-        .nav-link:hover::after {
-            width: 100%;
-        }
+        .nav-link:hover::after { width: 100%; }
 
-        /* Modern Cards */
-        .card {
-            border: none;
-            border-radius: var(--border-radius);
-            box-shadow: var(--box-shadow);
-            transition: all 0.3s ease;
-            overflow: hidden;
-        }
+        .card { border: none; border-radius: var(--border-radius); box-shadow: var(--box-shadow); transition: all 0.3s ease; overflow: hidden; }
+        .card:hover { transform: translateY(-5px); box-shadow: var(--box-shadow-lg); }
+        .course-card { position: relative; overflow: hidden; }
+        .course-card::before { content: ''; position: absolute; top:0; left:0; right:0; bottom:0; background: linear-gradient(135deg, rgba(99,102,241,0.1), rgba(6,182,212,0.1)); opacity:0; transition: opacity 0.3s ease; z-index:1; }
+        .course-card:hover::before { opacity: 1; }
+        .course-card .card-body { position: relative; z-index: 2; }
 
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--box-shadow-lg);
-        }
+        .btn { border-radius: var(--border-radius); font-weight: 500; padding: 12px 24px; transition: all 0.3s ease; border: none; position: relative; overflow: hidden; }
+        .btn-primary { background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); box-shadow: 0 4px 15px rgba(99,102,241,0.3); }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(99,102,241,0.4); }
+        .btn-outline-primary { border: 2px solid var(--primary-color); color: var(--primary-color); background: transparent; }
+        .btn-outline-primary:hover { background: var(--primary-color); transform: translateY(-2px); }
 
-        .course-card {
-            position: relative;
-            overflow: hidden;
-        }
+        .form-control, .form-select { border-radius: var(--border-radius); border: 2px solid #e2e8f0; padding: 12px 16px; transition: all 0.3s ease; }
+        .form-control:focus, .form-select:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+        .badge { border-radius: 20px; padding: 6px 12px; font-weight: 500; }
+        .progress { height: 8px; border-radius: 10px; background: #e2e8f0; }
+        .progress-bar { border-radius: 10px; background: linear-gradient(90deg, var(--primary-color), var(--accent-color)); }
 
-        .course-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(6, 182, 212, 0.1));
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            z-index: 1;
-        }
+        .fade-in { animation: fadeIn 0.6s ease-in; }
+        @keyframes fadeIn { from { opacity:0; transform: translateY(20px);} to { opacity:1; transform: translateY(0);} }
+        .slide-up { animation: slideUp 0.6s ease-out; }
+        @keyframes slideUp { from { opacity:0; transform: translateY(30px);} to { opacity:1; transform: translateY(0);} }
 
-        .course-card:hover::before {
-            opacity: 1;
-        }
+        .glass { background: rgba(255,255,255,0.25); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.2); }
+        .footer { background: linear-gradient(135deg, #1e293b, #334155); color: white; }
 
-        .course-card .card-body {
-            position: relative;
-            z-index: 2;
-        }
-
-        /* Modern Buttons */
-        .btn {
-            border-radius: var(--border-radius);
-            font-weight: 500;
-            padding: 12px 24px;
-            transition: all 0.3s ease;
-            border: none;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
-        }
-
-        .btn-outline-primary {
-            border: 2px solid var(--primary-color);
-            color: var(--primary-color);
-            background: transparent;
-        }
-
-        .btn-outline-primary:hover {
-            background: var(--primary-color);
-            transform: translateY(-2px);
-        }
-
-        /* Modern Form Controls */
-        .form-control, .form-select {
-            border-radius: var(--border-radius);
-            border: 2px solid #e2e8f0;
-            padding: 12px 16px;
-            transition: all 0.3s ease;
-        }
-
-        .form-control:focus, .form-select:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-        }
-
-        /* Modern Badges */
-        .badge {
-            border-radius: 20px;
-            padding: 6px 12px;
-            font-weight: 500;
-        }
-
-        /* Progress Bars */
-        .progress {
-            height: 8px;
-            border-radius: 10px;
-            background: #e2e8f0;
-        }
-
-        .progress-bar {
-            border-radius: 10px;
-            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
-        }
-
-        /* Animations */
-        .fade-in {
-            animation: fadeIn 0.6s ease-in;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .slide-up {
-            animation: slideUp 0.6s ease-out;
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Glass Effect */
-        .glass {
-            background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        /* Modern Footer */
-        .footer {
-            background: linear-gradient(135deg, #1e293b, #334155);
-            color: white;
-        }
-
-        /* Responsive */
         @media (max-width: 768px) {
-            .main-content {
-                margin-top: 70px;
-            }
-
-            .navbar-brand {
-                font-size: 1.2rem;
-            }
+            .main-content { margin-top: 70px; }
+            .navbar-brand { font-size: 1.2rem; }
         }
 
-        /* Dark Mode Support */
         @media (prefers-color-scheme: dark) {
-            .navbar {
-                background: rgba(30, 41, 59, 0.95) !important;
-            }
-
-            .nav-link {
-                color: white !important;
-            }
+            .navbar { background: rgba(30, 41, 59, 0.95) !important; }
+            .nav-link { color: white !important; }
         }
     </style>
+
+    @if($appSettings->block_copy_text ?? false)
+    <style>
+        /* Global Security CSS (only selection/interaction) */
+        * { -webkit-user-select: none !important; -moz-user-select: none !important; -ms-user-select: none !important; user-select: none !important; -webkit-touch-callout: none !important; -webkit-user-drag: none !important; }
+        .learning-interface, .content-section, .lesson-content, .notes-content, .security-alert, .danger-content { -webkit-user-select: text !important; -moz-user-select: text !important; -ms-user-select: text !important; user-select: text !important; }
+        video, .video-container, .enhanced-video-player { -webkit-user-select: none !important; -moz-user-select: none !important; -ms-user-select: none !important; user-select: none !important; }
+    </style>
+    @endif
     @stack('styles')
 </head>
 <body>
@@ -499,8 +362,14 @@
                                 {{ auth()->user()->name }}
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end">
+                                @if(auth()->user()->isAdmin())
+                                <li><a class="dropdown-item" href="{{ route('admin.profile') }}"><i class="fas fa-user me-2"></i>الملف الشخصي</a></li>
+                                @else
                                 <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>الملف الشخصي</a></li>
-                                <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>الإعدادات</a></li>
+                                @endif
+                                @if(auth()->user()->isAdmin())
+                                <li><a class="dropdown-item" href="{{ route('admin.settings.index') }}"><i class="fas fa-cog me-2"></i>إعدادات النظام</a></li>
+                                @endif
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
                                     <a class="dropdown-item text-danger" href="{{ route('logout') }}"

@@ -542,32 +542,42 @@ class VideoSecurity {
             });
 
             // Disable right-click context menu globally
+            @if($appSettings->block_copy_text ?? false)
             document.addEventListener('contextmenu', e => e.preventDefault());
+            @endif
             if (this.video) {
                 this.video.addEventListener('contextmenu', e => e.preventDefault());
             }
 
             // Disable keyboard shortcuts for recording and developer tools
+            @if($appSettings->block_devtools ?? false)
             document.addEventListener('keydown', e => this.handleKeySecurity(e));
+            @endif
 
             // Disable drag and drop globally
+            @if($appSettings->block_copy_text ?? false)
             document.addEventListener('dragstart', e => e.preventDefault());
             document.addEventListener('drop', e => e.preventDefault());
+            @endif
             if (this.video) {
                 this.video.addEventListener('dragstart', e => e.preventDefault());
                 this.video.addEventListener('drop', e => e.preventDefault());
             }
 
             // Disable selection globally
+            @if($appSettings->block_copy_text ?? false)
             document.addEventListener('selectstart', e => e.preventDefault());
+            @endif
             if (this.video) {
                 this.video.addEventListener('selectstart', e => e.preventDefault());
             }
 
             // Disable copy/paste globally
+            @if($appSettings->block_copy_text ?? false)
             document.addEventListener('copy', e => e.preventDefault());
             document.addEventListener('cut', e => e.preventDefault());
             document.addEventListener('paste', e => e.preventDefault());
+            @endif
             if (this.video) {
                 this.video.addEventListener('copy', e => e.preventDefault());
                 this.video.addEventListener('cut', e => e.preventDefault());
@@ -578,13 +588,17 @@ class VideoSecurity {
             this.monitorScreenRecording();
 
             // Enhanced developer tools detection
+            @if($appSettings->block_devtools ?? false)
             this.enhancedDeveloperToolsDetection();
+            @endif
 
             // Add watermark
             this.addWatermark();
 
             // Add CSS protection
+            @if($appSettings->block_copy_text ?? false)
             this.addCSSProtection();
+            @endif
 
             console.log('Enhanced security measures initialized successfully');
         } catch (error) {
