@@ -96,11 +96,13 @@
 
                         <div class="col-md-2">
                             <label class="form-label">الدور</label>
-                            <select class="form-select" name="role">
+                            <select class="form-select" name="role_id">
                                 <option value="">جميع الأدوار</option>
-                                <option value="student" {{ request('role') == 'student' ? 'selected' : '' }}>طالب</option>
-                                <option value="instructor" {{ request('role') == 'instructor' ? 'selected' : '' }}>مدرب</option>
-                                <option value="admin" {{ request('role') == 'admin' ? 'selected' : '' }}>مدير</option>
+                                @foreach(($roles ?? []) as $role)
+                                    <option value="{{ $role->id }}" {{ request('role_id') == $role->id ? 'selected' : '' }}>
+                                        {{ $role->name }}
+                                    </option>
+                                @endforeach
                             </select>
                         </div>
 
@@ -214,21 +216,17 @@
                                                 </div>
                                             </td>
                                             <td>
-                                                <span class="role-badge role-{{ $user->role }}">
-                                                    @switch($user->role)
-                                                        @case('admin')
-                                                            <i class="fas fa-user-shield me-1"></i>
-                                                            مدير
-                                                            @break
-                                                        @case('instructor')
-                                                            <i class="fas fa-chalkboard-teacher me-1"></i>
-                                                            مدرب
-                                                            @break
-                                                        @case('student')
-                                                            <i class="fas fa-user-graduate me-1"></i>
-                                                            طالب
-                                                            @break
-                                                    @endswitch
+                                                <span class="role-badge role-{{ $user->role_slug }}">
+                                                    @php($slug = $user->role_slug)
+                                                    @if($slug === 'admin')
+                                                        <i class="fas fa-user-shield me-1"></i> {{ $user->role_name }}
+                                                    @elseif($slug === 'instructor')
+                                                        <i class="fas fa-chalkboard-teacher me-1"></i> {{ $user->role_name }}
+                                                    @elseif($slug === 'student')
+                                                        <i class="fas fa-user-graduate me-1"></i> {{ $user->role_name }}
+                                                    @else
+                                                        <i class="fas fa-user me-1"></i> {{ $user->role_name ?? 'غير محدد' }}
+                                                    @endif
                                                 </span>
                                             </td>
                                             <td>
@@ -350,11 +348,11 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">الدور</label>
-                            <select class="form-select" name="role" required>
+                            <select class="form-select" name="role_id" required>
                                 <option value="">اختر الدور</option>
-                                <option value="student">طالب</option>
-                                <option value="instructor">مدرب</option>
-                                <option value="admin">مدير</option>
+                                @foreach(($roles ?? []) as $role)
+                                    <option value="{{ $role->id }}">{{ $role->name }}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="col-md-6">
@@ -407,10 +405,10 @@
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">الدور</label>
-                            <select class="form-select" name="role" id="editRole" required>
-                                <option value="student">طالب</option>
-                                <option value="instructor">مدرب</option>
-                                <option value="admin">مدير</option>
+                            <select class="form-select" name="role_id" id="editRole" required>
+                                @foreach(($roles ?? []) as $role)
+                                    <option value="{{ $role->id }}">{{ $role->name }}</option>
+                                @endforeach
                             </select>
                         </div>
                         <div class="col-md-6">

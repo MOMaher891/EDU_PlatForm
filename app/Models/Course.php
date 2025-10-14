@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class Course extends Model
 {
@@ -39,6 +40,29 @@ class Course extends Model
         'requirements' => 'array',
         'what_you_learn' => 'array'
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function (Course $course) {
+            if (empty($course->slug) && !empty($course->title)) {
+                $base = Str::slug($course->title);
+                $slug = $base;
+                $counter = 1;
+                while (static::where('slug', $slug)->exists()) {
+                    $slug = $base . '-' . $counter++;
+                }
+                $course->slug = $slug;
+            }
+        });
+
+        static::updating(function (Course $course) {
+            if ($course->isDirty('title') && empty($course->slug)) {
+                $course->slug = Str::slug($course->title);
+            }
+        });
+    }
 
     // Relationships
     public function category()

@@ -11,6 +11,7 @@ use App\Models\Payment;
 use App\Models\CourseSection;
 use App\Models\Lesson;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
@@ -93,7 +94,10 @@ class AdminController extends Controller
                 });
             }
 
-            if ($request->filled('role')) {
+            // Prefer filtering by role_id (roles table); keep legacy 'role' fallback
+            if ($request->filled('role_id')) {
+                $query->where('role_id', $request->role_id);
+            } elseif ($request->filled('role')) {
                 $query->where('role', $request->role);
             }
             if ($request->filled('sort')) {
@@ -112,11 +116,21 @@ class AdminController extends Controller
                 }
             }
 
-            $users = $query->withCount(['enrollments', 'instructedCourses'])
+            $users = $query->with(['role'])
+                ->withCount(['enrollments', 'instructedCourses'])
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
 
-            return view('admin.users.index', compact('users'));
+            // Expose role slug/name derived from roles table (fallback to legacy column)
+            $users->getCollection()->transform(function ($user) {
+                $user->role_slug = optional($user->role)->slug ?? $user->getAttribute('role');
+                $user->role_name = optional($user->role)->name ?? ucfirst((string) $user->getAttribute('role'));
+                return $user;
+            });
+
+            $roles = Role::orderBy('id')->get();
+
+            return view('admin.users.index', compact('users', 'roles'));
         } catch (\Exception $e) {
             Log::error('Error in admin users: ' , [
                 'user_id' => auth()->id(),
@@ -382,6 +396,7 @@ class AdminController extends Controller
                 'category_id' => 'required|exists:categories,id',
                 'instructor_id' => 'required|exists:users,id',
                 'price' => 'required|numeric|min:0',
+                'discount_price' => 'nullable|numeric|min:0|lt:price',
                 'level' => 'required|in:beginner,intermediate,advanced',
                 'duration_hours' => 'required|integer|min:1',
                 'is_published' => 'boolean',
@@ -392,6 +407,10 @@ class AdminController extends Controller
                 $thumbnailPath = $request->file('thumbnail')->store('courses/thumbnails', 'public');
                 $validated['thumbnail'] = $thumbnailPath;
             }
+
+            // Normalize booleans
+            $validated['is_published'] = $request->has('is_published');
+            $validated['is_featured'] = $request->has('is_featured');
 
             $course = Course::create($validated);
 
@@ -434,6 +453,7 @@ class AdminController extends Controller
                 'category_id' => 'required|exists:categories,id',
                 'instructor_id' => 'required|exists:users,id',
                 'price' => 'required|numeric|min:0',
+                'discount_price' => 'nullable|numeric|min:0|lt:price',
                 'level' => 'required|in:beginner,intermediate,advanced',
                 'duration_hours' => 'required|integer|min:1',
                 'is_published' => 'boolean',
@@ -448,6 +468,10 @@ class AdminController extends Controller
                 $thumbnailPath = $request->file('thumbnail')->store('courses/thumbnails', 'public');
                 $validated['thumbnail'] = $thumbnailPath;
             }
+
+            // Normalize booleans
+            $validated['is_published'] = $request->has('is_published');
+            $validated['is_featured'] = $request->has('is_featured');
 
             $course->update($validated);
 
@@ -917,21 +941,52 @@ class AdminController extends Controller
 
     public function storeCategory(Request $request)
     {
+        // Handle AJAX and normal requests
         try {
-            $validated = $request->validate([
+            $validator = \Validator::make($request->all(), [
                 'name' => 'required|string|max:255|unique:categories',
-                'description' => 'nullable|string'
+                'description' => 'nullable|string',
+                'icon' => 'nullable|string|max:255',
             ]);
 
-            Category::create($validated);
+            if ($validator->fails()) {
+                if ($request->expectsJson() || $request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $validator->errors()->first(),
+                        'errors' => $validator->errors(),
+                    ], 422);
+                }
+                return redirect()->back()->withErrors($validator)->withInput();
+            }
+
+            $data = $validator->validated();
+            $data['is_active'] = true;
+
+            Category::create($data);
+
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم إنشاء التصنيف بنجاح',
+                ]);
+            }
 
             return redirect()->route('admin.categories.index')
                 ->with('success', 'تم إنشاء التصنيف بنجاح');
         } catch (\Exception $e) {
             Log::error('Error in store category: ' , [
                 'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
+
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'حدث خطأ أثناء إضافة التصنيف',
+                ], 500);
+            }
 
             return redirect()->back()->with('error', 'حدث خطأ أثناء إنشاء التصنيف. يرجى المحاولة مرة أخرى.');
         }
@@ -940,12 +995,32 @@ class AdminController extends Controller
     public function updateCategory(Request $request, Category $category)
     {
         try {
-            $validated = $request->validate([
+            $validator = \Validator::make($request->all(), [
                 'name' => 'required|string|max:255|unique:categories,name,' . $category->id,
-                'description' => 'nullable|string'
+                'description' => 'nullable|string',
+                'icon' => 'nullable|string|max:255',
+                'color' => 'nullable|string|max:20',
             ]);
 
-            $category->update($validated);
+            if ($validator->fails()) {
+                if ($request->expectsJson() || $request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => $validator->errors()->first(),
+                        'errors' => $validator->errors(),
+                    ], 422);
+                }
+                return redirect()->back()->withErrors($validator)->withInput();
+            }
+
+            $category->update($validator->validated());
+
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم تحديث التصنيف بنجاح',
+                ]);
+            }
 
             return redirect()->route('admin.categories.index')
                 ->with('success', 'تم تحديث التصنيف بنجاح');
@@ -953,21 +1028,43 @@ class AdminController extends Controller
             Log::error('Error in update category: ' , [
                 'user_id' => auth()->id(),
                 'category_id' => $category->id ?? null,
+                'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
+
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'حدث خطأ أثناء تحديث التصنيف',
+                    'error' => $e->getMessage(),
+                ], 500);
+            }
 
             return redirect()->back()->with('error', 'حدث خطأ أثناء تحديث التصنيف. يرجى المحاولة مرة أخرى.');
         }
     }
 
-    public function destroyCategory(Category $category)
+    public function destroyCategory(Request $request, Category $category)
     {
         try {
-            if ($category->courses()->count() > 0) {
+            if ($category->courses()->exists()) {
+                if ($request->expectsJson() || $request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'لا يمكن حذف التصنيف لوجود كورسات مرتبطة به',
+                    ], 400);
+                }
                 return redirect()->back()->with('error', 'لا يمكن حذف التصنيف لوجود كورسات مرتبطة به');
             }
 
             $category->delete();
+
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'تم حذف التصنيف بنجاح',
+                ]);
+            }
 
             return redirect()->route('admin.categories.index')
                 ->with('success', 'تم حذف التصنيف بنجاح');
@@ -975,8 +1072,17 @@ class AdminController extends Controller
             Log::error('Error in destroy category: ' , [
                 'user_id' => auth()->id(),
                 'category_id' => $category->id ?? null,
+                'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
+
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'حدث خطأ أثناء حذف التصنيف',
+                    'error' => $e->getMessage(),
+                ], 500);
+            }
 
             return redirect()->back()->with('error', 'حدث خطأ أثناء حذف التصنيف. يرجى المحاولة مرة أخرى.');
         }

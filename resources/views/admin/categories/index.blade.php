@@ -491,16 +491,17 @@ function deleteCategory(id, name) {
                 'X-CSRF-TOKEN': token,
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
             },
         })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
+        .then(async response => {
+            // Parse JSON even for 4xx/5xx to get message
+            let data;
+            try { data = await response.json(); } catch (_) { data = { success: false, message: 'حدث خطأ أثناء حذف التصنيف' }; }
+            return { ok: response.ok, status: response.status, data };
         })
-        .then(data => {
-            if (data.success) {
+        .then(({ ok, status, data }) => {
+            if (data && data.success) {
                 // Show success message
                 const successAlert = document.createElement('div');
                 successAlert.className = 'alert alert-success alert-dismissible fade show';
@@ -515,7 +516,8 @@ function deleteCategory(id, name) {
                     location.reload();
                 }, 1500);
             } else {
-                alert(data.message || 'حدث خطأ أثناء حذف التصنيف');
+                const msg = (data && data.message) ? data.message : (status === 400 ? 'لا يمكن حذف التصنيف' : 'حدث خطأ أثناء حذف التصنيف');
+                alert(msg);
             }
         })
         .catch(error => {
@@ -540,6 +542,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: formData,
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
                 },
             })
             .then(response => response.json())
@@ -570,6 +574,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: formData,
                 headers: {
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
                 },
             })
             .then(response => response.json())

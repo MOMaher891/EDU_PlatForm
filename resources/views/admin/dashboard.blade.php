@@ -104,7 +104,7 @@
                                 <i class="fas fa-dollar-sign fa-2x text-info"></i>
                             </div>
                             <div class="flex-grow-1">
-                                <h3 class="fw-bold mb-1">$<span class="counter" data-target="25000">0</span></h3>
+                                <h3 class="fw-bold mb-1">$<span class="counter" data-target="{{ \App\Models\Payment::where('status', 'completed')->sum('amount') }}">0</span></h3>
                                 <p class="text-muted mb-0">إجمالي الإيرادات</p>
                                 <small class="text-success">
                                     <i class="fas fa-arrow-up me-1"></i>
