@@ -204,40 +204,7 @@
                             @endif
                         </div>
 
-                        <!-- Progress Controls - Under file -->
-                        <div class="progress-controls">
-                            <div class="progress-status">
-                                @if(isset($lessonProgress[$currentLesson->id]) && $lessonProgress[$currentLesson->id])
-                                    <span class="status completed">
-                                        <i class="fas fa-check-circle"></i>
-                                        تم إكمال الدرس
-                                    </span>
-                                @else
-                                    <span class="status in-progress">
-                                        <i class="fas fa-play-circle"></i>
-                                        قيد التقدم
-                                    </span>
-                                @endif
-                            </div>
 
-                            <div class="progress-buttons">
-                                @if(isset($lessonProgress[$currentLesson->id]) && $lessonProgress[$currentLesson->id])
-                                    <button id="markIncomplete" class="btn btn-outline-warning">
-                                        <i class="fas fa-undo me-2"></i>
-                                        إلغاء الإكمال
-                                    </button>
-                                    <button id="nextLessonBtn" class="btn btn-primary" onclick="window.learningInterface.navigateToLesson('next')">
-                                        <i class="fas fa-arrow-right me-2"></i>
-                                        الدرس التالي
-                                    </button>
-                                @else
-                                    <button id="markComplete" class="btn btn-success">
-                                        <i class="fas fa-check me-2"></i>
-                                        إكمال الدرس
-                                    </button>
-                                @endif
-                            </div>
-                        </div>
 
                         <!-- Lesson Navigation - Under file -->
                         <div class="lesson-navigation">
@@ -283,6 +250,30 @@
                                 </div>
                             </div>
                         @endif
+
+                        <!-- Progress Controls (Unified for all media types) -->
+                        <div class="progress-controls-unified mb-4 p-4 rounded-4 shadow-sm border" 
+                             style="background: rgba(255, 255, 255, 0.8) !important; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-color: rgba(99, 102, 241, 0.1);">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                                <div class="progress-status-container">
+                                    <span id="lessonStatusBadge" class="badge {{ isset($lessonProgress[$currentLesson->id]) && $lessonProgress[$currentLesson->id] ? 'bg-success' : 'bg-warning' }} px-3 py-2 fs-6">
+                                        <i class="fas {{ isset($lessonProgress[$currentLesson->id]) && $lessonProgress[$currentLesson->id] ? 'fa-check-circle' : 'fa-play-circle' }} me-2"></i>
+                                        <span id="lessonStatusText">{{ isset($lessonProgress[$currentLesson->id]) && $lessonProgress[$currentLesson->id] ? 'تم إكمال الدرس' : 'قيد التقدم' }}</span>
+                                    </span>
+                                </div>
+
+                                <div class="progress-actions-container">
+                                    <button id="markComplete" class="btn btn-success px-4 py-2 fw-semibold" style="display: {{ isset($lessonProgress[$currentLesson->id]) && $lessonProgress[$currentLesson->id] ? 'none' : 'block' }}">
+                                        <i class="fas fa-check me-2"></i>
+                                        إكمال الدرس
+                                    </button>
+                                    <button id="markIncomplete" class="btn btn-outline-danger px-4 py-2 fw-semibold" style="display: {{ isset($lessonProgress[$currentLesson->id]) && $lessonProgress[$currentLesson->id] ? 'block' : 'none' }}">
+                                        <i class="fas fa-undo me-2"></i>
+                                        إلغاء الإكمال
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
 
                         <!-- Simple Navigation Controls - Under video -->
                         <div class="simple-navigation mt-4">

@@ -375,16 +375,22 @@
     }
 
     .list-view .course-item {
-        margin-bottom: 1rem;
+        margin-bottom: 1.5rem;
     }
 
     .list-view .course-card {
         flex-direction: row;
+        align-items: stretch;
     }
 
-    .list-view .course-card img {
-        width: 200px;
-        height: 150px;
+    .list-view .course-card > .position-relative {
+        width: 300px;
+        min-width: 300px;
+    }
+
+    .list-view .course-card .card-img-top {
+        width: 100% !important;
+        height: 100% !important;
         object-fit: cover;
     }
 
@@ -408,6 +414,20 @@
 
         .results-info h5 {
             font-size: 1rem;
+        }
+
+        .list-view .course-card {
+            flex-direction: column;
+        }
+
+        .list-view .course-card > .position-relative {
+            width: 100%;
+            min-width: 100%;
+        }
+
+        .list-view .course-card .card-img-top {
+            width: 100% !important;
+            height: 200px !important;
         }
     }
 </style>

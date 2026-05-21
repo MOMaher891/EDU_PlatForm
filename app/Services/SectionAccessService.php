@@ -74,7 +74,22 @@ class SectionAccessService
             return false;
         }
 
-        return $this->hasAccess($user, $lesson->section);
+        // Check full course / section access first
+        if ($this->hasAccess($user, $lesson->section)) {
+            return true;
+        }
+
+        // Check individual approved lesson payments
+        return \App\Models\LessonPayment::where('student_id', $user->id)
+            ->where('course_id', $lesson->section->course_id)
+            ->where('status', 1)
+            ->get()
+            ->flatMap(function ($p) {
+                return explode(',', (string) $p->lessons_ids);
+            })
+            ->filter()
+            ->map(fn($id) => (int)$id)
+            ->contains((int)$lesson->id);
     }
 
     /**

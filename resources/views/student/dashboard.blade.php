@@ -18,9 +18,9 @@
                 </div>
                 <div class="col-md-4" data-aos="fade-left">
                     <div class="text-center text-white">
-                        <div class="learning-streak bg-white bg-opacity-20 rounded-4 p-3">
-                            <h3 class="fw-bold mb-1">🔥 {{ rand(5, 30) }}</h3>
-                            <small>يوم متتالي في التعلم</small>
+                        <div class="learning-streak rounded-4 p-3 border border-white border-opacity-10" style="background: rgba(255, 255, 255, 0.15) !important; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);">
+                            <h3 class="fw-bold mb-1 text-white" style="font-size: 1.8rem;">🔥 {{ rand(5, 30) }}</h3>
+                            <small style="color: rgba(255, 255, 255, 0.85); font-size: 0.8rem; font-weight: 500; display: block;">يوم متتالي في التعلم</small>
                         </div>
                     </div>
                 </div>
@@ -32,11 +32,11 @@
         <!-- Progress Overview -->
         <div class="row g-4 mb-5">
             @php
-                $enrolledCourses = auth()->user()->enrollments()->with('course')->get();
-                $completedCourses = $enrolledCourses->where('progress', 100);
-                $inProgressCourses = $enrolledCourses->where('progress', '>', 0)->where('progress', '<', 100);
-                $totalHours = $enrolledCourses->sum(function($enrollment) {
-                    return $enrollment->course->duration_hours;
+                $enrolledCourses = $enrolledCourses ?? auth()->user()->enrollments()->with('course')->get();
+                $completedCourses = $completedCourses ?? $enrolledCourses->where('progress', 100);
+                $inProgressCourses = $inProgressCourses ?? $enrolledCourses->where('progress', '>', 0)->where('progress', '<', 100);
+                $totalHours = $totalHours ?? $enrolledCourses->sum(function($enrollment) {
+                    return $enrollment->course->duration_hours ?? 0;
                 });
             @endphp
 

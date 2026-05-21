@@ -170,93 +170,99 @@
                             <table class="table table-hover mb-0">
                                 <thead class="table-light">
                                     <tr>
-                                        <th width="50">
-                                            <div class="form-check">
+                                        <th width="50" class="text-center">
+                                            <div class="form-check d-inline-block">
                                                 <input class="form-check-input" type="checkbox" id="selectAll">
                                             </div>
                                         </th>
-                                        <th>الكورس</th>
-                                        <th>المدرب</th>
-                                        <th>التصنيف</th>
-                                        <th>السعر</th>
-                                        <th>الطلاب</th>
-                                        <th>الحالة</th>
-                                        <th>تاريخ الإنشاء</th>
-                                        <th width="120">الإجراءات</th>
+                                        <th class="text-start">الكورس</th>
+                                        <th class="text-start">المدرب</th>
+                                        <th class="text-center">التصنيف</th>
+                                        <th class="text-center">السعر</th>
+                                        <th class="text-center">الطلاب</th>
+                                        <th class="text-center">الحالة</th>
+                                        <th class="text-center">تاريخ الإنشاء</th>
+                                        <th width="120" class="text-center">الإجراءات</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($courses as $course)
                                         <tr class="course-row" data-course-id="{{ $course->id }}">
-                                            <td>
-                                                <div class="form-check">
+                                            <td class="text-center">
+                                                <div class="form-check d-inline-block">
                                                     <input class="form-check-input course-checkbox" type="checkbox" value="{{ $course->id }}">
                                                 </div>
                                             </td>
-                                            <td>
+                                            <td class="text-start">
                                                 <div class="course-info">
                                                     <div class="course-thumbnail">
-                                                        <img src="{{ $course->thumbnail ? asset('storage/' . $course->thumbnail) : 'https://via.placeholder.com/60x40' }}"
-                                                             alt="{{ $course->title }}" class="rounded">
+                                                        @if($course->thumbnail)
+                                                            <img src="{{ asset('storage/' . $course->thumbnail) }}"
+                                                                 alt="{{ $course->title }}" class="rounded">
+                                                        @else
+                                                            <div class="course-thumbnail-placeholder rounded">
+                                                                <i class="fas fa-book"></i>
+                                                            </div>
+                                                        @endif
                                                     </div>
                                                     <div class="course-details">
                                                         <h6 class="course-title">{{ $course->title }}</h6>
                                                         <p class="course-description">{{ Str::limit($course->short_description, 50) }}</p>
                                                         <div class="course-meta">
                                                             <span class="badge bg-secondary">{{ $course->level }}</span>
-                                                            <span class="text-muted">{{ $course->duration_hours }} ساعة</span>
+                                                            <span class="text-muted small">{{ $course->duration_hours }} ساعة</span>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td>
+                                            <td class="text-start">
                                                 <div class="instructor-info">
                                                     <img src="https://ui-avatars.com/api/?name={{ urlencode($course->instructor->name) }}&background=6366f1&color=fff&size=32"
-                                                         alt="{{ $course->instructor->name }}" class="rounded-circle me-2">
-                                                    <span>{{ $course->instructor->name }}</span>
+                                                         alt="{{ $course->instructor->name }}" class="rounded-circle">
+                                                    <span class="fw-semibold">{{ $course->instructor->name }}</span>
                                                 </div>
                                             </td>
-                                            <td>
+                                            <td class="text-center">
                                                 <span class="badge bg-info">{{ $course->category->name }}</span>
                                             </td>
-                                            <td>
+                                            <td class="text-center">
                                                 @if($course->discount_price)
                                                     <div class="price-info">
-                                                        <span class="text-decoration-line-through text-muted">{{ $course->price }} ريال</span>
+                                                        <span class="text-decoration-line-through text-muted small">{{ $course->price }} ريال</span>
                                                         <br>
                                                         <span class="text-success fw-bold">{{ $course->discount_price }} ريال</span>
-                                                        <span class="badge bg-danger ms-1">{{ $course->getDiscountPercentage() }}%</span>
+                                                        <span class="badge bg-danger ms-1 small">{{ $course->getDiscountPercentage() }}%</span>
                                                     </div>
                                                 @else
                                                     <span class="fw-bold">{{ $course->price }} ريال</span>
                                                 @endif
                                             </td>
-                                            <td>
+                                            <td class="text-center">
                                                 <div class="enrollment-info">
                                                     <span class="fw-bold">{{ $course->enrollments_count ?? 0 }}</span>
                                                     <br>
                                                     <small class="text-muted">طالب</small>
                                                 </div>
                                             </td>
-                                            <td>
+                                            <td class="text-center">
                                                 @if($course->is_published)
-                                                    <span class="badge bg-success">منشور</span>
+                                                    <span class="badge bg-success d-inline-block mb-1">منشور</span>
                                                 @else
-                                                    <span class="badge bg-warning">مسودة</span>
+                                                    <span class="badge bg-warning d-inline-block mb-1">مسودة</span>
                                                 @endif
                                                 @if($course->is_featured)
                                                     <br>
-                                                    <span class="badge bg-primary mt-1">مميز</span>
+                                                    <span class="badge bg-primary">مميز</span>
                                                 @endif
                                             </td>
-                                            <td>
+                                            <td class="text-center">
                                                 <div class="date-info">
                                                     <div class="fw-bold">{{ $course->created_at->format('Y/m/d') }}</div>
                                                     <small class="text-muted">{{ $course->created_at->format('H:i') }}</small>
                                                 </div>
                                             </td>
-                                            <td>
-                                                <div class="action-buttons">
+                                            <td class="text-center">
+                                                <div class="action-buttons justify-content-center">
                                                     <a href="{{ route('admin.courses.show', $course) }}"
                                                        class="btn btn-sm btn-outline-primary"
                                                        data-bs-toggle="tooltip" title="عرض التفاصيل">
@@ -282,16 +288,16 @@
                         </div>
 
                         <!-- Pagination -->
-                        <div class="card-footer bg-white">
+                        <div class="card-footer bg-white py-3">
                             <div class="row align-items-center">
-                                <div class="col-md-6">
+                                <div class="col-md-6 text-center text-md-start mb-3 mb-md-0">
                                     <p class="mb-0 text-muted">
                                         عرض {{ $courses->firstItem() ?? 0 }} إلى {{ $courses->lastItem() ?? 0 }}
                                         من أصل {{ $courses->total() }} كورس
                                     </p>
                                 </div>
-                                <div class="col-md-6">
-                                    {{ $courses->appends(request()->query())->links() }}
+                                <div class="col-md-6 d-flex justify-content-center justify-content-md-end">
+                                    {{ $courses->appends(request()->query())->links('pagination::bootstrap-5') }}
                                 </div>
                             </div>
                         </div>
@@ -380,23 +386,42 @@
 .course-info {
     display: flex;
     align-items: center;
+    gap: 12px;
+}
+
+.course-thumbnail {
+    flex-shrink: 0;
 }
 
 .course-thumbnail img {
     width: 60px;
     height: 40px;
     object-fit: cover;
-    margin-left: 1rem;
+    border-radius: 6px;
+    display: block;
+}
+
+.course-thumbnail-placeholder {
+    width: 60px;
+    height: 40px;
+    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
 }
 
 .course-title {
     font-weight: 600;
     margin: 0 0 0.25rem 0;
     color: var(--dark-color);
+    line-height: 1.4;
 }
 
 .course-description {
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 0.25rem 0;
     color: #6c757d;
     font-size: 0.8rem;
 }
@@ -410,11 +435,18 @@
 .instructor-info {
     display: flex;
     align-items: center;
+    gap: 10px;
+}
+
+.instructor-info img {
+    width: 32px;
+    height: 32px;
+    object-fit: cover;
 }
 
 .action-buttons {
     display: flex;
-    gap: 0.25rem;
+    gap: 0.35rem;
 }
 
 .action-buttons .btn {
@@ -424,18 +456,20 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 6px;
+    transition: all 0.2s ease;
 }
 
 .price-info {
-    line-height: 1.2;
+    line-height: 1.3;
 }
 
 .enrollment-info {
-    text-align: center;
+    line-height: 1.3;
 }
 
 .date-info {
-    text-align: center;
+    line-height: 1.3;
 }
 
 .table th {
@@ -448,23 +482,77 @@
     vertical-align: middle;
 }
 
+.table td .form-check, .table th .form-check {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.table td .form-check-input, .table th .form-check-input {
+    margin: 0 !important;
+    float: none !important;
+}
+
 .badge {
     font-size: 0.75rem;
     padding: 0.35rem 0.65rem;
+    border-radius: 6px;
+}
+
+/* Custom Pagination Styles */
+.pagination {
+    margin: 0;
+    display: flex;
+    gap: 4px;
+}
+
+.pagination .page-item .page-link {
+    border-radius: 8px !important;
+    border: 1px solid #e2e8f0;
+    color: #4f46e5;
+    padding: 6px 12px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    box-shadow: none;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: #4f46e5 !important;
+    border-color: #4f46e5 !important;
+    color: white !important;
+}
+
+.pagination .page-item .page-link:hover {
+    background-color: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+.pagination .page-item.disabled .page-link {
+    color: #94a3b8;
+    background-color: #f8fafc;
+    border-color: #e2e8f0;
+}
+
+/* Fix for Laravel's SVG chevron arrow icons overflowing */
+.pagination svg, nav svg {
+    width: 16px !important;
+    height: 16px !important;
+    vertical-align: middle;
 }
 
 @media (max-width: 768px) {
     .course-info {
         flex-direction: column;
         align-items: flex-start;
-    }
-
-    .course-thumbnail {
-        margin-bottom: 0.5rem;
+        gap: 8px;
     }
 
     .action-buttons {
-        flex-direction: column;
+        justify-content: center;
     }
 }
 </style>

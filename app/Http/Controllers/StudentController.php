@@ -34,15 +34,78 @@ class StudentController extends Controller
             // Get student's enrolled courses
             $enrolledCourses = $user->enrollments()->with(['course.instructor', 'course.category'])->get();
 
+            // Keep track of the course IDs the user is already enrolled in
+            $enrolledCourseIds = $enrolledCourses->pluck('course_id')->toArray();
+
+            // Get course IDs where student has lesson payments
+            $paidCourseIds = \App\Models\LessonPayment::where('student_id', $user->id)
+                ->where('status', 1)
+                ->pluck('course_id')
+                ->unique()
+                ->toArray();
+
+            // Get course IDs where student has section access
+            $sectionCourseIds = \App\Models\StudentSectionAccess::where('user_id', $user->id)
+                ->where('is_active', true)
+                ->pluck('course_id')
+                ->unique()
+                ->toArray();
+
+            // Merge partial access course IDs
+            $partialCourseIds = array_unique(array_merge($paidCourseIds, $sectionCourseIds));
+            // Only keep course IDs where the user is NOT already enrolled
+            $partialCourseIds = array_diff($partialCourseIds, $enrolledCourseIds);
+
+            if (!empty($partialCourseIds)) {
+                $partialCourses = Course::whereIn('id', $partialCourseIds)
+                    ->with(['instructor', 'category'])
+                    ->get();
+
+                foreach ($partialCourses as $course) {
+                    // Compute progress for this partial course
+                    $totalLessons = $course->getTotalLessons();
+                    if ($totalLessons > 0) {
+                        $completedLessons = $user->lessonProgress()
+                            ->where('course_id', $course->id)
+                            ->where('is_completed', true)
+                            ->count();
+                        $progress = round(($completedLessons / $totalLessons) * 100, 2);
+                    } else {
+                        $progress = 0;
+                    }
+
+                    // Get last activity date or fallback to now
+                    $lastActivity = $user->lessonProgress()
+                        ->where('course_id', $course->id)
+                        ->orderBy('updated_at', 'desc')
+                        ->first();
+                    
+                    $updatedAt = $lastActivity ? $lastActivity->updated_at : now();
+
+                    // Construct a virtual enrollment object using standard Laravel Fluent class
+                    $virtualEnrollment = new \Illuminate\Support\Fluent([
+                        'id' => null,
+                        'course_id' => $course->id,
+                        'course' => $course,
+                        'progress' => $progress,
+                        'updated_at' => $updatedAt,
+                        'enrolled_at' => $updatedAt,
+                        'is_virtual' => true
+                    ]);
+
+                    $enrolledCourses->push($virtualEnrollment);
+                }
+            }
+
             // Get accessible sections
             $accessibleSections = $user->getAccessibleSections();
 
             // Calculate statistics
             $totalCourses = $enrolledCourses->count();
-            $completedCourses = $enrolledCourses->where('progress', 100)->count();
+            $completedCourses = $enrolledCourses->where('progress', '>=', 100);
             $inProgressCourses = $enrolledCourses->where('progress', '>', 0)->where('progress', '<', 100);
             $totalHours = $enrolledCourses->sum(function($enrollment) {
-                return $enrollment->course->duration_hours;
+                return $enrollment->course->duration_hours ?? 0;
             });
 
             // Get recent activities
@@ -168,68 +231,149 @@ class StudentController extends Controller
             $user = Auth::user();
 
             // Get all enrolled courses with relationships
-            $query = $user->enrollments()
-                ->with(['course.instructor', 'course.category']);
+            $enrolledEnrollments = $user->enrollments()
+                ->with(['course.instructor', 'course.category'])
+                ->get();
+
+            // Keep track of the course IDs the user is already enrolled in
+            $enrolledCourseIds = $enrolledEnrollments->pluck('course_id')->toArray();
+
+            // Get course IDs where student has lesson payments
+            $paidCourseIds = \App\Models\LessonPayment::where('student_id', $user->id)
+                ->where('status', 1)
+                ->pluck('course_id')
+                ->unique()
+                ->toArray();
+
+            // Get course IDs where student has section access
+            $sectionCourseIds = \App\Models\StudentSectionAccess::where('user_id', $user->id)
+                ->where('is_active', true)
+                ->pluck('course_id')
+                ->unique()
+                ->toArray();
+
+            // Merge partial access course IDs
+            $partialCourseIds = array_unique(array_merge($paidCourseIds, $sectionCourseIds));
+            // Only keep course IDs where the user is NOT already enrolled
+            $partialCourseIds = array_diff($partialCourseIds, $enrolledCourseIds);
+
+            // Construct unified collection
+            $allEnrollments = collect();
+            
+            // Push actual enrollments
+            foreach ($enrolledEnrollments as $enrollment) {
+                $allEnrollments->push($enrollment);
+            }
+
+            if (!empty($partialCourseIds)) {
+                $partialCourses = Course::whereIn('id', $partialCourseIds)
+                    ->with(['instructor', 'category'])
+                    ->get();
+
+                foreach ($partialCourses as $course) {
+                    // Compute progress for this partial course
+                    $totalLessons = $course->getTotalLessons();
+                    if ($totalLessons > 0) {
+                        $completedLessons = $user->lessonProgress()
+                            ->where('course_id', $course->id)
+                            ->where('is_completed', true)
+                            ->count();
+                        $progress = round(($completedLessons / $totalLessons) * 100, 2);
+                    } else {
+                        $progress = 0;
+                    }
+
+                    // Get last activity date or fallback to now
+                    $lastActivity = $user->lessonProgress()
+                        ->where('course_id', $course->id)
+                        ->orderBy('updated_at', 'desc')
+                        ->first();
+                    
+                    $updatedAt = $lastActivity ? $lastActivity->updated_at : now();
+
+                    // Construct virtual enrollment
+                    $virtualEnrollment = new \Illuminate\Support\Fluent([
+                        'id' => null,
+                        'user_id' => $user->id,
+                        'course_id' => $course->id,
+                        'course' => $course,
+                        'progress' => $progress,
+                        'updated_at' => $updatedAt,
+                        'enrolled_at' => $updatedAt,
+                        'created_at' => $updatedAt,
+                        'is_virtual' => true
+                    ]);
+
+                    $allEnrollments->push($virtualEnrollment);
+                }
+            }
 
             // Apply status filter
             if (request('status')) {
-                switch (request('status')) {
-                    case 'completed':
-                        $query->where('progress', 100);
-                        break;
-                    case 'in_progress':
-                        $query->where('progress', '>', 0)->where('progress', '<', 100);
-                        break;
-                    case 'not_started':
-                        $query->where('progress', 0);
-                        break;
-                }
+                $status = request('status');
+                $allEnrollments = $allEnrollments->filter(function ($enrollment) use ($status) {
+                    if ($status === 'completed') {
+                        return $enrollment->progress >= 100;
+                    } elseif ($status === 'in_progress') {
+                        return $enrollment->progress > 0 && $enrollment->progress < 100;
+                    } elseif ($status === 'not_started') {
+                        return $enrollment->progress == 0;
+                    }
+                    return true;
+                });
             }
 
             // Apply search filter
             if (request('search')) {
-                $query->whereHas('course', function($q) {
-                    $q->where('title', 'like', '%' . request('search') . '%')
-                      ->orWhere('description', 'like', '%' . request('search') . '%');
+                $search = request('search');
+                $allEnrollments = $allEnrollments->filter(function ($enrollment) use ($search) {
+                    return stripos($enrollment->course->title, $search) !== false ||
+                           stripos($enrollment->course->description, $search) !== false;
                 });
             }
 
             // Apply category filter
             if (request('category')) {
-                $query->whereHas('course', function($q) {
-                    $q->where('category_id', request('category'));
+                $categoryId = request('category');
+                $allEnrollments = $allEnrollments->filter(function ($enrollment) use ($categoryId) {
+                    return $enrollment->course->category_id == $categoryId;
                 });
             }
 
             // Apply sorting
-            switch (request('sort', 'recent')) {
-                case 'title':
-                    $query->whereHas('course', function($q) {
-                        $q->orderBy('title');
-                    });
-                    break;
-                case 'progress':
-                    $query->orderBy('progress', 'desc');
-                    break;
-                case 'recent':
-                    $query->orderBy('updated_at', 'desc');
-                    break;
-                case 'oldest':
-                    $query->orderBy('created_at', 'asc');
-                    break;
+            $sort = request('sort', 'recent');
+            if ($sort === 'title') {
+                $allEnrollments = $allEnrollments->sortBy(function ($enrollment) {
+                    return $enrollment->course->title;
+                });
+            } elseif ($sort === 'progress') {
+                $allEnrollments = $allEnrollments->sortByDesc('progress');
+            } elseif ($sort === 'recent') {
+                $allEnrollments = $allEnrollments->sortByDesc('updated_at');
+            } elseif ($sort === 'oldest') {
+                $allEnrollments = $allEnrollments->sortBy('created_at');
             }
 
-            // Get paginated enrollments
-            $enrollments = $query->paginate(12);
+            // Calculate statistics
+            $totalEnrolled = $allEnrollments->count();
+            $completedCourses = $allEnrollments->where('progress', '>=', 100)->count();
+            $inProgressCourses = $allEnrollments->where('progress', '>', 0)->where('progress', '<', 100)->count();
+            $notStartedCourses = $allEnrollments->where('progress', 0)->count();
+
+            // Paginate manual collection
+            $currentPage = \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPage();
+            $perPage = 12;
+            $currentItems = $allEnrollments->slice(($currentPage - 1) * $perPage, $perPage)->values();
+            $enrollments = new \Illuminate\Pagination\LengthAwarePaginator(
+                $currentItems,
+                $allEnrollments->count(),
+                $perPage,
+                $currentPage,
+                ['path' => \Illuminate\Pagination\LengthAwarePaginator::resolveCurrentPath()]
+            );
 
             // Get categories for filtering
             $categories = Category::all();
-
-            // Calculate statistics
-            $totalEnrolled = $user->enrollments()->count();
-            $completedCourses = $user->enrollments()->where('progress', 100)->count();
-            $inProgressCourses = $user->enrollments()->where('progress', '>', 0)->where('progress', '<', 100)->count();
-            $notStartedCourses = $user->enrollments()->where('progress', 0)->count();
 
             return view('student.enrolled-courses.index', compact(
                 'enrollments',

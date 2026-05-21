@@ -18,19 +18,19 @@
                 </div>
                 <div class="col-md-4" data-aos="fade-left">
                     <div class="text-center text-white">
-                        <div class="stats-overview bg-white bg-opacity-20 rounded-4 p-3">
-                            <div class="row text-center">
-                                <div class="col-4">
-                                    <h4 class="fw-bold mb-1">{{ $totalEnrolled }}</h4>
-                                    <small>إجمالي الكورسات</small>
+                        <div class="stats-overview rounded-4 p-3 border border-white border-opacity-10" style="background: rgba(255, 255, 255, 0.15) !important; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);">
+                            <div class="row text-center align-items-center">
+                                <div class="col-4 border-end border-white border-opacity-10">
+                                    <h4 class="fw-bold mb-1 text-white" style="font-size: 1.6rem;">{{ $totalEnrolled }}</h4>
+                                    <small style="color: rgba(255, 255, 255, 0.85); font-size: 0.75rem; font-weight: 500; display: block;">إجمالي الكورسات</small>
+                                </div>
+                                <div class="col-4 border-end border-white border-opacity-10">
+                                    <h4 class="fw-bold mb-1" style="color: #4ade80; font-size: 1.6rem;">{{ $completedCourses }}</h4>
+                                    <small style="color: rgba(255, 255, 255, 0.85); font-size: 0.75rem; font-weight: 500; display: block;">مكتملة</small>
                                 </div>
                                 <div class="col-4">
-                                    <h4 class="fw-bold mb-1 text-success">{{ $completedCourses }}</h4>
-                                    <small>مكتملة</small>
-                                </div>
-                                <div class="col-4">
-                                    <h4 class="fw-bold mb-1 text-warning">{{ $inProgressCourses }}</h4>
-                                    <small>قيد التقدم</small>
+                                    <h4 class="fw-bold mb-1" style="color: #fbbf24; font-size: 1.6rem;">{{ $inProgressCourses }}</h4>
+                                    <small style="color: rgba(255, 255, 255, 0.85); font-size: 0.75rem; font-weight: 500; display: block;">قيد التقدم</small>
                                 </div>
                             </div>
                         </div>

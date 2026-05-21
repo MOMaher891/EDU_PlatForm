@@ -290,20 +290,15 @@
                                                                 </div>
                                                                 <div>
                                                                     <h6 class="mb-1">{{ $lesson->title }}</h6>
-                                                                    @if(!$lesson->is_free && !$hasAccess)
-                                                                        @php $isPaid = isset($paidLessonIds) && in_array($lesson->id, $paidLessonIds); @endphp
-                                                                        @if($isPaid)
-                                                                            <span class="badge bg-primary">مدفوع</span>
-                                                                        @else
-                                                                            <small class="text-primary">السعر: {{ number_format($lesson->price ?? 0, 2) }}</small>
-                                                                        @endif
-                                                                    @endif
                                                                     @if($lesson->is_free)
                                                                         <span class="badge bg-success">مجاني</span>
                                                                     @elseif($hasAccess)
                                                                         <span class="badge bg-primary">متاح</span>
+                                                                    @elseif(isset($paidLessonIds) && in_array($lesson->id, $paidLessonIds))
+                                                                        <span class="badge bg-success">تم الشراء</span>
                                                                     @else
                                                                         <span class="badge bg-secondary">مدفوع</span>
+                                                                        <small class="text-primary d-block mt-1">السعر: ${{ number_format($lesson->price ?? 0, 2) }}</small>
                                                                     @endif
                                                                 </div>
                                                             </div>
@@ -498,6 +493,25 @@
                                 </button>
                             </div>
                         @else
+                            @if(isset($paidLessonIds) && count($paidLessonIds) > 0)
+                                <div class="alert alert-success border-0 mb-4 shadow-sm">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-unlock-alt fa-2x me-3 text-success"></i>
+                                        <div>
+                                            <h6 class="fw-bold mb-1">لديك دروس مشتراة</h6>
+                                            <small class="text-muted">لقد قمت بشراء {{ count($paidLessonIds) }} من الدروس بنجاح</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-grid gap-2 mb-4">
+                                    <a href="{{ route('student.courses.learn', $course) }}" class="btn btn-success btn-lg">
+                                        <i class="fas fa-play me-2"></i>
+                                        مشاهدة الدروس المشتراة
+                                    </a>
+                                </div>
+                                <hr class="my-4">
+                            @endif
+
                             <div class="price-section text-center mb-4">
                                 @if($course->getEffectivePrice() == 0)
                                     <h2 class="display-4 fw-bold text-success mb-2">مجاني</h2>
@@ -628,7 +642,14 @@
             </div>
             <div class="modal-body p-0">
                 <div class="ratio ratio-16x9">
-                    <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe>
+                    @if($course->preview_video)
+                        <video id="previewLocalVideo" controls class="w-100 rounded-bottom">
+                            <source src="{{ asset('storage/' . $course->preview_video) }}" type="video/mp4">
+                            متصفحك لا يدعم تشغيل الفيديو.
+                        </video>
+                    @else
+                        <iframe id="previewYoutubeVideo" src="https://www.youtube.com/embed/ScMzIvxBSi4" allowfullscreen></iframe>
+                    @endif
                 </div>
             </div>
         </div>

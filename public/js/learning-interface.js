@@ -11,6 +11,14 @@ class LearningInterface {
     }
 
     init() {
+        const container = document.querySelector('.learning-interface');
+        if (container) {
+            this.currentLesson = container.dataset.currentLesson || null;
+            this.nextLessonId = container.dataset.nextLesson || null;
+            this.prevLessonId = container.dataset.prevLesson || null;
+            this.courseId = container.dataset.courseId || null;
+        }
+
         this.setupEventListeners();
         this.initializeVideoPlayer();
         this.loadLessonProgress();
@@ -409,6 +417,23 @@ class LearningInterface {
             } else {
                 completeBtn.style.display = 'block';
                 incompleteBtn.style.display = 'none';
+            }
+        }
+
+        // Dynamically update the status badge and text if they exist
+        const badge = document.getElementById('lessonStatusBadge');
+        const badgeText = document.getElementById('lessonStatusText');
+        if (badge && badgeText) {
+            if (this.isCompleted) {
+                badge.className = 'badge bg-success px-3 py-2 fs-6';
+                const icon = badge.querySelector('i');
+                if (icon) icon.className = 'fas fa-check-circle me-2';
+                badgeText.textContent = 'تم إكمال الدرس';
+            } else {
+                badge.className = 'badge bg-warning px-3 py-2 fs-6';
+                const icon = badge.querySelector('i');
+                if (icon) icon.className = 'fas fa-play-circle me-2';
+                badgeText.textContent = 'قيد التقدم';
             }
         }
     }
