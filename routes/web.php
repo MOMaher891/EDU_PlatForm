@@ -9,6 +9,7 @@ use App\Http\Controllers\InstructorController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\LessonPaymentController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\ComplianceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -247,6 +248,11 @@ Route::middleware(['auth', 'instructor'])->prefix('instructor')->name('instructo
 // Public Course Routes
 Route::get('/courses', [StudentController::class, 'courses'])->name('student.courses.index');
 Route::get('/courses/{course}', [StudentController::class, 'showCourse'])->name('student.courses.show');
+
+// Public Compliance Routes
+Route::get('/terms', [ComplianceController::class, 'terms'])->name('compliance.terms');
+Route::get('/privacy-policy', [ComplianceController::class, 'privacy'])->name('compliance.privacy');
+Route::get('/refund-policy', [ComplianceController::class, 'refund'])->name('compliance.refund');
 
 // Payment Routes
 Route::middleware('auth')->group(function () {

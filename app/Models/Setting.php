@@ -12,6 +12,9 @@ class Setting extends Model
 	protected $fillable = [
 		'block_devtools',
 		'block_copy_text',
+		'terms_and_conditions',
+		'privacy_policy',
+		'refund_and_cancellation_policy',
 	];
 
 	public static function getCached(): self
