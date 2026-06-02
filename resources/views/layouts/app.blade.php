@@ -1,6 +1,19 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+    <script>
+        (function () {
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                document.documentElement.setAttribute('data-bs-theme', 'dark');
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.setAttribute('data-bs-theme', 'light');
+                document.documentElement.classList.remove('dark');
+            }
+        })();
+    </script>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -268,6 +281,10 @@
         .badge { border-radius: 20px; padding: 6px 12px; font-weight: 500; }
         .progress { height: 8px; border-radius: 10px; background: #e2e8f0; }
         .progress-bar { border-radius: 10px; background: linear-gradient(90deg, var(--primary-color), var(--accent-color)); }
+        .progress-controls-unified {
+            background-color: rgba(255, 255, 255, 0.8);
+            border-color: rgba(99, 102, 241, 0.1) !important;
+        }
 
         .fade-in { animation: fadeIn 0.6s ease-in; }
         @keyframes fadeIn { from { opacity:0; transform: translateY(20px);} to { opacity:1; transform: translateY(0);} }
@@ -282,9 +299,515 @@
             .navbar-brand { font-size: 1.2rem; }
         }
 
-        @media (prefers-color-scheme: dark) {
-            .navbar { background: rgba(30, 41, 59, 0.95) !important; }
-            .nav-link { color: white !important; }
+        /* Theme Toggle Button Premium Design */
+        #theme-toggle {
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: var(--dark-color);
+        }
+
+        #theme-toggle:hover {
+            color: var(--primary-color) !important;
+            transform: scale(1.15) rotate(15deg);
+        }
+
+        /* Dynamic Dark Mode Overrides */
+        [data-bs-theme="dark"] {
+            color-scheme: dark;
+            --bs-body-bg: #0f172a;
+            --bs-body-color: #f8fafc;
+            --bs-card-bg: #1e293b;
+            --bs-card-color: #f8fafc;
+            --bs-tertiary-bg: #1e293b;
+            --bs-border-color: #334155;
+            --bs-body-color-rgb: 248, 250, 252;
+            --bs-body-bg-rgb: 15, 23, 42;
+
+            /* Override app UI style variables */
+            --dark-color: #f8fafc;
+            --light-color: #0f172a;
+            --secondary-color: #1e293b;
+            --box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+            --box-shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Specific element overrides for premium dark theme */
+        [data-bs-theme="dark"] body {
+            background: linear-gradient(135deg, #090d16 0%, #0f172a 100%) !important;
+        }
+
+        [data-bs-theme="dark"] .main-content {
+            background: #0f172a !important;
+        }
+
+        [data-bs-theme="dark"] .navbar {
+            background: rgba(15, 23, 42, 0.95) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+
+        [data-bs-theme="dark"] .nav-link {
+            color: rgba(248, 250, 252, 0.8) !important;
+        }
+
+        [data-bs-theme="dark"] .nav-link:hover {
+            color: var(--primary-color) !important;
+        }
+
+        [data-bs-theme="dark"] .card {
+            background-color: #1e293b !important;
+            color: #f8fafc !important;
+            border: 1px solid rgba(255, 255, 255, 0.05) !important;
+        }
+
+        [data-bs-theme="dark"] .card-header, 
+        [data-bs-theme="dark"] .card-footer {
+            background-color: rgba(255, 255, 255, 0.02) !important;
+            border-color: rgba(255, 255, 255, 0.08) !important;
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .text-dark {
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .text-muted {
+            color: #94a3b8 !important;
+        }
+
+        [data-bs-theme="dark"] .bg-white {
+            background-color: #1e293b !important;
+        }
+
+        [data-bs-theme="dark"] .bg-light {
+            background-color: #1e293b !important;
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .dropdown-menu {
+            background-color: #1e293b !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        [data-bs-theme="dark"] .dropdown-item {
+            color: #e2e8f0 !important;
+        }
+
+        [data-bs-theme="dark"] .dropdown-item:hover {
+            background-color: #334155 !important;
+            color: #fff !important;
+        }
+
+        [data-bs-theme="dark"] .form-control,
+        [data-bs-theme="dark"] .form-select {
+            background-color: #0f172a !important;
+            border-color: #334155 !important;
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .form-control:focus,
+        [data-bs-theme="dark"] .form-select:focus {
+            background-color: #0f172a !important;
+            border-color: var(--primary-color) !important;
+            color: #f8fafc !important;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25) !important;
+        }
+
+        [data-bs-theme="dark"] .table {
+            --bs-table-bg: #1e293b !important;
+            --bs-table-color: #f8fafc !important;
+            --bs-table-border-color: #334155 !important;
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .table-striped>tbody>tr:nth-of-type(odd)>* {
+            --bs-table-color-type: #f8fafc !important;
+            --bs-table-bg-type: #162030 !important;
+        }
+
+        [data-bs-theme="dark"] .modal-content {
+            background-color: #1e293b !important;
+            color: #f8fafc !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+
+        [data-bs-theme="dark"] .modal-header,
+        [data-bs-theme="dark"] .modal-footer {
+            border-color: rgba(255, 255, 255, 0.08) !important;
+        }
+
+        [data-bs-theme="dark"] .modal-header .btn-close {
+            filter: invert(1) grayscale(1) brightness(2);
+        }
+
+        [data-bs-theme="dark"] .hero-section {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95)) !important;
+        }
+
+        [data-bs-theme="dark"] .glass {
+            background: rgba(15, 23, 42, 0.45) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+
+        [data-bs-theme="dark"] .badge.bg-light.text-dark {
+            background-color: #334155 !important;
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .alert {
+            background-color: #1e293b !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .progress {
+            background-color: #0f172a !important;
+        }
+
+        [data-bs-theme="dark"] .activity-item:hover {
+            background: rgba(255, 255, 255, 0.02) !important;
+        }
+
+        [data-bs-theme="dark"] .activity-icon.bg-light {
+            background-color: #334155 !important;
+        }
+
+        [data-bs-theme="dark"] ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+
+        [data-bs-theme="dark"] ::-webkit-scrollbar-thumb {
+            background: #334155;
+        }
+
+        [data-bs-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+
+        /* Compliance Pages Overrides */
+        [data-bs-theme="dark"] .markdown-body {
+            color: #cbd5e1 !important;
+        }
+
+        [data-bs-theme="dark"] .markdown-body h1,
+        [data-bs-theme="dark"] .markdown-body h2,
+        [data-bs-theme="dark"] .markdown-body h3,
+        [data-bs-theme="dark"] .markdown-body strong {
+            color: #f8fafc !important;
+            border-bottom-color: #334155 !important;
+        }
+
+        [data-bs-theme="dark"] .markdown-body blockquote,
+        [data-bs-theme="dark"] .markdown-body p:has(strong:contains("Paymob")),
+        [data-bs-theme="dark"] .markdown-body p:has(strong:contains("We do not store")) {
+            background-color: #0f172a !important;
+            color: #cbd5e1 !important;
+            border-left-color: var(--primary-color) !important;
+        }
+
+        /* Settings Page Overrides */
+        [data-bs-theme="dark"] .admin-settings-page {
+            background-color: #0f172a !important;
+        }
+
+        [data-bs-theme="dark"] .settings-section,
+        [data-bs-theme="dark"] .system-status-card,
+        [data-bs-theme="dark"] .quick-actions-card,
+        [data-bs-theme="dark"] .system-info-card {
+            background-color: #1e293b !important;
+        }
+
+        [data-bs-theme="dark"] .info-item {
+            border-bottom-color: #334155 !important;
+        }
+
+        [data-bs-theme="dark"] .info-label {
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .info-value {
+            color: #cbd5e1 !important;
+        }
+
+        [data-bs-theme="dark"] .form-label {
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .compliance-nav-link {
+            color: #cbd5e1 !important;
+            background-color: #334155 !important;
+            border-color: #475569 !important;
+        }
+
+        [data-bs-theme="dark"] .compliance-nav-link:hover {
+            color: #ffffff !important;
+            background-color: #475569 !important;
+        }
+
+        [data-bs-theme="dark"] .compliance-nav-link.active {
+            background-color: #4f46e5 !important;
+            color: #ffffff !important;
+            border-color: #4f46e5 !important;
+        }
+
+        /* Learning Interface Overrides */
+        [data-bs-theme="dark"] .learning-interface {
+            background-color: #0f172a !important;
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .content-section {
+            background-color: #1e293b !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .lesson-header {
+            border-bottom-color: #334155 !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .lesson-title {
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .lesson-meta span {
+            background-color: #0f172a !important;
+            color: #94a3b8 !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .action-btn {
+            background-color: #1e293b !important;
+            border-color: #334155 !important;
+            color: #94a3b8 !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .action-btn:hover {
+            background-color: #334155 !important;
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .action-btn.active {
+            background-color: var(--primary-color) !important;
+            color: white !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .file-preview {
+            border-color: #334155 !important;
+            background-color: #0f172a !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .file-info h4 {
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .lesson-text-content {
+            background-color: #0f172a !important;
+            border-left-color: var(--primary-color) !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .lesson-text-content h4 {
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .content-text {
+            color: #cbd5e1 !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .lesson-navigation {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+            border-top-color: #334155 !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .course-sidebar {
+            background-color: #1e293b !important;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4) !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .sidebar-header {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+            border-bottom-color: #334155 !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .course-title {
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .instructor-name {
+            color: #94a3b8 !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .total-lessons,
+        [data-bs-theme="dark"] .learning-interface .progress-text,
+        [data-bs-theme="dark"] .learning-interface .progress-percentage {
+            color: #94a3b8 !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .progress-bar {
+            background-color: #0f172a !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .content-tabs {
+            border-bottom-color: #334155 !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .tab-btn {
+            color: #94a3b8 !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .tab-btn:hover {
+            background-color: #0f172a !important;
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .tab-btn.active {
+            background-color: var(--primary-color) !important;
+            color: white !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .section-item {
+            border-color: #334155 !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .section-header {
+            background-color: #1e293b !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .section-header:hover {
+            background-color: #334155 !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .section-title {
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .section-lessons-count {
+            color: #94a3b8 !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .mini-progress-bar {
+            background-color: #0f172a !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .lesson-item {
+            background-color: transparent !important;
+            color: #f8fafc !important;
+            border-color: transparent !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .lesson-item:hover {
+            background-color: #334155 !important;
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .lesson-item.active {
+            background-color: rgba(99, 102, 241, 0.2) !important;
+            color: #f8fafc !important;
+            border-left: 3px solid var(--primary-color) !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .lesson-item.completed {
+            background-color: rgba(40, 167, 69, 0.1) !important;
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .content-body {
+            color: #cbd5e1 !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .content-body p {
+            color: #cbd5e1 !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .content-body h1,
+        [data-bs-theme="dark"] .learning-interface .content-body h2,
+        [data-bs-theme="dark"] .learning-interface .content-body h3,
+        [data-bs-theme="dark"] .learning-interface .content-body h4,
+        [data-bs-theme="dark"] .learning-interface .content-body h5,
+        [data-bs-theme="dark"] .learning-interface .content-body h6 {
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .content-body blockquote {
+            background-color: #0f172a !important;
+            color: #94a3b8 !important;
+            border-left: 4px solid var(--primary-color) !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .content-body code {
+            background-color: #0f172a !important;
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .content-body pre {
+            background-color: #0f172a !important;
+            border-color: #334155 !important;
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .progress-controls-unified {
+            background: rgba(30, 41, 59, 0.8) !important;
+            border-color: rgba(255, 255, 255, 0.08) !important;
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .simple-navigation {
+            background-color: #1e293b !important;
+            border-color: #334155 !important;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .simple-navigation .btn-outline-primary {
+            border-color: var(--primary-color) !important;
+            color: var(--primary-color) !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .simple-navigation .btn-outline-primary:hover:not(:disabled) {
+            background-color: var(--primary-color) !important;
+            color: white !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .simple-navigation .btn-primary {
+            background-color: var(--primary-color) !important;
+            border-color: var(--primary-color) !important;
+            color: white !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .simple-navigation .btn-primary:hover:not(:disabled) {
+            background-color: var(--primary-dark) !important;
+            border-color: var(--primary-dark) !important;
+        }
+
+        [data-bs-theme="dark"] .learning-interface .resource-item {
+            border-color: #334155 !important;
+            background-color: #0f172a !important;
+            color: #f8fafc !important;
+        }
+
+        /* Auth Pages Overrides */
+        [data-bs-theme="dark"] .auth-card {
+            background-color: #1e293b !important;
+            border: 1px solid rgba(255, 255, 255, 0.05) !important;
+        }
+
+        [data-bs-theme="dark"] .auth-form {
+            background-color: #1e293b !important;
+        }
+
+        [data-bs-theme="dark"] .auth-form h2 {
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .auth-form .form-check-label {
+            color: #cbd5e1 !important;
+        }
+
+        [data-bs-theme="dark"] .demo-accounts {
+            border-color: #334155 !important;
+            background-color: #0f172a !important;
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .demo-accounts h6 {
+            color: #f8fafc !important;
         }
     </style>
 
@@ -349,7 +872,14 @@
                     @endauth
                 </ul>
 
-                <ul class="navbar-nav">
+                <ul class="navbar-nav align-items-center">
+                    <!-- Theme Toggle -->
+                    <li class="nav-item mx-2">
+                        <button id="theme-toggle" class="nav-link p-0 d-flex align-items-center justify-content-center" type="button" style="width: 40px; height: 40px; border-radius: 50%; border: none; background: transparent;" title="تغيير المظهر">
+                            <i class="fas fa-moon fs-5" id="theme-toggle-dark-icon"></i>
+                            <i class="fas fa-sun fs-5 d-none" id="theme-toggle-light-icon"></i>
+                        </button>
+                    </li>
                     @guest
                         <li class="nav-item me-2">
                             <a class="btn btn-outline-primary" href="{{ route('login') }}">
@@ -534,6 +1064,44 @@
                     });
                 }
             });
+        });
+
+        // Theme Toggle Functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            const themeToggleBtn = document.getElementById('theme-toggle');
+            const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+            const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+
+            function updateToggleIcons(theme) {
+                if (theme === 'dark') {
+                    themeToggleDarkIcon.classList.add('d-none');
+                    themeToggleLightIcon.classList.remove('d-none');
+                } else {
+                    themeToggleDarkIcon.classList.remove('d-none');
+                    themeToggleLightIcon.classList.add('d-none');
+                }
+            }
+
+            // Sync icon on load
+            const currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
+            updateToggleIcons(currentTheme);
+
+            if (themeToggleBtn) {
+                themeToggleBtn.addEventListener('click', () => {
+                    const activeTheme = document.documentElement.getAttribute('data-bs-theme');
+                    const newTheme = activeTheme === 'dark' ? 'light' : 'dark';
+
+                    document.documentElement.setAttribute('data-bs-theme', newTheme);
+                    if (newTheme === 'dark') {
+                        document.documentElement.classList.add('dark');
+                    } else {
+                        document.documentElement.classList.remove('dark');
+                    }
+
+                    localStorage.setItem('theme', newTheme);
+                    updateToggleIcons(newTheme);
+                });
+            }
         });
     </script>
     @stack('scripts')

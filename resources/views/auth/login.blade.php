@@ -20,19 +20,19 @@
                                         <div class="stats-grid row g-3">
                                             <div class="col-6">
                                                 <div class="stat-card text-center p-3 rounded-3" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);">
-                                                    <h4 class="fw-bold mb-1">1000+</h4>
+                                                    <h4 class="fw-bold mb-1">{{ \App\Models\Course::where('is_published', true)->count() }}+</h4>
                                                     <small>كورس متاح</small>
                                                 </div>
                                             </div>
                                             <div class="col-6">
                                                 <div class="stat-card text-center p-3 rounded-3" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);">
-                                                    <h4 class="fw-bold mb-1">50K+</h4>
+                                                    <h4 class="fw-bold mb-1">{{ \App\Models\User::where('role', 'student')->count() }}+</h4>
                                                     <small>طالب نشط</small>
                                                 </div>
                                             </div>
                                             <div class="col-6">
                                                 <div class="stat-card text-center p-3 rounded-3" style="background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);">
-                                                    <h4 class="fw-bold mb-1">500+</h4>
+                                                    <h4 class="fw-bold mb-1">{{ \App\Models\User::where('role', 'instructor')->count() }}+</h4>
                                                     <small>مدرب خبير</small>
                                                 </div>
                                             </div>
