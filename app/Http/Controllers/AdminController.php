@@ -86,7 +86,7 @@ class AdminController extends Controller
     {
         try {
             $query = User::query();
-
+            $roles= Role::all();
             if ($request->filled('search')) {
                 $query->where(function ($q) use ($request) {
                     $q->where('name', 'like', '%' . $request->search . '%')
@@ -96,10 +96,11 @@ class AdminController extends Controller
 
             // Prefer filtering by role_id (roles table); keep legacy 'role' fallback
             if ($request->filled('role_id')) {
-                $query->where('role_id', $request->role_id);
-            } elseif ($request->filled('role')) {
-                $query->where('role', $request->role);
-            }
+                $role = $roles->firstWhere('id', $request->role_id);
+                if ($role) {
+                    $query->where('role','like', '%' . $role->slug . '%');
+                }
+            } 
             if ($request->filled('sort')) {
                 if ($request->filled('sort_type')) {
                     $query->orderBy($request->sort, $request->sort_type);

@@ -39,15 +39,15 @@
                     </div>
                 </div>
             </div>
-
+                        
             <div class="col-xl-3 col-md-6 mb-4">
-                <div class="stats-card stats-success" data-aos="fade-up" data-aos-delay="100">
+                <div class="stats-card stats-info" data-aos="fade-up" data-aos-delay="300">
                     <div class="stats-icon">
-                        <i class="fas fa-user-graduate"></i>
+                        <i class="fas fa-user-shield"></i>
                     </div>
                     <div class="stats-content">
-                        <h3 class="stats-number">{{ $users->where('role', 'student')->count() }}</h3>
-                        <p class="stats-label">الطلاب</p>
+                        <h3 class="stats-number">{{DB::table('users')->where('role', 'admin')->count() }}</h3>
+                        <p class="stats-label">المديرين</p>
                     </div>
                 </div>
             </div>
@@ -58,20 +58,20 @@
                         <i class="fas fa-chalkboard-teacher"></i>
                     </div>
                     <div class="stats-content">
-                        <h3 class="stats-number">{{ $users->where('role', 'instructor')->count() }}</h3>
+                        <h3 class="stats-number">{{DB::table('users')->where('role', 'instructor')->count() }}</h3>
                         <p class="stats-label">المدربين</p>
                     </div>
                 </div>
             </div>
 
             <div class="col-xl-3 col-md-6 mb-4">
-                <div class="stats-card stats-info" data-aos="fade-up" data-aos-delay="300">
+                <div class="stats-card stats-success" data-aos="fade-up" data-aos-delay="100">
                     <div class="stats-icon">
-                        <i class="fas fa-user-shield"></i>
+                        <i class="fas fa-user-graduate"></i>
                     </div>
                     <div class="stats-content">
-                        <h3 class="stats-number">{{ $users->where('role', 'admin')->count() }}</h3>
-                        <p class="stats-label">المديرين</p>
+                        <h3 class="stats-number">{{DB::table('users')->where('role', 'student')->count() }}</h3>
+                        <p class="stats-label">الطلاب</p>
                     </div>
                 </div>
             </div>
@@ -122,11 +122,11 @@
                                 <option value="name" {{ request('sort') == 'name' ? 'selected' : '' }}>الاسم</option>
                                 <option value="email" {{ request('sort') == 'email' ? 'selected' : '' }}>البريد الإلكتروني</option>
                                 <option value="role" {{ request('sort') == 'role' ? 'selected' : '' }}>الدور</option>
-                                <option value="is_active" {{ request('sort') == 'is_active' ? 'selected' : '' }}>الحاله</option>
+                                <option value="is_active" {{ request('sort') == 'is_active' ? 'selected' : '' }}>الحالة</option>
                             </select>
                         </div>
                         <div class="col-md-2">
-                            <label for="form-label">طريقه الترتيب</label>
+                            <label class="form-label">طريقة الترتيب</label>
                             <select name="sort_type" class="form-select">
                                 <option value="desc" {{ request('sort_type') == 'desc' ? 'selected' : '' }}>تنازلي</option>
                                 <option value="asc" {{ request('sort_type') == 'asc' ? 'selected' : '' }}>تصاعدي</option>
