@@ -122,11 +122,11 @@
                                 <option value="name" {{ request('sort') == 'name' ? 'selected' : '' }}>الاسم</option>
                                 <option value="email" {{ request('sort') == 'email' ? 'selected' : '' }}>البريد الإلكتروني</option>
                                 <option value="role" {{ request('sort') == 'role' ? 'selected' : '' }}>الدور</option>
-                                <option value="is_active" {{ request('sort') == 'is_active' ? 'selected' : '' }}>الحاله</option>
+                                <option value="is_active" {{ request('sort') == 'is_active' ? 'selected' : '' }}>الحالة</option>
                             </select>
                         </div>
                         <div class="col-md-2">
-                            <label for="form-label">طريقه الترتيب</label>
+                            <label class="form-label">طريقة الترتيب</label>
                             <select name="sort_type" class="form-select">
                                 <option value="desc" {{ request('sort_type') == 'desc' ? 'selected' : '' }}>تنازلي</option>
                                 <option value="asc" {{ request('sort_type') == 'asc' ? 'selected' : '' }}>تصاعدي</option>
