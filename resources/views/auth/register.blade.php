@@ -187,7 +187,7 @@
                                                 <i class="fas fa-check-circle fa-2x me-3"></i>
                                                 <div class="text-start">
                                                     <h6 class="fw-bold mb-1">كورسات متنوعة</h6>
-                                                    <small class="opacity-75">أكثر من 1000 كورس في مختلف المجالات</small>
+                                                    <small class="opacity-75">أكثر من {{ \App\Models\Course::where('is_published', true)->count() }} كورس في مختلف المجالات</small>
                                                 </div>
                                             </div>
                                             <div class="feature-item d-flex align-items-center mb-3">

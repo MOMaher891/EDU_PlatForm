@@ -253,7 +253,7 @@
 
                         <!-- Progress Controls (Unified for all media types) -->
                         <div class="progress-controls-unified mb-4 p-4 rounded-4 shadow-sm border" 
-                             style="background: rgba(255, 255, 255, 0.8) !important; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-color: rgba(99, 102, 241, 0.1);">
+                             style="backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);">
                             <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                                 <div class="progress-status-container">
                                     <span id="lessonStatusBadge" class="badge {{ isset($lessonProgress[$currentLesson->id]) && $lessonProgress[$currentLesson->id] ? 'bg-success' : 'bg-warning' }} px-3 py-2 fs-6">
