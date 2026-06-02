@@ -17,7 +17,7 @@
                 </div>
                 <div class="col-md-6 text-end">
                     <div class="d-flex justify-content-end gap-2">
-                        <button type="button" class="btn btn-outline-primary" onclick="resetSettings()">
+                        <button type="button" class="btn btn-outline-light" onclick="resetSettings()">
                             <i class="fas fa-undo me-2"></i>
                             إعادة تعيين
                         </button>
@@ -268,6 +268,67 @@
                                     </div>
                                 </div>
                             </div>
+                    <!-- Compliance & Policies Settings -->
+                    <div class="settings-section mb-4" data-aos="fade-up" data-aos-delay="400">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-transparent border-0 p-4">
+                                <h5 class="fw-bold mb-0">
+                                    <i class="fas fa-file-contract me-2"></i>
+                                    صفحات الامتثال والقوانين (Compliance & Policies)
+                                </h5>
+                            </div>
+                            <div class="card-body p-4">
+                                <p class="text-muted mb-4">
+                                    يمكنك تعديل نصوص صفحات الامتثال والسياسات أدناه باستخدام تنسيق Markdown. سيتم حفظ التعديلات في قاعدة البيانات وعرضها للمستخدمين باللغة الإنجليزية كما هو مطلوب لبوابات الدفع.
+                                </p>
+                                
+                                <ul class="nav nav-pills mb-3 gap-2" id="pills-tab" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link compliance-nav-link active" id="pills-terms-tab" data-bs-toggle="pill" data-bs-target="#pills-terms" type="button" role="tab" aria-controls="pills-terms" aria-selected="true">
+                                            الشروط والأحكام
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link compliance-nav-link" id="pills-privacy-tab" data-bs-toggle="pill" data-bs-target="#pills-privacy" type="button" role="tab" aria-controls="pills-privacy" aria-selected="false">
+                                            سياسة الخصوصية
+                                        </button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link compliance-nav-link" id="pills-refund-tab" data-bs-toggle="pill" data-bs-target="#pills-refund" type="button" role="tab" aria-controls="pills-refund" aria-selected="false">
+                                            سياسة الاسترجاع
+                                        </button>
+                                    </li>
+                                </ul>
+                                
+                                <div class="tab-content" id="pills-tabContent">
+                                    <!-- Terms & Conditions -->
+                                    <div class="tab-pane fade show active" id="pills-terms" role="tabpanel" aria-labelledby="pills-terms-tab" tabindex="0">
+                                        <div class="form-group">
+                                            <label class="form-label fw-semibold">نص الشروط والأحكام (Terms & Conditions)</label>
+                                            <textarea class="form-control font-monospace" name="terms_and_conditions" rows="15" dir="ltr" placeholder="Write terms in Markdown...">{{ old('terms_and_conditions', $settings->terms_and_conditions ?? '') }}</textarea>
+                                            <small class="form-text text-muted">تنسيق Markdown مدعوم بالكامل.</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Privacy Policy -->
+                                    <div class="tab-pane fade" id="pills-privacy" role="tabpanel" aria-labelledby="pills-privacy-tab" tabindex="0">
+                                        <div class="form-group">
+                                            <label class="form-label fw-semibold">نص سياسة الخصوصية (Privacy Policy)</label>
+                                            <textarea class="form-control font-monospace" name="privacy_policy" rows="15" dir="ltr" placeholder="Write privacy policy in Markdown...">{{ old('privacy_policy', $settings->privacy_policy ?? '') }}</textarea>
+                                            <small class="form-text text-muted">تنسيق Markdown مدعوم بالكامل. تأكد من إبقاء بند Paymob للمدفوعات.</small>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Refund Policy -->
+                                    <div class="tab-pane fade" id="pills-refund" role="tabpanel" aria-labelledby="pills-refund-tab" tabindex="0">
+                                        <div class="form-group">
+                                            <label class="form-label fw-semibold">نص سياسة الاسترجاع (Refund & Cancellation)</label>
+                                            <textarea class="form-control font-monospace" name="refund_and_cancellation_policy" rows="15" dir="ltr" placeholder="Write refund policy in Markdown...">{{ old('refund_and_cancellation_policy', $settings->refund_and_cancellation_policy ?? '') }}</textarea>
+                                            <small class="form-text text-muted">تنسيق Markdown مدعوم بالكامل. يجب توضيح فترة ووسيلة الاسترجاع البنكي.</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -396,6 +457,30 @@
 </div>
 
 <style>
+/* Compliance Tab Styling */
+.compliance-nav-link {
+    font-weight: 600;
+    color: #495057 !important;
+    background-color: #f1f5f9 !important;
+    border: 1px solid #cbd5e1 !important;
+    padding: 10px 20px !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease-in-out !important;
+}
+
+.compliance-nav-link:hover {
+    color: #4f46e5 !important;
+    background-color: #e2e8f0 !important;
+    border-color: #94a3b8 !important;
+    transform: none !important;
+}
+
+.compliance-nav-link.active {
+    color: #ffffff !important;
+    background-color: #4f46e5 !important;
+    border-color: #4f46e5 !important;
+}
+
 .admin-settings-page {
     background-color: #f8f9fa;
     min-height: 100vh;

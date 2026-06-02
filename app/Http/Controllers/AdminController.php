@@ -1211,11 +1211,17 @@ class AdminController extends Controller
             $validated = $request->validate([
                 'block_devtools' => 'nullable|boolean',
                 'block_copy_text' => 'nullable|boolean',
+                'terms_and_conditions' => 'nullable|string',
+                'privacy_policy' => 'nullable|string',
+                'refund_and_cancellation_policy' => 'nullable|string',
             ]);
 
             $settings = Setting::query()->first() ?? new Setting();
             $settings->block_devtools = (bool) $request->input('block_devtools', false);
             $settings->block_copy_text = (bool) $request->input('block_copy_text', false);
+            $settings->terms_and_conditions = $request->input('terms_and_conditions');
+            $settings->privacy_policy = $request->input('privacy_policy');
+            $settings->refund_and_cancellation_policy = $request->input('refund_and_cancellation_policy');
             $settings->save();
 
             cache()->forget('app_settings_singleton');

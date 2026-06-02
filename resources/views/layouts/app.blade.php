@@ -319,6 +319,17 @@
                             الكورسات
                         </a>
                     </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-file-contract me-1"></i>
+                            الشروط والسياسات
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item text-start" href="{{ route('compliance.terms') }}">الشروط والأحكام</a></li>
+                            <li><a class="dropdown-item text-start" href="{{ route('compliance.privacy') }}">سياسة الخصوصية</a></li>
+                            <li><a class="dropdown-item text-start" href="{{ route('compliance.refund') }}">سياسة الاسترجاع</a></li>
+                        </ul>
+                    </li>
                     @auth
                         @if(auth()->user()->isStudent())
                             <li class="nav-item">
@@ -450,12 +461,11 @@
                     </ul>
                 </div>
                 <div class="col-lg-2 col-md-6">
-                    <h6 class="fw-bold mb-3">الدعم</h6>
+                    <h6 class="fw-bold mb-3">الدعم والسياسات</h6>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><a href="#" class="text-light opacity-75 text-decoration-none">مركز المساعدة</a></li>
-                        <li class="mb-2"><a href="#" class="text-light opacity-75 text-decoration-none">تواصل معنا</a></li>
-                        <li class="mb-2"><a href="#" class="text-light opacity-75 text-decoration-none">الأسئلة الشائعة</a></li>
-                        <li class="mb-2"><a href="#" class="text-light opacity-75 text-decoration-none">سياسة الخصوصية</a></li>
+                        <li class="mb-2"><a href="{{ route('compliance.terms') }}" class="text-light opacity-75 text-decoration-none">الشروط والأحكام</a></li>
+                        <li class="mb-2"><a href="{{ route('compliance.privacy') }}" class="text-light opacity-75 text-decoration-none">سياسة الخصوصية</a></li>
+                        <li class="mb-2"><a href="{{ route('compliance.refund') }}" class="text-light opacity-75 text-decoration-none">سياسة الاسترجاع</a></li>
                     </ul>
                 </div>
                 <div class="col-lg-4">
