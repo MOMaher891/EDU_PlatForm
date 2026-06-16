@@ -263,6 +263,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/payment/confirm-stripe', [PaymentController::class, 'confirmStripePayment'])->name('payment.confirm.stripe');
     Route::get('/payment/success', [PaymentController::class, 'success'])->name('payment.success');
     Route::get('/payment/cancel', [PaymentController::class, 'cancel'])->name('payment.cancel');
+    Route::get('/payment/callback/{gateway}', [PaymentController::class, 'callback'])->name('payment.callback');
 });
 
 // Payment Webhooks (no auth required)

@@ -11,6 +11,7 @@ use App\Services\PaymentGatewayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class PaymentController extends Controller
@@ -20,11 +21,14 @@ class PaymentController extends Controller
 
     public function __construct(SectionAccessService $sectionAccessService, PaymentGatewayService $paymentGatewayService)
     {
-        $this->middleware('auth');
+        $this->middleware('auth')->except(['webhook']);
         $this->sectionAccessService = $sectionAccessService;
         $this->paymentGatewayService = $paymentGatewayService;
     }
 
+    /**
+     * Show checkout page for course or section.
+     */
     public function checkout(Course $course, CourseSection $section = null)
     {
         try {
@@ -108,6 +112,9 @@ class PaymentController extends Controller
         }
     }
 
+    /**
+     * Process checkout request.
+     */
     public function process(Request $request, Course $course, CourseSection $section = null)
     {
         try {
@@ -115,7 +122,6 @@ class PaymentController extends Controller
                 'gateway' => 'required|in:stripe,paypal,paymob',
             ]);
 
-            // Log the request for debugging
             Log::info('Payment request received', [
                 'request_data' => $request->all(),
                 'course_id' => $course->id,
@@ -144,12 +150,12 @@ class PaymentController extends Controller
     private function processCoursePayment(Request $request, Course $course, $user)
     {
         try {
-            // Create payment record
+            // Create pending payment record
             $payment = Payment::create([
                 'user_id' => $user->id,
                 'course_id' => $course->id,
                 'amount' => $course->getEffectivePrice(),
-                'currency' => 'USD',
+                'currency' => $request->gateway === 'paymob' ? 'EGP' : 'USD',
                 'payment_method' => $request->gateway,
                 'payment_id' => 'PAY-' . Str::random(10),
                 'status' => 'pending',
@@ -161,32 +167,31 @@ class PaymentController extends Controller
                 ]
             ]);
 
-            // Process payment through gateway
+            // Process payment through resolved gateway strategy
             $result = $this->paymentGatewayService->processPayment($payment, $request, $request->gateway);
 
             if ($result['success']) {
-                // Payment successful
-                $payment->update(['status' => 'completed']);
-
-                // Create enrollment if not already enrolled
-                $existingEnrollment = CourseEnrollment::where('user_id', $user->id)
-                    ->where('course_id', $course->id)
-                    ->first();
-
-                if (!$existingEnrollment) {
-                    CourseEnrollment::create([
-                        'user_id' => $user->id,
-                        'course_id' => $course->id,
-                        'enrolled_at' => now(),
-                        'progress' => 0
-                    ]);
+                if ($request->wantsJson() || $request->ajax()) {
+                    return response()->json($result);
                 }
+
+                // If gateway requires client redirect (like Paymob/PayPal)
+                if (isset($result['data']['redirect_url'])) {
+                    return redirect($result['data']['redirect_url']);
+                }
+
+                // If processed synchronously
+                $this->completePaymentAndEnroll($payment, $result['data'] ?? []);
 
                 return redirect()->route('payment.success', $payment)
                     ->with('success', 'تم الدفع بنجاح! يمكنك الآن الوصول للكورس.');
             } else {
-                // Payment failed
                 $payment->update(['status' => 'failed']);
+
+                if ($request->wantsJson() || $request->ajax()) {
+                    return response()->json($result, 400);
+                }
+
                 return redirect()->route('payment.failed', $payment)
                     ->with('error', 'فشل في الدفع: ' . $result['message']);
             }
@@ -204,12 +209,12 @@ class PaymentController extends Controller
     private function processSectionPayment(Request $request, Course $course, CourseSection $section, $user)
     {
         try {
-            // Create payment record
+            // Create pending payment record
             $payment = Payment::create([
                 'user_id' => $user->id,
                 'course_id' => $course->id,
                 'amount' => $section->getEffectivePrice(),
-                'currency' => 'USD',
+                'currency' => $request->gateway === 'paymob' ? 'EGP' : 'USD',
                 'payment_method' => $request->gateway,
                 'payment_id' => 'PAY-' . Str::random(10),
                 'status' => 'pending',
@@ -223,21 +228,31 @@ class PaymentController extends Controller
                 ]
             ]);
 
-            // Process payment through gateway
+            // Process payment through resolved gateway strategy
             $result = $this->paymentGatewayService->processPayment($payment, $request, $request->gateway);
 
             if ($result['success']) {
-                // Payment successful
-                $payment->update(['status' => 'completed']);
+                if ($request->wantsJson() || $request->ajax()) {
+                    return response()->json($result);
+                }
 
-                // Grant section access
-                $this->sectionAccessService->grantAccess($user, $section);
+                // If gateway requires client redirect (like Paymob/PayPal)
+                if (isset($result['data']['redirect_url'])) {
+                    return redirect($result['data']['redirect_url']);
+                }
+
+                // If processed synchronously
+                $this->completePaymentAndEnroll($payment, $result['data'] ?? []);
 
                 return redirect()->route('payment.success', $payment)
                     ->with('success', 'تم الدفع بنجاح! يمكنك الآن الوصول للقسم.');
             } else {
-                // Payment failed
                 $payment->update(['status' => 'failed']);
+
+                if ($request->wantsJson() || $request->ajax()) {
+                    return response()->json($result, 400);
+                }
+
                 return redirect()->route('payment.failed', $payment)
                     ->with('error', 'فشل في الدفع: ' . $result['message']);
             }
@@ -253,6 +268,135 @@ class PaymentController extends Controller
         }
     }
 
+    /**
+     * Handle unified redirect callbacks from payment gateways.
+     */
+    public function callback(Request $request, string $gateway)
+    {
+        try {
+            Log::info("Callback received from {$gateway}");
+
+            $result = $this->paymentGatewayService->handleCallback($request, $gateway);
+
+            if ($result['success']) {
+                $payment = Payment::where('payment_id', $result['payment_id'])
+                    ->orWhere('id', $result['payment_id'])
+                    ->first();
+
+                if ($payment) {
+                    $this->completePaymentAndEnroll($payment, $result['transaction_data'] ?? []);
+                    return redirect()->route('payment.success', $payment)
+                        ->with('success', 'تم الدفع بنجاح! تم تفعيل اشتراكك.');
+                }
+            }
+
+            $paymentId = $result['payment_id'] ?? null;
+            $payment = $paymentId ? Payment::where('payment_id', $paymentId)->orWhere('id', $paymentId)->first() : null;
+
+            if ($payment) {
+                $payment->update(['status' => 'failed']);
+                return redirect()->route('payment.failed', $payment)
+                    ->with('error', 'فشلت عملية الدفع أو تم إلغاؤها: ' . ($result['message'] ?? ''));
+            }
+
+            return redirect()->route('student.courses.index')
+                ->with('error', 'فشلت عملية الدفع أو تم إلغاؤها: ' . ($result['message'] ?? ''));
+        } catch (\Exception $e) {
+            Log::error("Error handling callback for {$gateway}: " . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->route('student.courses.index')->with('error', 'حدث خطأ غير متوقع أثناء معالجة الدفع.');
+        }
+    }
+
+    /**
+     * Unified Webhook router for payment gateways.
+     */
+    public function webhook(Request $request, $gateway)
+    {
+        try {
+            Log::info("Webhook received from {$gateway}");
+
+            $result = $this->paymentGatewayService->handleWebhook($request, $gateway);
+
+            if ($result['success']) {
+                $payment = Payment::where('payment_id', $result['payment_id'])
+                    ->orWhere('id', $result['payment_id'])
+                    ->first();
+
+                if ($payment) {
+                    $this->completePaymentAndEnroll($payment, $result['transaction_data'] ?? []);
+                    return response()->json(['status' => 'success']);
+                }
+
+                Log::warning("Payment record not found for webhook transaction ID: {$result['payment_id']}");
+                return response()->json(['error' => 'Payment record not found'], 404);
+            }
+
+            return response()->json(['error' => $result['message'] ?? 'Webhook verification failed'], 400);
+        } catch (\Exception $e) {
+            Log::error("Webhook processing error for {$gateway}: " . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json(['error' => 'Webhook processing failed'], 500);
+        }
+    }
+
+    /**
+     * Safely complete payment status and enroll student (DB Transaction wrapped).
+     */
+    private function completePaymentAndEnroll(Payment $payment, array $transactionData)
+    {
+        if ($payment->status === 'completed') {
+            return;
+        }
+
+        DB::transaction(function () use ($payment, $transactionData) {
+            $payment->update([
+                'status' => 'completed',
+                'transaction_data' => array_merge($payment->transaction_data ?? [], $transactionData)
+            ]);
+
+            $user = $payment->user;
+            $course = $payment->course;
+            $sectionId = $payment->transaction_data['section_id'] ?? null;
+
+            if ($sectionId) {
+                $section = CourseSection::find($sectionId);
+                if ($section) {
+                    $this->sectionAccessService->grantAccess($user, $section, $payment->id, $payment->amount);
+                    Log::info('Granted section access to student via payment complete', [
+                        'user_id' => $user->id,
+                        'section_id' => $sectionId,
+                        'payment_id' => $payment->id
+                    ]);
+                }
+            } else {
+                $existingEnrollment = CourseEnrollment::where('user_id', $user->id)
+                    ->where('course_id', $course->id)
+                    ->first();
+
+                if (!$existingEnrollment) {
+                    CourseEnrollment::create([
+                        'user_id' => $user->id,
+                        'course_id' => $course->id,
+                        'enrolled_at' => now(),
+                        'progress' => 0
+                    ]);
+                    Log::info('Enrolled student in course via payment complete', [
+                        'user_id' => $user->id,
+                        'course_id' => $course->id,
+                        'payment_id' => $payment->id
+                    ]);
+                }
+            }
+        });
+    }
+
+    /**
+     * Show success page.
+     */
     public function success(Payment $payment = null)
     {
         try {
@@ -260,7 +404,6 @@ class PaymentController extends Controller
                 abort(403, 'Unauthorized access to payment details.');
             }
 
-            // If no payment provided, get the latest completed payment for the user
             if (!$payment) {
                 $payment = Payment::where('user_id', Auth::id())
                     ->where('status', 'completed')
@@ -280,6 +423,9 @@ class PaymentController extends Controller
         }
     }
 
+    /**
+     * Show failed page.
+     */
     public function failed(Payment $payment)
     {
         try {
@@ -299,6 +445,9 @@ class PaymentController extends Controller
         }
     }
 
+    /**
+     * Handle Stripe redirect / confirmation endpoint.
+     */
     public function confirmStripePayment(Request $request)
     {
         try {
@@ -309,27 +458,10 @@ class PaymentController extends Controller
             $result = $this->paymentGatewayService->confirmStripePayment($request->payment_intent_id);
 
             if ($result['success']) {
-                // Find the payment record
                 $payment = Payment::where('payment_id', $request->payment_intent_id)->first();
 
                 if ($payment) {
-                    $payment->update(['status' => 'completed']);
-
-                    // Create enrollment if it's a course payment and user is not already enrolled
-                    if ($payment->course_id) {
-                        $existingEnrollment = CourseEnrollment::where('user_id', $payment->user_id)
-                            ->where('course_id', $payment->course_id)
-                            ->first();
-
-                        if (!$existingEnrollment) {
-                            CourseEnrollment::create([
-                                'user_id' => $payment->user_id,
-                                'course_id' => $payment->course_id,
-                                'enrolled_at' => now(),
-                                'progress' => 0
-                            ]);
-                        }
-                    }
+                    $this->completePaymentAndEnroll($payment, ['verified_via' => 'confirm_endpoint']);
                 }
 
                 return response()->json([
@@ -355,82 +487,35 @@ class PaymentController extends Controller
         }
     }
 
-    public function webhook(Request $request, $gateway)
+    /**
+     * Handle cancel event redirect.
+     */
+    public function cancel()
     {
-        try {
-            Log::info("Webhook received from {$gateway}", [
-                'payload' => $request->all(),
-                'headers' => $request->headers->all()
-            ]);
-
-            // Process webhook based on gateway
-            switch ($gateway) {
-                case 'stripe':
-                    return $this->processStripeWebhook($request);
-                case 'paypal':
-                    return $this->processPayPalWebhook($request);
-                case 'paymob':
-                    return $this->processPayMobWebhook($request);
-                default:
-                    Log::warning("Unknown gateway webhook: {$gateway}");
-                    return response()->json(['error' => 'Unknown gateway'], 400);
-            }
-        } catch (\Exception $e) {
-            Log::error("Webhook processing error for {$gateway}: " , [
-                'payload' => $request->all(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json(['error' => 'Webhook processing failed'], 500);
-        }
+        return redirect()->route('student.courses.index')
+            ->with('warning', 'تم إلغاء عملية الدفع.');
     }
 
-    private function processStripeWebhook(Request $request)
+    private function enrollFree(Course $course)
     {
-        try {
-            // Implement Stripe webhook processing
-            // This would verify the webhook signature and process the event
+        $user = Auth::user();
+        CourseEnrollment::create([
+            'user_id' => $user->id,
+            'course_id' => $course->id,
+            'enrolled_at' => now(),
+            'progress' => 0
+        ]);
 
-            return response()->json(['status' => 'success']);
-        } catch (\Exception $e) {
-            Log::error('Error in Stripe webhook: ' , [
-                'payload' => $request->all(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json(['error' => 'Stripe webhook processing failed'], 500);
-        }
+        return redirect()->route('student.courses.show', $course)
+            ->with('success', 'تم التسجيل في الكورس المجاني بنجاح!');
     }
 
-    private function processPayPalWebhook(Request $request)
+    private function grantFreeSectionAccess(Course $course, CourseSection $section)
     {
-        try {
-            // Implement PayPal webhook processing
+        $user = Auth::user();
+        $this->sectionAccessService->grantAccess($user, $section, null, 0);
 
-            return response()->json(['status' => 'success']);
-        } catch (\Exception $e) {
-            Log::error('Error in PayPal webhook: ' , [
-                'payload' => $request->all(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json(['error' => 'PayPal webhook processing failed'], 500);
-        }
-    }
-
-    private function processPayMobWebhook(Request $request)
-    {
-        try {
-            // Implement PayMob webhook processing
-
-            return response()->json(['status' => 'success']);
-        } catch (\Exception $e) {
-            Log::error('Error in PayMob webhook: ' , [
-                'payload' => $request->all(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return response()->json(['error' => 'PayMob webhook processing failed'], 500);
-        }
+        return redirect()->route('student.courses.show', $course)
+            ->with('success', 'تم تفعيل الوصول للقسم المجاني بنجاح!');
     }
 }
