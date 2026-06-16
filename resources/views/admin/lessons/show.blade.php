@@ -14,27 +14,9 @@
                 <div class="card-body">
                     @if($lesson->file_type === 'video' && ($lesson->video_url || $lesson->file_path))
                     <div class="mb-4">
-                        @php
-                            $url = $lesson->video_url;
-                            $isYouTube = $url && (\Illuminate\Support\Str::contains($url, 'youtube.com') || \Illuminate\Support\Str::contains($url, 'youtu.be'));
-                            $isVimeo = $url && \Illuminate\Support\Str::contains($url, 'vimeo.com');
-                            $embedSrc = null;
-                            if ($isYouTube) {
-                                // Normalize YouTube URL to embed
-                                if (preg_match('~youtu\.be/([\w-]+)~', $url, $m)) {
-                                    $embedSrc = 'https://www.youtube.com/embed/' . $m[1];
-                                } elseif (preg_match('~v=([\w-]+)~', $url, $m)) {
-                                    $embedSrc = 'https://www.youtube.com/embed/' . $m[1];
-                                }
-                            } elseif ($isVimeo) {
-                                if (preg_match('~vimeo\.com/(\d+)~', $url, $m)) {
-                                    $embedSrc = 'https://player.vimeo.com/video/' . $m[1];
-                                }
-                            }
-                        @endphp
-                        @if($embedSrc)
+                        @if($lesson->video_embed_url)
                         <div class="ratio ratio-16x9 rounded overflow-hidden">
-                            <iframe src="{{ $embedSrc }}" title="lesson video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                            <iframe src="{{ $lesson->video_embed_url }}" title="lesson video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
                         </div>
                         @else
                         <div class="ratio ratio-16x9 rounded overflow-hidden">
@@ -47,12 +29,10 @@
                                     if (\Illuminate\Support\Str::startsWith($path, ['http://', 'https://'])) {
                                         $src = $path;
                                     } elseif (\Illuminate\Support\Str::startsWith($path, 'public/storage/')) {
-                                        // Normalize to /storage/...
                                         $src = asset(substr($path, strlen('public/')));
                                     } elseif (\Illuminate\Support\Str::startsWith($path, 'storage/')) {
                                         $src = asset($path);
                                     } else {
-                                        // Assume stored under storage/app/public
                                         $src = asset('storage/' . $path);
                                     }
                                 }

@@ -132,6 +132,37 @@ class Lesson extends Model
     }
 
     /**
+     * Get the embedded video URL for YouTube or Vimeo
+     */
+    public function getVideoEmbedUrlAttribute()
+    {
+        $url = $this->video_url;
+        if (!$url) {
+            return null;
+        }
+
+        // YouTube parsing
+        if (str_contains($url, 'youtube.com') || str_contains($url, 'youtu.be')) {
+            $videoId = null;
+            if (preg_match('%(?:youtube(?:-nocookie)?\.com/(?:[^/]+/.+/|(?:v|e(?:mbed)?)/|.*[?&]v=)|youtu\.be/)([^"&?/ ]{11})%i', $url, $match)) {
+                $videoId = $match[1];
+            }
+            return $videoId ? 'https://www.youtube.com/embed/' . $videoId : null;
+        }
+
+        // Vimeo parsing
+        if (str_contains($url, 'vimeo.com')) {
+            $vimeoId = null;
+            if (preg_match('%vimeo\.com/(?:channels/(?:\w+/)?|groups/(?:[^\/]*)/videos/|album/(?:\d+)/video/|video/|)(\d+)(?:$|[?&])%i', $url, $match)) {
+                $vimeoId = $match[1];
+            }
+            return $vimeoId ? 'https://player.vimeo.com/video/' . $vimeoId : null;
+        }
+
+        return null;
+    }
+
+    /**
      * Check if the file is an image
      */
     public function isImage()

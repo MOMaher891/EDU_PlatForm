@@ -13,55 +13,38 @@
                 </div>
                 <div class="card-body">
                     @php
-                        $initialVideoSrc = null;
-                        $initialEmbedSrc = null;
-                        if ($lesson->file_type === 'video') {
-                            $url = $lesson->video_url;
-                            if ($url) {
-                                $isYouTube = \Illuminate\Support\Str::contains($url, 'youtube.com') || \Illuminate\Support\Str::contains($url, 'youtu.be');
-                                $isVimeo = \Illuminate\Support\Str::contains($url, 'vimeo.com');
-                                if ($isYouTube) {
-                                    if (preg_match('~youtu\\.be/([\\w-]+)~', $url, $m)) {
-                                        $initialEmbedSrc = 'https://www.youtube.com/embed/' . $m[1];
-                                    } elseif (preg_match('~v=([\\w-]+)~', $url, $m)) {
-                                        $initialEmbedSrc = 'https://www.youtube.com/embed/' . $m[1];
-                                    }
-                                } elseif ($isVimeo) {
-                                    if (preg_match('~vimeo\\.com/(\\d+)~', $url, $m)) {
-                                        $initialEmbedSrc = 'https://player.vimeo.com/video/' . $m[1];
-                                    }
-                                } else {
-                                    $initialVideoSrc = $url;
-                                }
-                            }
-                            if (!$initialEmbedSrc && !$initialVideoSrc) {
-                                $path = ltrim((string) $lesson->file_path, '/');
-                                if ($path) {
-                                    if (\Illuminate\Support\Str::startsWith($path, ['http://', 'https://'])) {
-                                        $initialVideoSrc = $path;
-                                    } elseif (\Illuminate\Support\Str::startsWith($path, 'public/storage/')) {
-                                        $initialVideoSrc = asset(substr($path, strlen('public/')));
-                                    } elseif (\Illuminate\Support\Str::startsWith($path, 'storage/')) {
-                                        $initialVideoSrc = asset($path);
-                                    } else {
-                                        $initialVideoSrc = asset('storage/' . $path);
-                                    }
-                                }
-                            }
+                        $initialVideoSource = 'file';
+                        if ($lesson->file_type === 'video' && !empty($lesson->video_url)) {
+                            $initialVideoSource = 'link';
                         }
                     @endphp
 
-                    @if($lesson->file_type === 'video' && ($initialEmbedSrc || $initialVideoSrc))
+                    @if($lesson->file_type === 'video' && ($lesson->video_embed_url || $lesson->file_path))
                     <div class="mb-4">
                         <h6 class="fw-semibold mb-2">معاينة الفيديو</h6>
                         <div class="ratio ratio-16x9 rounded overflow-hidden" id="videoPreviewWrapper">
-                            @if($initialEmbedSrc)
-                            <iframe id="videoPreviewIframe" src="{{ $initialEmbedSrc }}" title="preview" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
-                            @else
+                            @if($lesson->video_embed_url)
+                            <iframe id="videoPreviewIframe" src="{{ $lesson->video_embed_url }}" title="preview" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                            @elseif($lesson->file_path)
+                            @php
+                                $path = ltrim((string) $lesson->file_path, '/');
+                                $videoSrc = null;
+                                if (\Illuminate\Support\Str::startsWith($path, ['http://', 'https://'])) {
+                                    $videoSrc = $path;
+                                } elseif (\Illuminate\Support\Str::startsWith($path, 'public/storage/')) {
+                                    $videoSrc = asset(substr($path, strlen('public/')));
+                                } elseif (\Illuminate\Support\Str::startsWith($path, 'storage/')) {
+                                    $videoSrc = asset($path);
+                                } else {
+                                    $videoSrc = asset('storage/' . $path);
+                                }
+                            @endphp
+                            @if($videoSrc)
                             <video id="videoPreview" class="w-100 h-100" controls playsinline preload="metadata" style="object-fit: cover;">
-                                <source id="videoPreviewSource" src="{{ $initialVideoSrc }}" type="video/mp4">
+                                <source id="videoPreviewSource" src="{{ $videoSrc }}" type="video/mp4">
                                 متصفحك لا يدعم تشغيل الفيديو.
                             </video>
+                            @endif
                             @endif
                         </div>
                     </div>
@@ -104,47 +87,68 @@
                                 @enderror
                             </div>
 
+                            <!-- Video Source Selection -->
+                            <div class="col-md-6" id="videoSourceWrapper" style="display: none;">
+                                <label class="form-label">مصدر الفيديو</label>
+                                <div class="d-flex gap-4 mt-2">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="video_source" id="video_source_file" value="file" {{ old('video_source', $initialVideoSource) == 'file' ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="video_source_file">
+                                            رفع ملف فيديو
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="video_source" id="video_source_link" value="link" {{ old('video_source', $initialVideoSource) == 'link' ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="video_source_link">
+                                            رابط فيديو خارجي (YouTube / Vimeo / Link)
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
                             <!-- Current File -->
                             @if($lesson->hasFile())
-                            <div class="bg-light p-3 rounded">
-                                <h6 class="fw-semibold text-muted mb-2">الملف الحالي</h6>
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <div class="d-flex align-items-center">
-                                        <i class="{{ $lesson->file_icon }} fs-4 text-secondary me-2"></i>
-                                        <div>
-                                            <p class="mb-0 fw-medium">{{ $lesson->file_name ?? basename($lesson->file_path) }}</p>
-                                            @if($lesson->file_size)
-                                                <small class="text-muted">{{ $lesson->file_size_human }}</small>
-                                            @endif
+                            <div class="col-12" id="currentFileWrapper">
+                                <div class="bg-light p-3 rounded">
+                                    <h6 class="fw-semibold text-muted mb-2">الملف الحالي</h6>
+                                    <div class="d-flex align-items-center justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            <i class="{{ $lesson->file_icon }} fs-4 text-secondary me-2"></i>
+                                            <div>
+                                                <p class="mb-0 fw-medium">{{ $lesson->file_name ?? basename($lesson->file_path) }}</p>
+                                                @if($lesson->file_size)
+                                                    <small class="text-muted">{{ $lesson->file_size_human }}</small>
+                                                @endif
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="d-flex gap-2">
-                                        @if($lesson->file_url)
-                                            <a href="{{ $lesson->file_url }}" target="_blank" class="btn btn-sm btn-primary">
-                                                <i class="fas fa-eye me-1"></i>
-                                                عرض
+                                        <div class="d-flex gap-2">
+                                            @if($lesson->file_url)
+                                                <a href="{{ $lesson->file_url }}" target="_blank" class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-eye me-1"></i>
+                                                    عرض
+                                                </a>
+                                            @endif
+                                            <a href="{{ route('admin.lessons.download', $lesson) }}" class="btn btn-sm btn-success">
+                                                <i class="fas fa-download me-1"></i>
+                                                تحميل
                                             </a>
-                                        @endif
-                                        <a href="{{ route('admin.lessons.download', $lesson) }}" class="btn btn-sm btn-success">
-                                            <i class="fas fa-download me-1"></i>
-                                            تحميل
-                                        </a>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                             @endif
 
-                            <!-- File Upload -->
-                            <div class="col-12">
-                                <label for="lesson_file" class="form-label">رفع ملف جديد (اختياري)</label>
+                            <!-- File Upload Wrapper -->
+                            <div class="col-12" id="fileUploadWrapper" style="display: none;">
+                                <label for="lesson_file" class="form-label" id="fileUploadLabel">رفع ملف جديد (اختياري)</label>
                                 <div class="upload-area mt-1" id="fileUpload">
                                     <div class="upload-content">
                                         <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
-                                        <p class="upload-text">اسحب وأفلت الملف هنا أو اضغط للاختيار</p>
-                                        <small class="text-muted">الحد الأقصى 100MB - يدعم: فيديو، صور، PDF، مستندات</small>
+                                        <p class="upload-text" id="uploadAreaText">اسحب وأفلت الملف هنا أو اضغط للاختيار</p>
+                                        <small class="text-muted" id="uploadAreaHelp">الحد الأقصى 100MB</small>
                                     </div>
                                     <input type="file" class="form-control @error('lesson_file') is-invalid @enderror"
-                                           id="lesson_file" name="lesson_file" style="display: none;" accept="video/*,image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt">
+                                           id="lesson_file" name="lesson_file" style="display: none;">
                                 </div>
                                 <div id="filePreview" class="mt-2" style="display: none;">
                                     <div class="file-preview-item">
@@ -161,18 +165,18 @@
                                 @enderror
                             </div>
 
-                            <!-- Video URL -->
-                            <div class="col-md-6">
+                            <!-- Video URL Wrapper -->
+                            <div class="col-md-6" id="videoUrlWrapper" style="display: none;">
                                 <label for="video_url" class="form-label">رابط الفيديو</label>
                                 <input id="video_url" type="url" name="video_url" value="{{ old('video_url', $lesson->video_url) }}" class="form-control @error('video_url') is-invalid @enderror">
-                                <small class="text-muted">يمكن أن يكون رابط YouTube أو Vimeo أو أي منصة فيديو أخرى</small>
+                                <small class="text-muted" id="videoUrlHelp">يمكن أن يكون رابط YouTube أو Vimeo أو أي منصة فيديو أخرى</small>
                                 @error('video_url')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
 
-                            <!-- Video Duration -->
-                            <div class="col-md-6">
+                            <!-- Video Duration Wrapper -->
+                            <div class="col-md-6" id="videoDurationWrapper" style="display: none;">
                                 <label for="video_duration" class="form-label">مدة الفيديو (بالثواني)</label>
                                 <input id="video_duration" type="number" name="video_duration" value="{{ old('video_duration', $lesson->video_duration) }}" min="0" class="form-control @error('video_duration') is-invalid @enderror">
                                 @error('video_duration')
@@ -197,6 +201,25 @@
                                 @error('price')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
+                            </div>
+
+                            <!-- Collapsible Advanced File Path Section -->
+                            <div class="col-12 mb-3">
+                                <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#advancedOptions" aria-expanded="false" aria-controls="advancedOptions">
+                                    <i class="fas fa-cog me-1"></i>
+                                    خيارات متقدمة (مسار ملف محلي)
+                                </button>
+                                <div class="collapse mt-2" id="advancedOptions">
+                                    <div class="card card-body bg-light border-0">
+                                        <label for="file_path" class="form-label">مسار الملف</label>
+                                        <input type="text" class="form-control @error('file_path') is-invalid @enderror"
+                                               id="file_path" name="file_path" value="{{ old('file_path', $lesson->file_path) }}">
+                                        <div class="form-text">مسار الملف المحلي أو رابط التحميل</div>
+                                        @error('file_path')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Is Free -->
@@ -271,7 +294,86 @@
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         setupFileUpload();
+        setupDynamicFields();
     });
+
+    function setupDynamicFields() {
+        const fileTypeSelect = document.getElementById('file_type');
+        const videoSourceRadios = document.getElementsByName('video_source');
+
+        if (fileTypeSelect) {
+            fileTypeSelect.addEventListener('change', toggleFields);
+        }
+
+        videoSourceRadios.forEach(radio => {
+            radio.addEventListener('change', toggleFields);
+        });
+
+        // Run once on load to initialize correct state
+        toggleFields();
+    }
+
+    function toggleFields() {
+        const fileType = document.getElementById('file_type').value;
+        const videoSource = document.querySelector('input[name="video_source"]:checked')?.value || 'file';
+
+        const videoSourceWrapper = document.getElementById('videoSourceWrapper');
+        const fileUploadWrapper = document.getElementById('fileUploadWrapper');
+        const videoUrlWrapper = document.getElementById('videoUrlWrapper');
+        const videoDurationWrapper = document.getElementById('videoDurationWrapper');
+        const input = document.getElementById('lesson_file');
+
+        const fileUploadLabel = document.getElementById('fileUploadLabel');
+        const uploadAreaText = document.getElementById('uploadAreaText');
+        const uploadAreaHelp = document.getElementById('uploadAreaHelp');
+        const currentFileWrapper = document.getElementById('currentFileWrapper');
+
+        // Hide everything first
+        videoSourceWrapper.style.display = 'none';
+        fileUploadWrapper.style.display = 'none';
+        videoUrlWrapper.style.display = 'none';
+        videoDurationWrapper.style.display = 'none';
+
+        if (fileType === 'video') {
+            videoSourceWrapper.style.display = 'block';
+            videoDurationWrapper.style.display = 'block';
+
+            if (videoSource === 'file') {
+                fileUploadWrapper.style.display = 'block';
+                if (currentFileWrapper) currentFileWrapper.style.display = 'block';
+                if (input) input.setAttribute('accept', 'video/*');
+                if (fileUploadLabel) fileUploadLabel.innerHTML = 'رفع ملف فيديو جديد (اختياري)';
+                if (uploadAreaText) uploadAreaText.textContent = 'اسحب وأفلت ملف الفيديو هنا أو اضغط للاختيار';
+                if (uploadAreaHelp) uploadAreaHelp.textContent = 'الحد الأقصى 100MB (يدعم mp4, webm, avi)';
+            } else {
+                videoUrlWrapper.style.display = 'block';
+                if (currentFileWrapper) currentFileWrapper.style.display = 'none';
+            }
+        } else if (fileType === 'pdf') {
+            fileUploadWrapper.style.display = 'block';
+            if (currentFileWrapper) currentFileWrapper.style.display = 'block';
+            if (input) input.setAttribute('accept', '.pdf');
+            if (fileUploadLabel) fileUploadLabel.innerHTML = 'رفع ملف PDF جديد (اختياري)';
+            if (uploadAreaText) uploadAreaText.textContent = 'اسحب وأفلت ملف PDF هنا أو اضغط للاختيار';
+            if (uploadAreaHelp) uploadAreaHelp.textContent = 'الحد الأقصى 100MB';
+        } else if (fileType === 'image') {
+            fileUploadWrapper.style.display = 'block';
+            if (currentFileWrapper) currentFileWrapper.style.display = 'block';
+            if (input) input.setAttribute('accept', 'image/*');
+            if (fileUploadLabel) fileUploadLabel.innerHTML = 'رفع صورة جديدة (اختياري)';
+            if (uploadAreaText) uploadAreaText.textContent = 'اسحب وأفلت الصورة هنا أو اضغط للاختيار';
+            if (uploadAreaHelp) uploadAreaHelp.textContent = 'الحد الأقصى 10MB';
+        } else if (fileType === 'document') {
+            fileUploadWrapper.style.display = 'block';
+            if (currentFileWrapper) currentFileWrapper.style.display = 'block';
+            if (input) input.setAttribute('accept', '.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt');
+            if (fileUploadLabel) fileUploadLabel.innerHTML = 'رفع مستند جديد (اختياري)';
+            if (uploadAreaText) uploadAreaText.textContent = 'اسحب وأفلت المستند هنا أو اضغط للاختيار';
+            if (uploadAreaHelp) uploadAreaHelp.textContent = 'الحد الأقصى 20MB';
+        } else {
+            if (currentFileWrapper) currentFileWrapper.style.display = 'none';
+        }
+    }
 
     function setupFileUpload() {
         const uploadArea = document.getElementById('fileUpload');
@@ -311,8 +413,9 @@
             const file = input.files && input.files[0];
             if (file && file.type.startsWith('video/')) {
                 // Switch to HTML5 video preview for local file
-                if (videoPreviewIframe) {
-                    videoPreviewIframe.parentElement.innerHTML = '<video id="videoPreview" class="w-100 h-100" controls playsinline preload="metadata" style="object-fit: cover;"><source id="videoPreviewSource" type="video/mp4"></video>';
+                const wrapper = document.getElementById('videoPreviewWrapper');
+                if (wrapper) {
+                    wrapper.innerHTML = '<video id="videoPreview" class="w-100 h-100" controls playsinline preload="metadata" style="object-fit: cover;"><source id="videoPreviewSource" type="video/mp4"></video>';
                 }
                 const blobUrl = URL.createObjectURL(file);
                 const dynVideo = document.getElementById('videoPreview');
@@ -379,6 +482,10 @@
         if (fileTypeSelect) {
             if (file.type.startsWith('video/')) {
                 fileTypeSelect.value = 'video';
+                const fileRadio = document.getElementById('video_source_file');
+                if (fileRadio) {
+                    fileRadio.checked = true;
+                }
             } else if (file.type.startsWith('image/')) {
                 fileTypeSelect.value = 'image';
             } else if (file.type === 'application/pdf') {
@@ -386,6 +493,7 @@
             } else if (file.type.includes('document') || file.type.includes('word') || file.type.includes('excel') || file.type.includes('powerpoint') || file.type === 'text/plain') {
                 fileTypeSelect.value = 'document';
             }
+            toggleFields();
         }
     }
 

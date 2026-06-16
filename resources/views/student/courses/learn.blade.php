@@ -113,36 +113,30 @@
                                             </div>
                                         </div>
                                     </div>
-                                @elseif($currentLesson->video_url && (str_contains($currentLesson->video_url, 'youtube.com') || str_contains($currentLesson->video_url, 'youtu.be')))
-                                    <!-- YouTube Video -->
+                                @elseif($currentLesson->video_embed_url)
+                                    <!-- External Embed Video (YouTube / Vimeo) -->
                                     <div class="external-video-container">
-                                        <iframe src="{{ str_replace('watch?v=', 'embed/', $currentLesson->video_url) }}"
+                                        <iframe src="{{ $currentLesson->video_embed_url }}"
                                                 frameborder="0"
-                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                                                 allowfullscreen
                                                 class="video-player">
                                         </iframe>
                                         <div class="external-video-info">
-                                            <i class="fab fa-youtube me-2"></i>
-                                            <span>فيديو YouTube</span>
+                                            @if(str_contains($currentLesson->video_embed_url, 'youtube'))
+                                                <i class="fab fa-youtube me-2 text-danger"></i>
+                                                <span>فيديو YouTube</span>
+                                            @elseif(str_contains($currentLesson->video_embed_url, 'vimeo'))
+                                                <i class="fab fa-vimeo-v me-2 text-info"></i>
+                                                <span>فيديو Vimeo</span>
+                                            @else
+                                                <i class="fas fa-video me-2"></i>
+                                                <span>فيديو خارجي</span>
+                                            @endif
                                         </div>
                                     </div>
-                                @elseif($currentLesson->video_url && str_contains($currentLesson->video_url, 'vimeo.com'))
-                                    <!-- Vimeo Video -->
-                                    <div class="external-video-container">
-                                        <iframe src="{{ str_replace('vimeo.com', 'player.vimeo.com/video', $currentLesson->video_url) }}"
-                                                frameborder="0"
-                                                allow="autoplay; fullscreen; picture-in-picture"
-                                                allowfullscreen
-                                                class="video-player">
-                                        </iframe>
-                                        <div class="external-video-info">
-                                            <i class="fab fa-vimeo-v me-2"></i>
-                                            <span>فيديو Vimeo</span>
-                                        </div>
-                                    </div>
-                                @elseif($currentLesson->video_url && !str_contains($currentLesson->video_url, 'youtube.com') && !str_contains($currentLesson->video_url, 'youtu.be') && !str_contains($currentLesson->video_url, 'vimeo.com') && !str_contains($currentLesson->video_url, 'localhost'))
-                                    <!-- Direct Video URL (excluding localhost) -->
+                                @elseif($currentLesson->video_url)
+                                    <!-- Direct Video URL -->
                                     <div class="external-video-container">
                                         <video id="lessonVideo" class="video-player" controls preload="metadata">
                                             <source src="{{ $currentLesson->video_url }}" type="video/mp4">
