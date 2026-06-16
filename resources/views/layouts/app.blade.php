@@ -28,7 +28,7 @@
     <!-- Bootstrap RTL CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- AOS Animation -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 
@@ -956,6 +956,10 @@
 
     <!-- Modern Footer -->
     <footer class="footer py-5">
+        @php
+            $whatsappNumbers = ['201113050566', '201501036198'];
+            $randomWhatsapp = $whatsappNumbers[array_rand($whatsappNumbers)];
+        @endphp
         <div class="container">
             <div class="row g-4">
                 <div class="col-lg-4">
@@ -967,17 +971,23 @@
                         منصة التعلم الإلكتروني الرائدة في المنطقة. نوفر أفضل الكورسات التعليمية مع خبراء متخصصين.
                     </p>
                     <div class="social-links">
-                        <a href="#" class="btn btn-outline-light btn-sm me-2">
-                            <i class="fab fa-facebook"></i>
+                        <a href="https://www.facebook.com/share/1bEryWohy3/" target="_blank" class="btn btn-outline-light btn-sm me-2" title="فيسبوك">
+                            <i class="fab fa-facebook-f"></i>
                         </a>
-                        <a href="#" class="btn btn-outline-light btn-sm me-2">
-                            <i class="fab fa-twitter"></i>
+                        <a href="https://www.linkedin.com/in/mohamed-maher-5a17341b9?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app" target="_blank" class="btn btn-outline-light btn-sm me-2" title="لينكد إن">
+                            <i class="fab fa-linkedin-in"></i>
                         </a>
-                        <a href="#" class="btn btn-outline-light btn-sm me-2">
+                        <a href="https://www.instagram.com/momaher158?igsh=dG83Z3ltMDZjaHVi" target="_blank" class="btn btn-outline-light btn-sm me-2" title="إنستجرام">
                             <i class="fab fa-instagram"></i>
                         </a>
-                        <a href="#" class="btn btn-outline-light btn-sm">
-                            <i class="fab fa-linkedin"></i>
+                        <a href="https://wa.me/{{ $randomWhatsapp }}" target="_blank" class="btn btn-outline-light btn-sm me-2" title="واتساب الدعم">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                        <a href="https://x.com/Mohamed99873441" target="_blank" class="btn btn-outline-light btn-sm me-2" title="إكس (تويتر)">
+                            <i class="fab fa-x-twitter"></i>
+                        </a>
+                        <a href="mailto:obamedmaher213@gmail.com" class="btn btn-outline-light btn-sm" title="البريد الإلكتروني">
+                            <i class="fas fa-envelope"></i>
                         </a>
                     </div>
                 </div>
@@ -996,6 +1006,12 @@
                         <li class="mb-2"><a href="{{ route('compliance.terms') }}" class="text-light opacity-75 text-decoration-none">الشروط والأحكام</a></li>
                         <li class="mb-2"><a href="{{ route('compliance.privacy') }}" class="text-light opacity-75 text-decoration-none">سياسة الخصوصية</a></li>
                         <li class="mb-2"><a href="{{ route('compliance.refund') }}" class="text-light opacity-75 text-decoration-none">سياسة الاسترجاع</a></li>
+                        <li class="mb-2">
+                            <a href="https://wa.me/{{ $randomWhatsapp }}" target="_blank" class="text-light opacity-75 text-decoration-none d-inline-flex align-items-center gap-2" title="الدعم الفني (واتساب)">
+                                <i class="fab fa-whatsapp text-success"></i>
+                                <span>الدعم الفني (واتساب)</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
                 <div class="col-lg-4">
