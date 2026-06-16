@@ -127,20 +127,42 @@
                                     @enderror
                                 </div>
 
-                                <!-- File Upload -->
-                                <div class="col-md-12 mb-3">
-                                    <label for="lesson_file" class="form-label">
+                                <!-- Video Source Selection -->
+                                <div class="col-md-6 mb-3" id="videoSourceWrapper" style="display: none;">
+                                    <label class="form-label">
+                                        <i class="fas fa-photo-video me-1"></i>
+                                        مصدر الفيديو
+                                    </label>
+                                    <div class="d-flex gap-4 mt-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="video_source" id="video_source_file" value="file" {{ old('video_source', 'file') == 'file' ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="video_source_file">
+                                                رفع ملف فيديو
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="video_source" id="video_source_link" value="link" {{ old('video_source') == 'link' ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="video_source_link">
+                                                رابط فيديو خارجي (YouTube / Vimeo / Link)
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- File Upload Wrapper -->
+                                <div class="col-md-12 mb-3" id="fileUploadWrapper" style="display: none;">
+                                    <label for="lesson_file" class="form-label" id="fileUploadLabel">
                                         <i class="fas fa-upload me-1"></i>
                                         رفع ملف الدرس
                                     </label>
                                     <div class="upload-area" id="fileUpload">
                                         <div class="upload-content">
                                             <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
-                                            <p class="upload-text">اسحب وأفلت الملف هنا أو اضغط للاختيار</p>
-                                            <small class="text-muted">الحد الأقصى 100MB - يدعم: فيديو، صور، PDF، مستندات</small>
+                                            <p class="upload-text" id="uploadAreaText">اسحب وأفلت الملف هنا أو اضغط للاختيار</p>
+                                            <small class="text-muted" id="uploadAreaHelp">الحد الأقصى 100MB</small>
                                         </div>
                                         <input type="file" class="form-control @error('lesson_file') is-invalid @enderror"
-                                               id="lesson_file" name="lesson_file" style="display: none;" accept="video/*,image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt">
+                                               id="lesson_file" name="lesson_file" style="display: none;">
                                     </div>
                                     <div id="filePreview" class="mt-2" style="display: none;">
                                         <div class="file-preview-item">
@@ -154,6 +176,36 @@
                                     </div>
                                     @error('lesson_file')
                                         <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <!-- Video URL Wrapper -->
+                                <div class="col-md-6 mb-3" id="videoUrlWrapper" style="display: none;">
+                                    <label for="video_url" class="form-label">
+                                        <i class="fas fa-video me-1"></i>
+                                        رابط الفيديو
+                                    </label>
+                                    <input type="url" class="form-control @error('video_url') is-invalid @enderror"
+                                           id="video_url" name="video_url" value="{{ old('video_url') }}">
+                                    <div class="form-text">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        يمكن أن يكون رابط YouTube أو Vimeo أو أي منصة فيديو أخرى
+                                    </div>
+                                    @error('video_url')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <!-- Video Duration Wrapper -->
+                                <div class="col-md-6 mb-3" id="videoDurationWrapper" style="display: none;">
+                                    <label for="video_duration" class="form-label">
+                                        <i class="fas fa-clock me-1"></i>
+                                        مدة الفيديو (بالثواني)
+                                    </label>
+                                    <input type="number" class="form-control @error('video_duration') is-invalid @enderror"
+                                           id="video_duration" name="video_duration" value="{{ old('video_duration') }}" min="0">
+                                    @error('video_duration')
+                                        <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
 
@@ -187,51 +239,29 @@
                                     @enderror
                                 </div>
 
-                                <!-- Video URL -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="video_url" class="form-label">
-                                        <i class="fas fa-video me-1"></i>
-                                        رابط الفيديو
-                                    </label>
-                                    <input type="url" class="form-control @error('video_url') is-invalid @enderror"
-                                           id="video_url" name="video_url" value="{{ old('video_url') }}">
-                                    <div class="form-text">
-                                        <i class="fas fa-info-circle me-1"></i>
-                                        يمكن أن يكون رابط YouTube أو Vimeo أو أي منصة فيديو أخرى
-                                    </div>
-                                    @error('video_url')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <!-- Video Duration -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="video_duration" class="form-label">
-                                        <i class="fas fa-clock me-1"></i>
-                                        مدة الفيديو (بالثواني)
-                                    </label>
-                                    <input type="number" class="form-control @error('video_duration') is-invalid @enderror"
-                                           id="video_duration" name="video_duration" value="{{ old('video_duration') }}" min="0">
-                                    @error('video_duration')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <!-- File Path -->
+                                <!-- Collapsible Advanced File Path Section -->
                                 <div class="col-md-12 mb-3">
-                                    <label for="file_path" class="form-label">
-                                        <i class="fas fa-link me-1"></i>
-                                        مسار الملف
-                                    </label>
-                                    <input type="text" class="form-control @error('file_path') is-invalid @enderror"
-                                           id="file_path" name="file_path" value="{{ old('file_path') }}">
-                                    <div class="form-text">
-                                        <i class="fas fa-info-circle me-1"></i>
-                                        مسار الملف المحلي أو رابط التحميل
+                                    <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#advancedOptions" aria-expanded="false" aria-controls="advancedOptions">
+                                        <i class="fas fa-cog me-1"></i>
+                                        خيارات متقدمة (مسار ملف محلي)
+                                    </button>
+                                    <div class="collapse mt-2" id="advancedOptions">
+                                        <div class="card card-body bg-light border-0">
+                                            <label for="file_path" class="form-label">
+                                                <i class="fas fa-link me-1"></i>
+                                                مسار الملف
+                                            </label>
+                                            <input type="text" class="form-control @error('file_path') is-invalid @enderror"
+                                                   id="file_path" name="file_path" value="{{ old('file_path') }}">
+                                            <div class="form-text">
+                                                <i class="fas fa-info-circle me-1"></i>
+                                                مسار الملف المحلي أو رابط التحميل
+                                            </div>
+                                            @error('file_path')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
                                     </div>
-                                    @error('file_path')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
                                 </div>
 
                                 <!-- Is Free -->
@@ -551,7 +581,78 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     setupFileUpload();
+    setupDynamicFields();
 });
+
+function setupDynamicFields() {
+    const fileTypeSelect = document.getElementById('file_type');
+    const videoSourceRadios = document.getElementsByName('video_source');
+
+    if (fileTypeSelect) {
+        fileTypeSelect.addEventListener('change', toggleFields);
+    }
+
+    videoSourceRadios.forEach(radio => {
+        radio.addEventListener('change', toggleFields);
+    });
+
+    // Run once on load to initialize correct state
+    toggleFields();
+}
+
+function toggleFields() {
+    const fileType = document.getElementById('file_type').value;
+    const videoSource = document.querySelector('input[name="video_source"]:checked')?.value || 'file';
+
+    const videoSourceWrapper = document.getElementById('videoSourceWrapper');
+    const fileUploadWrapper = document.getElementById('fileUploadWrapper');
+    const videoUrlWrapper = document.getElementById('videoUrlWrapper');
+    const videoDurationWrapper = document.getElementById('videoDurationWrapper');
+    const input = document.getElementById('lesson_file');
+
+    const fileUploadLabel = document.getElementById('fileUploadLabel');
+    const uploadAreaText = document.getElementById('uploadAreaText');
+    const uploadAreaHelp = document.getElementById('uploadAreaHelp');
+
+    // Hide everything first
+    videoSourceWrapper.style.display = 'none';
+    fileUploadWrapper.style.display = 'none';
+    videoUrlWrapper.style.display = 'none';
+    videoDurationWrapper.style.display = 'none';
+
+    if (fileType === 'video') {
+        videoSourceWrapper.style.display = 'block';
+        videoDurationWrapper.style.display = 'block';
+
+        if (videoSource === 'file') {
+            fileUploadWrapper.style.display = 'block';
+            if (input) input.setAttribute('accept', 'video/*');
+            if (fileUploadLabel) fileUploadLabel.innerHTML = '<i class="fas fa-upload me-1"></i> رفع ملف الفيديو';
+            if (uploadAreaText) uploadAreaText.textContent = 'اسحب وأفلت ملف الفيديو هنا أو اضغط للاختيار';
+            if (uploadAreaHelp) uploadAreaHelp.textContent = 'الحد الأقصى 100MB (يدعم mp4, webm, avi)';
+        } else {
+            videoUrlWrapper.style.display = 'block';
+        }
+    } else if (fileType === 'pdf') {
+        fileUploadWrapper.style.display = 'block';
+        if (input) input.setAttribute('accept', '.pdf');
+        if (fileUploadLabel) fileUploadLabel.innerHTML = '<i class="fas fa-upload me-1"></i> رفع ملف PDF';
+        if (uploadAreaText) uploadAreaText.textContent = 'اسحب وأفلت ملف PDF هنا أو اضغط للاختيار';
+        if (uploadAreaHelp) uploadAreaHelp.textContent = 'الحد الأقصى 100MB';
+    } else if (fileType === 'image') {
+        fileUploadWrapper.style.display = 'block';
+        if (input) input.setAttribute('accept', 'image/*');
+        if (fileUploadLabel) fileUploadLabel.innerHTML = '<i class="fas fa-upload me-1"></i> رفع صورة';
+        if (uploadAreaText) uploadAreaText.textContent = 'اسحب وأفلت الصورة هنا أو اضغط للاختيار';
+        if (uploadAreaHelp) uploadAreaHelp.textContent = 'الحد الأقصى 10MB';
+    } else if (fileType === 'document') {
+        fileUploadWrapper.style.display = 'block';
+        if (input) input.setAttribute('accept', '.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt');
+        if (fileUploadLabel) fileUploadLabel.innerHTML = '<i class="fas fa-upload me-1"></i> رفع مستند';
+        if (uploadAreaText) uploadAreaText.textContent = 'اسحب وأفلت المستند هنا أو اضغط للاختيار';
+        if (uploadAreaHelp) uploadAreaHelp.textContent = 'الحد الأقصى 20MB';
+    }
+}
 
 function setupFileUpload() {
     const uploadArea = document.getElementById('fileUpload');
@@ -613,6 +714,10 @@ function handleFileSelect(input, preview, fileName) {
     if (fileTypeSelect) {
         if (file.type.startsWith('video/')) {
             fileTypeSelect.value = 'video';
+            const fileRadio = document.getElementById('video_source_file');
+            if (fileRadio) {
+                fileRadio.checked = true;
+            }
         } else if (file.type.startsWith('image/')) {
             fileTypeSelect.value = 'image';
         } else if (file.type === 'application/pdf') {
@@ -620,6 +725,7 @@ function handleFileSelect(input, preview, fileName) {
         } else if (file.type.includes('document') || file.type.includes('word') || file.type.includes('excel') || file.type.includes('powerpoint') || file.type === 'text/plain') {
             fileTypeSelect.value = 'document';
         }
+        toggleFields();
     }
 }
 

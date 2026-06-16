@@ -251,7 +251,6 @@ class LearningInterface {
 
     onVideoEnded() {
         this.markLessonComplete();
-        this.showCompletionMessage();
     }
 
     onVideoPlay() {
@@ -328,6 +327,7 @@ class LearningInterface {
     }
 
     async markLessonComplete() {
+        if (this.isCompleted) return;
         this.isCompleted = true;
 
         try {
