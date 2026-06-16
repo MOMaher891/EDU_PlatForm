@@ -57,7 +57,7 @@
                 </div>
 
                 <!-- Content Display -->
-                <div class="lesson-content">
+                <div class="lesson-display-content">
                     @if($currentLesson->hasVideo())
                         <!-- Video Content -->
                         <div class="video-container">
@@ -333,8 +333,14 @@
             <div class="tab-content active" data-tab="curriculum">
                 <div class="curriculum-list">
                     @foreach($accessibleSections as $section)
+                        @php
+                            $isCurrentSection = $currentLesson && $section->lessons->contains('id', $currentLesson->id);
+                        @endphp
                         <div class="section-item">
-                            <div class="section-header" data-bs-toggle="collapse" data-bs-target="#section-{{ $section->id }}">
+                            <div class="section-header {{ $isCurrentSection ? '' : 'collapsed' }}" 
+                                 data-bs-toggle="collapse" 
+                                 data-bs-target="#section-{{ $section->id }}"
+                                 aria-expanded="{{ $isCurrentSection ? 'true' : 'false' }}">
                                 <div class="section-info">
                                     <h6 class="section-title">{{ $section->title }}</h6>
                                     <span class="section-lessons-count">{{ $section->lessons->count() }} درس</span>
@@ -353,11 +359,13 @@
                                 <i class="fas fa-chevron-down section-toggle"></i>
                             </div>
 
-                            <div class="section-lessons collapse show" id="section-{{ $section->id }}">
+                            <div class="section-lessons collapse {{ $isCurrentSection ? 'show' : '' }}" id="section-{{ $section->id }}">
                                 <div class="lessons-list">
                                     @foreach($section->lessons as $lesson)
-                                        <div class="lesson-item {{ $currentLesson && $currentLesson->id == $lesson->id ? 'active' : '' }} {{ isset($lessonProgress[$lesson->id]) && $lessonProgress[$lesson->id] ? 'completed' : '' }}"
-                                             data-lesson-id="{{ $lesson->id }}">
+                                        <a href="{{ route('student.courses.learn', ['course' => $course, 'lesson' => $lesson->id]) }}"
+                                           class="lesson-item {{ $currentLesson && $currentLesson->id == $lesson->id ? 'active' : '' }} {{ isset($lessonProgress[$lesson->id]) && $lessonProgress[$lesson->id] ? 'completed' : '' }} text-decoration-none"
+                                           data-lesson-id="{{ $lesson->id }}"
+                                           style="color: inherit; text-decoration: none;">
                                             <div class="lesson-content">
                                                 <div class="lesson-icon">
                                                     @if(isset($lessonProgress[$lesson->id]) && $lessonProgress[$lesson->id])
@@ -387,11 +395,10 @@
                                                 </div>
                                             </div>
 
-                                            <a href="{{ route('student.courses.learn', ['course' => $course, 'lesson' => $lesson->id]) }}"
-                                               class="lesson-link">
+                                            <div class="lesson-link">
                                                 <i class="fas fa-external-link-alt"></i>
-                                            </a>
-                                        </div>
+                                            </div>
+                                        </a>
                                     @endforeach
                                 </div>
                             </div>
@@ -2059,6 +2066,9 @@ function testSecuritySystem() {
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     display: flex;
     flex-direction: column;
+    height: calc(100% - 40px);
+    max-height: calc(100% - 40px);
+    overflow: hidden;
 }
 
 .sidebar-header {
@@ -2138,6 +2148,8 @@ function testSecuritySystem() {
     flex: 1;
     display: flex;
     flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
 }
 
 .content-tabs {
@@ -2376,6 +2388,18 @@ function testSecuritySystem() {
     .course-sidebar {
         width: 100%;
         margin: 0 20px 20px 20px;
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    .sidebar-content {
+        height: auto !important;
+        overflow: visible !important;
+    }
+
+    .tab-content {
+        overflow-y: visible !important;
     }
 
     .lesson-header {
