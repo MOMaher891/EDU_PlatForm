@@ -132,7 +132,7 @@ class Lesson extends Model
     }
 
     /**
-     * Get the embedded video URL for YouTube or Vimeo
+     * Get the embedded video URL for YouTube, Vimeo, or Telegram
      */
     public function getVideoEmbedUrlAttribute()
     {
@@ -157,6 +157,28 @@ class Lesson extends Model
                 $vimeoId = $match[1];
             }
             return $vimeoId ? 'https://player.vimeo.com/video/' . $vimeoId : null;
+        }
+
+        // Telegram parsing
+        if (str_contains($url, 't.me/') || str_contains($url, 'telegram.me/')) {
+            if (preg_match('%(?:t\.me|telegram\.me)/(?:c/)?([^/]+)/(\d+)(?:$|[/?&])%i', $url, $matches)) {
+                $isPrivate = str_contains($url, '/c/');
+                $channelId = $matches[1];
+                $messageId = $matches[2];
+                if ($isPrivate) {
+                    return 'https://t.me/c/' . $channelId . '/' . $messageId . '?embed=1';
+                }
+                return 'https://t.me/' . $channelId . '/' . $messageId . '?embed=1';
+            }
+        }
+
+        // Google Drive parsing
+        if (str_contains($url, 'drive.google.com') || str_contains($url, 'docs.google.com')) {
+            $driveId = null;
+            if (preg_match('%(?:drive|docs)\.google\.com/(?:file/d/|open\?id=)([a-zA-Z0-9_-]+)%i', $url, $match)) {
+                $driveId = $match[1];
+            }
+            return $driveId ? 'https://drive.google.com/file/d/' . $driveId . '/preview' : null;
         }
 
         return null;

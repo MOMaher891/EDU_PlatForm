@@ -114,26 +114,89 @@
                                         </div>
                                     </div>
                                 @elseif($currentLesson->video_embed_url)
-                                    <!-- External Embed Video (YouTube / Vimeo) -->
+                                    <!-- External Embed Video (YouTube / Vimeo / Telegram) -->
                                     <div class="external-video-container">
-                                        <iframe src="{{ $currentLesson->video_embed_url }}"
-                                                frameborder="0"
-                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                                allowfullscreen
-                                                class="video-player">
-                                        </iframe>
-                                        <div class="external-video-info">
-                                            @if(str_contains($currentLesson->video_embed_url, 'youtube'))
-                                                <i class="fab fa-youtube me-2 text-danger"></i>
-                                                <span>فيديو YouTube</span>
-                                            @elseif(str_contains($currentLesson->video_embed_url, 'vimeo'))
-                                                <i class="fab fa-vimeo-v me-2 text-info"></i>
-                                                <span>فيديو Vimeo</span>
-                                            @else
-                                                <i class="fas fa-video me-2"></i>
-                                                <span>فيديو خارجي</span>
-                                            @endif
-                                        </div>
+                                        @if(str_contains($currentLesson->video_embed_url, 't.me'))
+                                            <!-- Telegram Video Custom Layout -->
+                                            <div class="telegram-video-card p-4 rounded-4 text-center mb-3" 
+                                                 style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); 
+                                                        border: 1px solid rgba(255,255,255,0.08); 
+                                                        color: #f8fafc; 
+                                                        min-height: 280px; 
+                                                        display: flex; 
+                                                        flex-direction: column; 
+                                                        align-items: center; 
+                                                        justify-content: center;
+                                                        border-radius: 16px;">
+                                                
+                                                <div class="telegram-logo-box mb-3 d-flex align-items-center justify-content-center" 
+                                                     style="width: 70px; height: 70px; 
+                                                            border-radius: 50%; 
+                                                            background: rgba(34, 158, 217, 0.15); 
+                                                            box-shadow: 0 0 20px rgba(34, 158, 217, 0.25);">
+                                                    <i class="fab fa-telegram-plane fa-2x" style="color: #229ED9;"></i>
+                                                </div>
+                                                
+                                                <h5 class="fw-bold mb-2 text-white">مشاهدة الفيديو على تطبيق تيليجرام</h5>
+                                                
+                                                <p class="small mb-4 px-3" style="max-width: 480px; line-height: 1.6; color: rgba(255, 255, 255, 0.75);">
+                                                    @if(str_contains($currentLesson->video_embed_url, 't.me/c/'))
+                                                        هذا الفيديو مستضاف على <strong>قناة تيليجرام خاصة</strong>. لمشاهدة الفيديو، يرجى التأكد من انضمامك للقناة أولاً ثم اضغط على الزر أدناه لفتح الفيديو مباشرة في تطبيق تيليجرام الخاص بك.
+                                                    @else
+                                                        هذا الفيديو مستضاف على قناة تيليجرام. يمكنك مشاهدته مباشرة عبر تطبيق تيليجرام أو استخدام شاشة المعاينة أدناه.
+                                                    @endif
+                                                </p>
+                                                
+                                                <a href="{{ $currentLesson->video_url }}" target="_blank" 
+                                                   class="btn px-4 py-2.5 fw-bold d-inline-flex align-items-center gap-2" 
+                                                   style="background-color: #229ED9; 
+                                                          color: white; 
+                                                          border-radius: 30px; 
+                                                          box-shadow: 0 4px 15px rgba(34, 158, 217, 0.35); 
+                                                          border: none; 
+                                                          transition: all 0.2s ease-in-out;">
+                                                    <i class="fab fa-telegram-plane fs-5"></i>
+                                                    <span>فتح الفيديو في تيليجرام</span>
+                                                </a>
+                                                
+                                                @if(!str_contains($currentLesson->video_embed_url, 't.me/c/'))
+                                                    <!-- Preview Iframe for Public Channel Messages -->
+                                                    <div class="w-100 mt-4 border-top pt-4" style="border-color: rgba(255,255,255,0.06) !important;">
+                                                        <span class="small d-block mb-3" style="color: rgba(255, 255, 255, 0.7);">شاشة معاينة البث:</span>
+                                                        <div class="ratio ratio-16x9 mx-auto rounded-3 overflow-hidden shadow-sm" style="max-width: 600px; border: 1px solid rgba(255,255,255,0.1);">
+                                                            <iframe src="{{ $currentLesson->video_embed_url }}"
+                                                                    frameborder="0"
+                                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                                                    allowfullscreen
+                                                                    class="video-player">
+                                                            </iframe>
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <iframe src="{{ $currentLesson->video_embed_url }}"
+                                                    frameborder="0"
+                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                                    allowfullscreen
+                                                    class="video-player">
+                                            </iframe>
+                                             <div class="external-video-info">
+                                                 @if(str_contains($currentLesson->video_embed_url, 'youtube'))
+                                                     <i class="fab fa-youtube me-2 text-danger"></i>
+                                                     <span>فيديو YouTube</span>
+                                                 @elseif(str_contains($currentLesson->video_embed_url, 'vimeo'))
+                                                     <i class="fab fa-vimeo-v me-2 text-info"></i>
+                                                     <span>فيديو Vimeo</span>
+                                                 @elseif(str_contains($currentLesson->video_embed_url, 'drive.google.com'))
+                                                     <i class="fab fa-google-drive me-2 text-primary"></i>
+                                                     <span>فيديو Google Drive</span>
+                                                 @else
+                                                     <i class="fas fa-video me-2"></i>
+                                                     <span>فيديو خارجي</span>
+                                                 @endif
+                                             </div>
+                                        @endif
                                     </div>
                                 @elseif($currentLesson->video_url)
                                     <!-- Direct Video URL -->

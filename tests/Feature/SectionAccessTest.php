@@ -236,7 +236,7 @@ class SectionAccessTest extends TestCase
         $response->assertSee($lesson1->title);
 
         // Check that lesson 1 is marked as active in the sidebar
-        $response->assertSee('data-lesson-id="' . $lesson1->id . '"');
+        $response->assertSee('data-lesson-id="' . $lesson1->id . '"', false);
 
         // Test navigation to lesson 2
         $response = $this->actingAs($user)
@@ -246,6 +246,6 @@ class SectionAccessTest extends TestCase
         $response->assertSee($lesson2->title);
 
         // Check that lesson 2 is marked as active in the sidebar
-        $response->assertSee('data-lesson-id="' . $lesson2->id . '"');
+        $response->assertSee('data-lesson-id="' . $lesson2->id . '"', false);
     }
 }

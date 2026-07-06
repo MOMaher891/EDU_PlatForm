@@ -24,7 +24,18 @@
                         <h6 class="fw-semibold mb-2">معاينة الفيديو</h6>
                         <div class="ratio ratio-16x9 rounded overflow-hidden" id="videoPreviewWrapper">
                             @if($lesson->video_embed_url)
-                            <iframe id="videoPreviewIframe" src="{{ $lesson->video_embed_url }}" title="preview" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                                @if(str_contains($lesson->video_embed_url, 't.me'))
+                                    <div class="telegram-preview-placeholder d-flex flex-column align-items-center justify-content-center bg-dark text-white p-4 h-100" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
+                                        <i class="fab fa-telegram-plane fa-3x mb-2" style="color: #229ED9;"></i>
+                                        <h6 class="mb-1 text-white fw-bold">فيديو تيليجرام</h6>
+                                        <p class="text-muted small mb-2 text-center" style="max-width: 400px;">رابط تيليجرام خارجي. سيتم فتح هذا الفيديو للطلاب مباشرة أو عبر التطبيق.</p>
+                                        <a href="{{ $lesson->video_url }}" target="_blank" class="btn btn-sm text-white px-3 py-1.5" style="background-color: #229ED9; border: none; border-radius: 20px;">
+                                            فتح الفيديو للمعاينة
+                                        </a>
+                                    </div>
+                                @else
+                                    <iframe id="videoPreviewIframe" src="{{ $lesson->video_embed_url }}" title="preview" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                                @endif
                             @elseif($lesson->file_path)
                             @php
                                 $path = ltrim((string) $lesson->file_path, '/');
@@ -433,6 +444,8 @@
                 if (!url) return;
                 const isYouTube = url.includes('youtube.com') || url.includes('youtu.be');
                 const isVimeo = url.includes('vimeo.com');
+                const isTelegram = url.includes('t.me') || url.includes('telegram.me');
+                const isGoogleDrive = url.includes('drive.google.com') || url.includes('docs.google.com');
                 let embedSrc = null;
                 if (isYouTube) {
                     const short = url.match(/youtu\.be\/([\w-]+)/);
@@ -442,10 +455,26 @@
                 } else if (isVimeo) {
                     const m = url.match(/vimeo\.com\/(\d+)/);
                     if (m) embedSrc = 'https://player.vimeo.com/video/' + m[1];
+                } else if (isGoogleDrive) {
+                    const match = url.match(/(?:drive|docs)\.google\.com\/(?:file\/d\/|open\?id=)([\w-]+)/);
+                    if (match && match[1]) {
+                        embedSrc = 'https://drive.google.com/file/d/' + match[1] + '/preview';
+                    }
                 }
                 const wrapper = document.getElementById('videoPreviewWrapper');
                 if (!wrapper) return;
-                if (embedSrc) {
+                if (isTelegram) {
+                    wrapper.innerHTML = `
+                        <div class="telegram-preview-placeholder d-flex flex-column align-items-center justify-content-center bg-dark text-white p-4 h-100" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);">
+                            <i class="fab fa-telegram-plane fa-3x mb-2" style="color: #229ED9;"></i>
+                            <h6 class="mb-1 text-white fw-bold">فيديو تيليجرام</h6>
+                            <p class="text-muted small mb-2 text-center" style="max-width: 400px;">رابط تيليجرام خارجي. سيتم فتح هذا الفيديو للطلاب مباشرة أو عبر التطبيق.</p>
+                            <a href="${url}" target="_blank" class="btn btn-sm text-white px-3 py-1.5" style="background-color: #229ED9; border: none; border-radius: 20px;">
+                                فتح الفيديو للمعاينة
+                            </a>
+                        </div>
+                    `;
+                } else if (embedSrc) {
                     wrapper.innerHTML = '<iframe id="videoPreviewIframe" title="preview" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>';
                     const ifr = document.getElementById('videoPreviewIframe');
                     if (ifr) ifr.src = embedSrc;
