@@ -875,7 +875,7 @@
         <div class="container">
             <a class="navbar-brand" href="{{ route('home') }}">
                 <i class="fas fa-graduation-cap me-2"></i>
-                EduPlatform
+                A+ Academy
             </a>
 
             <!-- Mobile Controls Group (visible on mobile only) -->
@@ -940,9 +940,21 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="{{ route('student.courses.index') }}">
+                        <a class="nav-link {{ request()->routeIs('student.courses.index') ? 'active' : '' }}" href="{{ route('student.courses.index') }}">
                             <i class="fas fa-book me-1"></i>
                             الكورسات
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('about') ? 'active' : '' }}" href="{{ route('about') }}">
+                            <i class="fas fa-info-circle me-1"></i>
+                            من نحن
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('contact') ? 'active' : '' }}" href="{{ route('contact') }}">
+                            <i class="fas fa-envelope me-1"></i>
+                            تواصل معنا
                         </a>
                     </li>
                     <li class="nav-item dropdown">
@@ -1068,7 +1080,7 @@
                 <div class="col-lg-4">
                     <h5 class="fw-bold mb-3">
                         <i class="fas fa-graduation-cap me-2"></i>
-                        EduPlatform
+                        A+ Academy
                     </h5>
                     <p class="text-light opacity-75">
                         منصة التعلم الإلكتروني الرائدة في المنطقة. نوفر أفضل الكورسات التعليمية مع خبراء متخصصين.
@@ -1097,9 +1109,9 @@
                 <div class="col-lg-2 col-md-6">
                     <h6 class="fw-bold mb-3">روابط سريعة</h6>
                     <ul class="list-unstyled">
-                        <li class="mb-2"><a href="#" class="text-light opacity-75 text-decoration-none">الكورسات</a></li>
-                        <li class="mb-2"><a href="#" class="text-light opacity-75 text-decoration-none">المدربين</a></li>
-                        <li class="mb-2"><a href="#" class="text-light opacity-75 text-decoration-none">الشهادات</a></li>
+                        <li class="mb-2"><a href="{{ route('student.courses.index') }}" class="text-light opacity-75 text-decoration-none">الكورسات</a></li>
+                        <li class="mb-2"><a href="{{ route('about') }}" class="text-light opacity-75 text-decoration-none">من نحن</a></li>
+                        <li class="mb-2"><a href="{{ route('contact') }}" class="text-light opacity-75 text-decoration-none">تواصل معنا</a></li>
                         <li class="mb-2"><a href="#" class="text-light opacity-75 text-decoration-none">المدونة</a></li>
                     </ul>
                 </div>
@@ -1132,7 +1144,7 @@
             <div class="row align-items-center">
                 <div class="col-md-6">
                     <p class="mb-0 text-light opacity-75">
-                        &copy; {{ date('Y') }} EduPlatform. جميع الحقوق محفوظة.
+                        &copy; {{ date('Y') }} A+ Academy. جميع الحقوق محفوظة.
                     </p>
                 </div>
                 <div class="col-md-6 text-md-end">
