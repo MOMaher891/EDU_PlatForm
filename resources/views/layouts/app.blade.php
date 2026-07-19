@@ -329,6 +329,13 @@
         .glass { background: rgba(255,255,255,0.25); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.2); }
         .footer { background: linear-gradient(135deg, #1e293b, #334155); color: white; }
 
+        @media (max-width: 991.98px) {
+            html, body {
+                overflow-x: hidden;
+                width: 100%;
+            }
+        }
+
         @media (max-width: 768px) {
             .main-content { margin-top: 70px; }
             .navbar-brand { font-size: 1.2rem; }

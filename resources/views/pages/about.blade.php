@@ -300,6 +300,30 @@
     [data-bs-theme="dark"] .founder-decor {
         border-color: #818cf8;
     }
+
+    /* Mobile view responsive floating badges */
+    @media (max-width: 768px) {
+        .about-hero-image .floating-badge {
+            padding: 8px 12px !important;
+            border-radius: 12px !important;
+            gap: 8px !important;
+        }
+        .about-hero-image .floating-badge h6 {
+            font-size: 0.8rem !important;
+        }
+        .about-hero-image .floating-badge small {
+            font-size: 0.65rem !important;
+        }
+        .about-hero-image .floating-badge i {
+            font-size: 0.9rem !important;
+        }
+        .about-hero-image .floating-badge[style*="right: -20px"] {
+            right: 5px !important;
+        }
+        .about-hero-image .floating-badge[style*="left: -20px"] {
+            left: 5px !important;
+        }
+    }
 </style>
 @endpush
 
