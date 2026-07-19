@@ -270,11 +270,46 @@
         .course-card:hover::before { opacity: 1; }
         .course-card .card-body { position: relative; z-index: 2; }
 
-        .btn { border-radius: var(--border-radius); font-weight: 500; padding: 12px 24px; transition: all 0.3s ease; border: none; position: relative; overflow: hidden; }
-        .btn-primary { background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); box-shadow: 0 4px 15px rgba(99,102,241,0.3); }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(99,102,241,0.4); }
-        .btn-outline-primary { border: 2px solid var(--primary-color); color: var(--primary-color); background: transparent; }
-        .btn-outline-primary:hover { background: var(--primary-color); transform: translateY(-2px); }
+        .btn {
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            padding: 12px 28px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 2px solid transparent;
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: #ffffff !important;
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+        }
+        .btn-primary:active {
+            transform: translateY(0) scale(0.98);
+        }
+        .btn-outline-primary {
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color) !important;
+            background: rgba(99, 102, 241, 0.03);
+        }
+        .btn-outline-primary:hover {
+            background: var(--primary-color);
+            color: #ffffff !important;
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.3);
+        }
+        .btn-outline-primary:active {
+            transform: translateY(0) scale(0.98);
+        }
 
         .form-control, .form-select { border-radius: var(--border-radius); border: 2px solid #e2e8f0; padding: 12px 16px; transition: all 0.3s ease; }
         .form-control:focus, .form-select:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
@@ -351,6 +386,19 @@
 
         [data-bs-theme="dark"] .nav-link:hover {
             color: var(--primary-color) !important;
+        }
+        
+        [data-bs-theme="dark"] .btn-outline-primary {
+            border-color: rgba(255, 255, 255, 0.25) !important;
+            color: #f8fafc !important;
+            background: rgba(255, 255, 255, 0.05) !important;
+        }
+
+        [data-bs-theme="dark"] .btn-outline-primary:hover {
+            background: #f8fafc !important;
+            color: #0f172a !important;
+            border-color: #f8fafc !important;
+            box-shadow: 0 6px 20px rgba(255, 255, 255, 0.15) !important;
         }
 
         [data-bs-theme="dark"] .card {
@@ -830,9 +878,64 @@
                 EduPlatform
             </a>
 
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <i class="fas fa-bars"></i>
-            </button>
+            <!-- Mobile Controls Group (visible on mobile only) -->
+            <div class="d-flex align-items-center gap-2 d-lg-none">
+                <!-- Theme Toggle for Mobile -->
+                <button id="theme-toggle-mobile" class="nav-link p-0 d-flex align-items-center justify-content-center" type="button" style="width: 36px; height: 36px; border-radius: 50%; border: none; background: transparent;" title="تغيير المظهر">
+                    <i class="fas fa-moon fs-5" id="theme-toggle-dark-icon-mobile"></i>
+                    <i class="fas fa-sun fs-5 d-none" id="theme-toggle-light-icon-mobile"></i>
+                </button>
+
+                <!-- Profile Dropdown or Login Link for Mobile -->
+                @guest
+                    <a class="nav-link p-0 d-flex align-items-center justify-content-center text-muted" href="{{ route('login') }}" style="width: 36px; height: 36px; border-radius: 50%;" title="تسجيل الدخول">
+                        <i class="far fa-user-circle fs-4"></i>
+                    </a>
+                @else
+                    <div class="dropdown">
+                        <a class="nav-link p-0 d-flex align-items-center justify-content-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false" style="width: 36px; height: 36px; border-radius: 50%;">
+                            <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name) }}&background=6366f1&color=fff"
+                                 class="rounded-circle border border-primary" width="32" height="32" alt="Avatar">
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end mt-2 shadow border-0" style="position: absolute; left: 0; right: auto; min-width: 200px;">
+                            <li class="dropdown-header text-start py-2 px-3">
+                                <div class="fw-bold text-dark">{{ auth()->user()->name }}</div>
+                                <small class="text-muted">{{ auth()->user()->email }}</small>
+                            </li>
+                            <li><hr class="dropdown-divider my-1"></li>
+                            @if(auth()->user()->isAdmin())
+                                <li><a class="dropdown-item py-2 text-start" href="{{ route('admin.profile') }}"><i class="fas fa-user me-2 text-primary"></i>الملف الشخصي</a></li>
+                                <li><a class="dropdown-item py-2 text-start" href="{{ route('admin.settings.index') }}"><i class="fas fa-cog me-2 text-secondary"></i>إعدادات النظام</a></li>
+                            @else
+                                <li><a class="dropdown-item py-2 text-start" href="#"><i class="fas fa-user me-2 text-primary"></i>الملف الشخصي</a></li>
+                            @endif
+                            
+                            @if(auth()->user()->isStudent())
+                                <li><a class="dropdown-item py-2 text-start" href="{{ route('student.dashboard') }}"><i class="fas fa-tachometer-alt me-2 text-success"></i>لوحة التحكم</a></li>
+                            @elseif(auth()->user()->isAdmin())
+                                <li><a class="dropdown-item py-2 text-start" href="{{ route('admin.dashboard') }}"><i class="fas fa-cog me-2 text-info"></i>إدارة النظام</a></li>
+                            @endif
+                            
+                            <li><hr class="dropdown-divider my-1"></li>
+                            <li>
+                                <a class="dropdown-item text-danger py-2 text-start" href="{{ route('logout') }}"
+                                   onclick="event.preventDefault(); document.getElementById('logout-form-mobile').submit();">
+                                    <i class="fas fa-sign-out-alt me-2"></i>
+                                    تسجيل الخروج
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <form id="logout-form-mobile" action="{{ route('logout') }}" method="POST" class="d-none">
+                        @csrf
+                    </form>
+                @endguest
+
+                <!-- Mobile Menu Toggler -->
+                <button class="navbar-toggler border-0 p-0 ms-1" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <i class="fas fa-bars fs-4"></i>
+                </button>
+            </div>
 
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav me-auto">
@@ -872,7 +975,7 @@
                     @endauth
                 </ul>
 
-                <ul class="navbar-nav align-items-center">
+                <ul class="navbar-nav align-items-center d-none d-lg-flex">
                     <!-- Theme Toggle -->
                     <li class="nav-item mx-2">
                         <button id="theme-toggle" class="nav-link p-0 d-flex align-items-center justify-content-center" type="button" style="width: 40px; height: 40px; border-radius: 50%; border: none; background: transparent;" title="تغيير المظهر">
@@ -1088,13 +1191,21 @@
             const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
             const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
 
+            const themeToggleBtnMobile = document.getElementById('theme-toggle-mobile');
+            const themeToggleDarkIconMobile = document.getElementById('theme-toggle-dark-icon-mobile');
+            const themeToggleLightIconMobile = document.getElementById('theme-toggle-light-icon-mobile');
+
             function updateToggleIcons(theme) {
                 if (theme === 'dark') {
-                    themeToggleDarkIcon.classList.add('d-none');
-                    themeToggleLightIcon.classList.remove('d-none');
+                    if (themeToggleDarkIcon) themeToggleDarkIcon.classList.add('d-none');
+                    if (themeToggleLightIcon) themeToggleLightIcon.classList.remove('d-none');
+                    if (themeToggleDarkIconMobile) themeToggleDarkIconMobile.classList.add('d-none');
+                    if (themeToggleLightIconMobile) themeToggleLightIconMobile.classList.remove('d-none');
                 } else {
-                    themeToggleDarkIcon.classList.remove('d-none');
-                    themeToggleLightIcon.classList.add('d-none');
+                    if (themeToggleDarkIcon) themeToggleDarkIcon.classList.remove('d-none');
+                    if (themeToggleLightIcon) themeToggleLightIcon.classList.add('d-none');
+                    if (themeToggleDarkIconMobile) themeToggleDarkIconMobile.classList.remove('d-none');
+                    if (themeToggleLightIconMobile) themeToggleLightIconMobile.classList.add('d-none');
                 }
             }
 
@@ -1102,22 +1213,50 @@
             const currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
             updateToggleIcons(currentTheme);
 
-            if (themeToggleBtn) {
-                themeToggleBtn.addEventListener('click', () => {
-                    const activeTheme = document.documentElement.getAttribute('data-bs-theme');
-                    const newTheme = activeTheme === 'dark' ? 'light' : 'dark';
+            function handleThemeToggle() {
+                const activeTheme = document.documentElement.getAttribute('data-bs-theme');
+                const newTheme = activeTheme === 'dark' ? 'light' : 'dark';
 
-                    document.documentElement.setAttribute('data-bs-theme', newTheme);
-                    if (newTheme === 'dark') {
-                        document.documentElement.classList.add('dark');
-                    } else {
-                        document.documentElement.classList.remove('dark');
-                    }
+                document.documentElement.setAttribute('data-bs-theme', newTheme);
+                if (newTheme === 'dark') {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
 
-                    localStorage.setItem('theme', newTheme);
-                    updateToggleIcons(newTheme);
-                });
+                localStorage.setItem('theme', newTheme);
+                updateToggleIcons(newTheme);
             }
+
+            if (themeToggleBtn) {
+                themeToggleBtn.addEventListener('click', handleThemeToggle);
+            }
+            if (themeToggleBtnMobile) {
+                themeToggleBtnMobile.addEventListener('click', handleThemeToggle);
+            }
+
+            // Auto-close mobile navbar on click outside or link click
+            document.addEventListener('click', (event) => {
+                const navbarCollapse = document.getElementById('navbarNav');
+                const toggler = document.querySelector('.navbar-toggler');
+                
+                if (navbarCollapse && navbarCollapse.classList.contains('show')) {
+                    const isClickInsideNavbar = navbarCollapse.contains(event.target);
+                    const isClickOnToggler = toggler && toggler.contains(event.target);
+                    
+                    if (!isClickInsideNavbar && !isClickOnToggler) {
+                        const bsCollapse = bootstrap.Collapse.getInstance(navbarCollapse) || new bootstrap.Collapse(navbarCollapse, { toggle: false });
+                        bsCollapse.hide();
+                    } else if (isClickInsideNavbar) {
+                        // Close if clicked on a nav-link or dropdown-item (but not a dropdown-toggle)
+                        const clickedLink = event.target.closest('.nav-link:not(.dropdown-toggle), .dropdown-item');
+                        if (clickedLink) {
+                            const bsCollapse = bootstrap.Collapse.getInstance(navbarCollapse) || new bootstrap.Collapse(navbarCollapse, { toggle: false });
+                            bsCollapse.hide();
+                        }
+                    }
+                }
+            });
         });
     </script>
     @stack('scripts')

@@ -67,7 +67,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/users/{user}', [AdminController::class, 'showUser'])->name('users.show');
     Route::get('/users/edit/{user}', [AdminController::class, 'editUser'])->name('users.edit');
     Route::put('/users/{user}', [AdminController::class, 'updateUser'])->name('users.update');
-    Route::get('/users/delete/{user}', [AdminController::class, 'deleteUser'])->name('users.destroy');
+    Route::get('/users/delete/{user}', [AdminController::class, 'destroyUser'])->name('users.destroy');
 
     // Courses Management
     Route::get('/courses', [AdminController::class, 'courses'])->name('courses.index');
@@ -76,7 +76,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/courses/{course}', [AdminController::class, 'showCourse'])->name('courses.show');
     Route::get('/courses/{course}/edit', [AdminController::class, 'editCourse'])->name('courses.edit');
     Route::put('/courses/{course}', [AdminController::class, 'updateCourse'])->name('courses.update');
-    Route::delete('/courses/{course}', [AdminController::class, 'deleteCourse'])->name('courses.destroy');
+    Route::delete('/courses/{course}', [AdminController::class, 'destroyCourse'])->name('courses.destroy');
 
     // Sections Management
     Route::get('/courses/{course}/sections', [AdminController::class, 'sections'])->name('sections.index');
@@ -84,7 +84,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/courses/{course}/sections', [AdminController::class, 'storeSection'])->name('sections.store');
     Route::get('/sections/{section}/edit', [AdminController::class, 'editSection'])->name('sections.edit');
     Route::put('/sections/{section}', [AdminController::class, 'updateSection'])->name('sections.update');
-    Route::delete('/sections/{section}', [AdminController::class, 'deleteSection'])->name('sections.destroy');
+    Route::delete('/sections/{section}', [AdminController::class, 'destroySection'])->name('sections.destroy');
 
     // Lessons Management
     Route::get('/sections/{section}/lessons', [AdminController::class, 'lessons'])->name('lessons.index');
@@ -93,7 +93,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/lessons/{lesson}', [AdminController::class, 'showLesson'])->name('lessons.show');
     Route::get('/lessons/{lesson}/edit', [AdminController::class, 'editLesson'])->name('lessons.edit');
     Route::put('/lessons/{lesson}', [AdminController::class, 'updateLesson'])->name('lessons.update');
-    Route::delete('/lessons/{lesson}', [AdminController::class, 'deleteLesson'])->name('lessons.destroy');
+    Route::delete('/lessons/{lesson}', [AdminController::class, 'destroyLesson'])->name('lessons.destroy');
     Route::get('/lessons/{lesson}/download', [AdminController::class, 'downloadLessonFile'])->name('lessons.download');
 
     // Categories Management
@@ -129,8 +129,6 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 // Student Routes
 Route::middleware(['auth', 'student'])->prefix('student')->name('student.')->group(function () {
     Route::get('/dashboard', [StudentController::class, 'dashboard'])->name('dashboard');
-    Route::get('/courses', [StudentController::class, 'courses'])->name('courses.index');
-    Route::get('/courses/{course}', [StudentController::class, 'showCourse'])->name('courses.show');
     Route::get('/courses/{course}/learn', [StudentController::class, 'learnCourse'])->name('courses.learn');
     // Select lessons and create manual payment
     Route::get('/courses/{course}/lessons/pay', [LessonPaymentController::class, 'create'])->name('courses.lessons.pay.create');
@@ -174,7 +172,7 @@ Route::middleware(['auth', 'student'])->prefix('student')->name('student.')->gro
             ->filter()
             ->contains((string) $lesson->id);
 
-        if (!$enrollment && !$hasSectionAccess && !$hasPaidLesson) {
+        if (!$user->isAdmin() && !$user->isInstructor() && !$enrollment && !$hasSectionAccess && !$hasPaidLesson) {
             abort(403, 'Access denied');
         }
 

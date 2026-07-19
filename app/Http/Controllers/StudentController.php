@@ -22,7 +22,7 @@ class StudentController extends Controller
 
     public function __construct(SectionAccessService $sectionAccessService)
     {
-        $this->middleware('auth');
+        $this->middleware('auth')->except(['courses', 'showCourse']);
         $this->sectionAccessService = $sectionAccessService;
     }
 
@@ -399,18 +399,18 @@ class StudentController extends Controller
             $user = Auth::user();
 
             // Check enrollment status
-            $enrollment = $user->enrollments()
+            $enrollment = $user ? $user->enrollments()
                 ->where('course_id', $course->id)
-                ->first();
+                ->first() : null;
 
             $isEnrolled = $enrollment !== null;
 
             // Check section access
-            $accessibleSections = $user->sectionAccess()
+            $accessibleSections = $user ? $user->sectionAccess()
                 ->active()
                 ->where('course_id', $course->id)
                 ->with('section')
-                ->get();
+                ->get() : collect();
 
             $hasSectionAccess = $accessibleSections->count() > 0;
 
@@ -428,7 +428,7 @@ class StudentController extends Controller
             $totalReviews = $course->reviews()->count();
 
             // Compute paid lesson IDs for this student in this course
-            $paidLessonIds = \App\Models\LessonPayment::where('student_id', $user->id)
+            $paidLessonIds = $user ? \App\Models\LessonPayment::where('student_id', $user->id)
                 ->where('course_id', $course->id)
                 ->where('status', 1)
                 ->get()
@@ -439,7 +439,7 @@ class StudentController extends Controller
                 })
                 ->unique()
                 ->values()
-                ->all();
+                ->all() : [];
 
             return view('student.courses.show', compact(
                 'course',
@@ -493,7 +493,7 @@ class StudentController extends Controller
                 ->values()
                 ->all();
 
-            if (!$enrollment && !$hasSectionAccess && count($paidLessonIds) === 0) {
+            if (!$user->isAdmin() && !$user->isInstructor() && !$enrollment && !$hasSectionAccess && count($paidLessonIds) === 0) {
                 return redirect()->route('student.courses.show', $course)
                     ->with('error', 'يجب شراء الكورس أولاً أو اختيار دروس مدفوعة');
             }
@@ -503,7 +503,7 @@ class StudentController extends Controller
             }]);
 
             // Get accessible sections: if enrolled or has section access, use service; otherwise restrict to paid lessons
-            if ($enrollment || $hasSectionAccess) {
+            if ($user->isAdmin() || $user->isInstructor() || $enrollment || $hasSectionAccess) {
                 $accessibleSections = $this->sectionAccessService->getAccessibleSections($user, $course);
             } else {
                 // Build sections containing only paid lessons
@@ -524,7 +524,7 @@ class StudentController extends Controller
                 $currentLesson = Lesson::findOrFail(request('lesson'));
 
                 // Check if user has access to this lesson (section access or paid lesson)
-                $hasLessonAccess = $this->sectionAccessService->hasLessonAccess($user, $currentLesson->id) || in_array($currentLesson->id, $paidLessonIds);
+                $hasLessonAccess = $user->isAdmin() || $user->isInstructor() || $this->sectionAccessService->hasLessonAccess($user, $currentLesson->id) || in_array($currentLesson->id, $paidLessonIds);
                 if (!$hasLessonAccess) {
                     return redirect()->route('student.courses.show', $course)
                         ->with('error', 'You do not have access to this lesson.');
@@ -628,7 +628,7 @@ class StudentController extends Controller
             $user = Auth::user();
 
             // Check access to lesson
-            if (!$this->sectionAccessService->hasLessonAccess($user, $lesson->id)) {
+            if (!$user->isAdmin() && !$user->isInstructor() && !$this->sectionAccessService->hasLessonAccess($user, $lesson->id)) {
                 return response()->json(['error' => 'No access to this lesson'], 403);
             }
 
@@ -690,7 +690,7 @@ class StudentController extends Controller
             $user = Auth::user();
 
             // Check access to lesson
-            if (!$this->sectionAccessService->hasLessonAccess($user, $lesson->id)) {
+            if (!$user->isAdmin() && !$user->isInstructor() && !$this->sectionAccessService->hasLessonAccess($user, $lesson->id)) {
                 return response()->json(['error' => 'No access to this lesson'], 403);
             }
 
@@ -755,7 +755,7 @@ class StudentController extends Controller
             $user = Auth::user();
 
             // Check access to lesson
-            if (!$this->sectionAccessService->hasLessonAccess($user, $lesson->id)) {
+            if (!$user->isAdmin() && !$user->isInstructor() && !$this->sectionAccessService->hasLessonAccess($user, $lesson->id)) {
                 return response()->json(['error' => 'No access to this lesson'], 403);
             }
 

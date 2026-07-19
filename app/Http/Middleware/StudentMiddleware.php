@@ -19,7 +19,7 @@ class StudentMiddleware
     {
         if (!Auth::check()) {
             return redirect()->route('login');
-        } elseif (Auth::user()->role != 'student') {
+        } elseif (Auth::user()->role != 'student' && Auth::user()->role != 'admin' && Auth::user()->role != 'instructor') {
             abort(403, 'غير مصرح لك بالوصول إلى هذه الصفحة');
         }
 

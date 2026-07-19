@@ -42,20 +42,20 @@
                             </div>
                         </div>
                     </div>
-                    <div class="hero-actions d-flex flex-wrap gap-3">
-                        <a href="{{ route('student.courses.index') }}" class="btn btn-primary btn-lg px-4 py-3">
+                    <div class="hero-actions d-flex flex-column flex-md-row gap-3">
+                        <a href="{{ route('student.courses.index') }}" class="btn btn-primary btn-lg px-4 py-3 w-100 w-md-auto d-inline-flex align-items-center justify-content-center">
                             <i class="fas fa-rocket me-2"></i>
-                            ابدأ التعلم الآن
+                            <span>ابدأ التعلم الآن</span>
                         </a>
                         @guest
-                            <a href="{{ route('register') }}" class="btn btn-outline-primary btn-lg px-4 py-3">
+                            <a href="{{ route('register') }}" class="btn btn-outline-primary btn-lg px-4 py-3 w-100 w-md-auto d-inline-flex align-items-center justify-content-center">
                                 <i class="fas fa-user-plus me-2"></i>
-                                إنشاء حساب مجاني
+                                <span>إنشاء حساب مجاني</span>
                             </a>
                         @endguest
-                        <button class="btn btn-link btn-lg text-decoration-none" data-bs-toggle="modal" data-bs-target="#videoModal">
+                        <button class="btn btn-link btn-lg text-decoration-none w-100 w-md-auto d-inline-flex align-items-center justify-content-center" data-bs-toggle="modal" data-bs-target="#videoModal">
                             <i class="fas fa-play-circle me-2"></i>
-                            شاهد الفيديو التعريفي
+                            <span>شاهد الفيديو التعريفي</span>
                         </button>
                     </div>
                 </div>
@@ -424,15 +424,15 @@
                         انضم إلى آلاف الطلاب الذين يطورون مهاراتهم معنا كل يوم.
                         ابدأ اليوم واحصل على خصم 50% على أول كورس لك!
                     </p>
-                    <div class="cta-actions d-flex flex-wrap justify-content-center gap-3">
-                        <a href="{{ route('student.courses.index') }}" class="btn btn-primary btn-lg px-5 py-3">
+                    <div class="cta-actions d-flex flex-column flex-md-row justify-content-center gap-3">
+                        <a href="{{ route('student.courses.index') }}" class="btn btn-primary btn-lg px-5 py-3 w-100 w-md-auto d-inline-flex align-items-center justify-content-center">
                             <i class="fas fa-rocket me-2"></i>
-                            ابدأ التعلم الآن
+                            <span>ابدأ التعلم الآن</span>
                         </a>
                         @guest
-                            <a href="{{ route('register') }}" class="btn btn-outline-primary btn-lg px-5 py-3">
+                            <a href="{{ route('register') }}" class="btn btn-outline-primary btn-lg px-5 py-3 w-100 w-md-auto d-inline-flex align-items-center justify-content-center">
                                 <i class="fas fa-user-plus me-2"></i>
-                                إنشاء حساب مجاني
+                                <span>إنشاء حساب مجاني</span>
                             </a>
                         @endguest
                     </div>
