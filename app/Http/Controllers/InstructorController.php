@@ -201,6 +201,10 @@ class InstructorController extends Controller
         if ($course->thumbnail) {
             Storage::disk('public')->delete($course->thumbnail);
         }
+
+        if ($course->preview_video) {
+            Storage::disk('public')->delete($course->preview_video);
+        }
         
         $course->delete();
         
