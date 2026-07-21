@@ -126,6 +126,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Settings
     Route::get('/settings', [AdminController::class, 'settings'])->name('settings.index');
     Route::put('/settings', [AdminController::class, 'updateSettings'])->name('settings.update');
+    Route::post('/settings/clear-cache', [AdminController::class, 'clearCache'])->name('settings.clearCache');
 
     // Admin Profile
     Route::get('/profile', [AdminController::class, 'profile'])->name('profile');

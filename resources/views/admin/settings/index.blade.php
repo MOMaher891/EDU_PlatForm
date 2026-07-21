@@ -613,8 +613,36 @@ function resetSettings() {
 
 function clearCache() {
     if (confirm('هل أنت متأكد من مسح الكاش؟')) {
-        // Add cache clearing logic here
-        alert('تم مسح الكاش بنجاح');
+        const btn = document.querySelector('button[onclick="clearCache()"]');
+        const originalContent = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>جاري مسح الكاش...';
+
+        fetch('{{ route('admin.settings.clearCache') }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                'Accept': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            btn.disabled = false;
+            btn.innerHTML = originalContent;
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert(data.message || 'حدث خطأ أثناء مسح الكاش');
+            }
+        })
+        .catch(error => {
+            btn.disabled = false;
+            btn.innerHTML = originalContent;
+            console.error('Error:', error);
+            alert('حدث خطأ غير متوقع أثناء مسح الكاش');
+        });
     }
 }
 

@@ -1308,4 +1308,24 @@ class AdminController extends Controller
             return redirect()->back()->with('error', 'حدث خطأ أثناء تحديث الإعدادات. يرجى المحاولة مرة أخرى.');
         }
     }
+
+    public function clearCache()
+    {
+        try {
+            \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+            return response()->json([
+                'success' => true,
+                'message' => 'تم مسح الكاش وتحديث المنصة بنجاح.'
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error clearing cache: ', [
+                'user_id' => auth()->id(),
+                'message' => $e->getMessage()
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء مسح الكاش: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
