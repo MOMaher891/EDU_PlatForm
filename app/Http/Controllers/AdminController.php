@@ -1213,6 +1213,11 @@ class AdminController extends Controller
                 $settings = (object) [
                     'block_devtools' => false,
                     'block_copy_text' => false,
+                    'platform_name' => 'A+ Academy',
+                    'platform_logo' => null,
+                    'support_email' => 'momaher1588@gmail.com',
+                    'support_phone' => '+201113050566',
+                    'platform_description' => 'منصة تعليمية متكاملة تقدم دورات تعليمية عالية الجودة',
                 ];
             }
             return view('admin.settings.index', compact('settings'));
@@ -1235,14 +1240,60 @@ class AdminController extends Controller
                 'terms_and_conditions' => 'nullable|string',
                 'privacy_policy' => 'nullable|string',
                 'refund_and_cancellation_policy' => 'nullable|string',
+                
+                'platform_name' => 'nullable|string|max:255',
+                'platform_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                'support_email' => 'nullable|email|max:255',
+                'support_phone' => 'nullable|string|max:255',
+                'platform_description' => 'nullable|string',
+                
+                'max_courses_per_instructor' => 'nullable|integer|min:1',
+                'max_lessons_per_course' => 'nullable|integer|min:1',
+                'max_file_size' => 'nullable|integer|in:5,10,25,50',
+                'allowed_file_types' => 'nullable|string|max:255',
+                'default_currency' => 'nullable|string|max:10',
+                'commission_rate' => 'nullable|numeric|min:0|max:100',
+                'minimum_withdrawal' => 'nullable|numeric|min:0',
+                'payment_processing_days' => 'nullable|integer|min:1',
+                'mail_provider' => 'nullable|string|max:50',
+                'from_email' => 'nullable|email|max:255',
+                'from_name' => 'nullable|string|max:255',
+                'email_notifications' => 'nullable|boolean',
             ]);
 
             $settings = Setting::query()->first() ?? new Setting();
-            $settings->block_devtools = (bool) $request->input('block_devtools', false);
-            $settings->block_copy_text = (bool) $request->input('block_copy_text', false);
+            
+            $settings->block_devtools = $request->has('block_devtools');
+            $settings->block_copy_text = $request->has('block_copy_text');
             $settings->terms_and_conditions = $request->input('terms_and_conditions');
             $settings->privacy_policy = $request->input('privacy_policy');
             $settings->refund_and_cancellation_policy = $request->input('refund_and_cancellation_policy');
+            
+            $settings->platform_name = $request->input('platform_name');
+            $settings->support_email = $request->input('support_email');
+            $settings->support_phone = $request->input('support_phone');
+            $settings->platform_description = $request->input('platform_description');
+            
+            $settings->max_courses_per_instructor = (int) $request->input('max_courses_per_instructor', 10);
+            $settings->max_lessons_per_course = (int) $request->input('max_lessons_per_course', 50);
+            $settings->max_file_size = (int) $request->input('max_file_size', 10);
+            $settings->allowed_file_types = $request->input('allowed_file_types', 'pdf,doc,docx,ppt,pptx,mp4,avi,mov');
+            $settings->default_currency = $request->input('default_currency', 'USD');
+            $settings->commission_rate = (float) $request->input('commission_rate', 10.00);
+            $settings->minimum_withdrawal = (float) $request->input('minimum_withdrawal', 50.00);
+            $settings->payment_processing_days = (int) $request->input('payment_processing_days', 7);
+            $settings->mail_provider = $request->input('mail_provider', 'smtp');
+            $settings->from_email = $request->input('from_email', 'noreply@example.com');
+            $settings->from_name = $request->input('from_name', 'منصة التعلم');
+            $settings->email_notifications = $request->has('email_notifications');
+
+            if ($request->hasFile('platform_logo')) {
+                if ($settings->platform_logo) {
+                    Storage::disk('public')->delete($settings->platform_logo);
+                }
+                $settings->platform_logo = $request->file('platform_logo')->store('settings', 'public');
+            }
+
             $settings->save();
 
             cache()->forget('app_settings_singleton');
@@ -1255,6 +1306,26 @@ class AdminController extends Controller
             ]);
 
             return redirect()->back()->with('error', 'حدث خطأ أثناء تحديث الإعدادات. يرجى المحاولة مرة أخرى.');
+        }
+    }
+
+    public function clearCache()
+    {
+        try {
+            \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+            return response()->json([
+                'success' => true,
+                'message' => 'تم مسح الكاش وتحديث المنصة بنجاح.'
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error clearing cache: ', [
+                'user_id' => auth()->id(),
+                'message' => $e->getMessage()
+            ]);
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء مسح الكاش: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

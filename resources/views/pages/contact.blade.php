@@ -37,13 +37,16 @@
                         <h5 class="fw-bold text-dark">واتساب الدعم الفني</h5>
                         <p class="text-muted small">للاستفسارات السريعة وحل المشكلات الفورية</p>
                         <div class="d-grid gap-2">
-                            <a href="https://wa.me/201113050566" target="_blank" class="btn btn-outline-success btn-sm">
+                            @php
+                                $supportPhone = $appSettings->support_phone ?? '+966 50 123 4567';
+                                $whatsappNumber = preg_replace('/[^0-9]/', '', $supportPhone);
+                                if (empty($whatsappNumber)) {
+                                    $whatsappNumber = '966501234567';
+                                }
+                            @endphp
+                            <a href="https://wa.me/{{ $whatsappNumber }}" target="_blank" class="btn btn-outline-success btn-sm">
                                 <i class="fab fa-whatsapp me-1"></i>
-                                +20 111 305 0566
-                            </a>
-                            <a href="https://wa.me/201501036198" target="_blank" class="btn btn-outline-success btn-sm">
-                                <i class="fab fa-whatsapp me-1"></i>
-                                +20 150 103 6198
+                                {{ $supportPhone }}
                             </a>
                         </div>
                     </div>
@@ -58,9 +61,9 @@
                         </div>
                         <h5 class="fw-bold text-dark">البريد الإلكتروني</h5>
                         <p class="text-muted small">للاستفسارات العامة والمقترحات والطلبات الخاصة</p>
-                        <a href="mailto:obamedmaher213@gmail.com" class="btn btn-outline-primary btn-sm mt-3 w-100">
+                        <a href="mailto:{{ $appSettings->support_email ?? 'support@example.com' }}" class="btn btn-outline-primary btn-sm mt-3 w-100">
                             <i class="fas fa-envelope me-1"></i>
-                            obamedmaher213@gmail.com
+                            {{ $appSettings->support_email ?? 'support@example.com' }}
                         </a>
                     </div>
                 </div>

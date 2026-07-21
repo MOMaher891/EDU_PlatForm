@@ -243,9 +243,9 @@
                                                         <div class="d-flex align-items-center">
                                                             @if($isPurchasable && !$hasAccess)
                                                                 <div class="me-3">
-                                                                    <span class="text-primary fw-bold">${{ $section->getEffectivePrice() }}</span>
+                                                                    <span class="text-primary fw-bold">{{ \App\Models\Setting::formatPrice($section->getEffectivePrice()) }}</span>
                                                                     @if($section->discount_price)
-                                                                        <small class="text-muted text-decoration-line-through ms-1">${{ $section->price }}</small>
+                                                                        <small class="text-muted text-decoration-line-through ms-1">{{ \App\Models\Setting::formatPrice($section->price) }}</small>
                                                                     @endif
                                                                 </div>
                                                             @endif
@@ -270,7 +270,7 @@
                                                                 <a href="{{ route('payment.section.checkout', ['course' => $course, 'section' => $section]) }}"
                                                                    class="btn btn-primary btn-sm">
                                                                     <i class="fas fa-shopping-cart me-1"></i>
-                                                                    شراء القسم - ${{ $section->getEffectivePrice() }}
+                                                                    شراء القسم - {{ \App\Models\Setting::formatPrice($section->getEffectivePrice()) }}
                                                                 </a>
                                                             </div>
                                                         </div>
@@ -298,7 +298,7 @@
                                                                         <span class="badge bg-success">تم الشراء</span>
                                                                     @else
                                                                         <span class="badge bg-secondary">مدفوع</span>
-                                                                        <small class="text-primary d-block mt-1">السعر: ${{ number_format($lesson->price ?? 0, 2) }}</small>
+                                                                        <small class="text-primary d-block mt-1">السعر: {{ \App\Models\Setting::formatPrice($lesson->price ?? 0) }}</small>
                                                                     @endif
                                                                 </div>
                                                             </div>
@@ -516,10 +516,10 @@
                                 @if($course->getEffectivePrice() == 0)
                                     <h2 class="display-4 fw-bold text-success mb-2">مجاني</h2>
                                 @else
-                                    <h2 class="display-4 fw-bold text-primary mb-2">${{ $course->getEffectivePrice() }}</h2>
+                                    <h2 class="display-4 fw-bold text-primary mb-2">{{ \App\Models\Setting::formatPrice($course->getEffectivePrice()) }}</h2>
                                     @if($course->discount_price)
                                         <div class="mb-2">
-                                            <span class="text-muted text-decoration-line-through fs-4">${{ $course->price }}</span>
+                                            <span class="text-muted text-decoration-line-through fs-4">{{ \App\Models\Setting::formatPrice($course->price) }}</span>
                                             <span class="badge bg-danger ms-2 fs-6">
                                                 خصم {{ round((($course->price - $course->discount_price) / $course->price) * 100) }}%
                                             </span>

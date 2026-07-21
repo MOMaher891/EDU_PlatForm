@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'من نحن - عن منصة A+ Academy')
+@section('title', 'من نحن - عن ' . ($appSettings->platform_name ?? 'منصة A+ Academy'))
 
 @section('content')
 <!-- Hero Section -->
@@ -17,7 +17,7 @@
                     <span class="text-primary">مستقبل أفضل</span>
                 </h1>
                 <p class="lead text-muted mb-4 fs-5">
-                    منصة A+ Academy هي منصة رائدة في التعليم الإلكتروني، نسعى لتمكين العقول الشابة وتوفير أفضل الكورسات التقنية والمهنية بأعلى جودة تحت إشراف نخبة من الخبراء والمهندسين.
+                    {{ $appSettings->platform_name ?? 'A+ Academy' }} هي منصة رائدة في التعليم الإلكتروني، نسعى لتمكين العقول الشابة وتوفير أفضل الكورسات التقنية والمهنية بأعلى جودة تحت إشراف نخبة من الخبراء والمهندسين.
                 </p>
                 <div class="d-flex flex-column flex-sm-row justify-content-center justify-content-lg-start gap-3">
                     <a href="{{ route('student.courses.index') }}" class="btn btn-primary btn-lg px-4 py-3">
@@ -51,7 +51,7 @@
                         </div>
                     </div>
                     <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                         alt="التعليم الإلكتروني في A+ Academy" class="img-fluid rounded-4 shadow-lg w-100">
+                         alt="التعليم الإلكتروني في {{ $appSettings->platform_name ?? 'A+ Academy' }}" class="img-fluid rounded-4 shadow-lg w-100">
                 </div>
             </div>
         </div>
@@ -195,14 +195,14 @@
             </div>
             <div class="col-lg-7" data-aos="fade-left" data-aos-delay="200">
                 <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill mb-3">مؤسس المنصة</span>
-                <h3 class="fw-bold mb-3 text-dark">كلمة مؤسس منصة A+ Academy</h3>
+                <h3 class="fw-bold mb-3 text-dark">كلمة مؤسس {{ $appSettings->platform_name ?? 'منصة A+ Academy' }}</h3>
                 <h5 class="text-primary mb-3">م. محمد ماهر (Software Engineer & Educator)</h5>
                 <p class="text-muted leading-relaxed mb-4">
-                    "بدأنا A+ Academy برؤية واضحة: إزالة كل الحواجز أمام الطلاب الطموحين وتمكينهم من تعلم البرمجة والتقنيات الحديثة بشكل ميسر وعملي بعيداً عن التلقين النظري الجاف. نحن هنا لنوجهك، خطوة بخطوة، لتبني مشاريعك الخاصة وتدخل سوق العمل بكل ثقة."
+                    "بدأنا {{ $appSettings->platform_name ?? 'A+ Academy' }} برؤية واضحة: إزالة كل الحواجز أمام الطلاب الطموحين وتمكينهم من تعلم البرمجة والتقنيات الحديثة بشكل ميسر وعملي بعيداً عن التلقين النظري الجاف. نحن هنا لنوجهك، خطوة بخطوة، لتبني مشاريعك الخاصة وتدخل سوق العمل بكل ثقة."
                 </p>
                 <div class="founder-signature">
                     <p class="mb-0 fw-bold text-dark">م. محمد ماهر</p>
-                    <small class="text-muted">المؤسس والمدير التنفيذي لـ A+ Academy</small>
+                    <small class="text-muted">المؤسس والمدير التنفيذي لـ {{ $appSettings->platform_name ?? 'A+ Academy' }}</small>
                 </div>
             </div>
         </div>

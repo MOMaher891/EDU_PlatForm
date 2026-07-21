@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'الصفحة الرئيسية - منصة التعلم الإلكتروني')
+@section('title', 'الصفحة الرئيسية')
 
 @section('content')
 <!-- Hero Section -->
@@ -326,9 +326,9 @@
                                     <small class="text-muted">{{ $course->instructor->name }}</small>
                                 </div>
                                 <div class="price">
-                                    <span class="text-primary fw-bold fs-5">${{ $course->getEffectivePrice() }}</span>
+                                    <span class="text-primary fw-bold fs-5">{{ \App\Models\Setting::formatPrice($course->getEffectivePrice()) }}</span>
                                     @if($course->discount_price)
-                                        <span class="text-muted text-decoration-line-through ms-2 small">${{ $course->price }}</span>
+                                        <span class="text-muted text-decoration-line-through ms-2 small">{{ \App\Models\Setting::formatPrice($course->price) }}</span>
                                     @endif
                                 </div>
                             </div>

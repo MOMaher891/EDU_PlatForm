@@ -69,10 +69,10 @@
             <div class="col-xl-3 col-md-6 mb-4">
                 <div class="stats-card stats-info" data-aos="fade-up" data-aos-delay="300">
                     <div class="stats-icon">
-                        <i class="fas fa-dollar-sign"></i>
+                        <i class="fas fa-money-bill"></i>
                     </div>
                     <div class="stats-content">
-                        <h3 class="stats-number">${{ number_format($payments->where('status', 'completed')->sum('amount'), 2) }}</h3>
+                        <h3 class="stats-number">{{ \App\Models\Setting::formatPrice($payments->where('status', 'completed')->sum('amount')) }}</h3>
                         <p class="stats-label">إجمالي الإيرادات</p>
                     </div>
                 </div>
@@ -183,7 +183,7 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <span class="fw-bold text-success">${{ number_format($payment->amount, 2) }}</span>
+                                        <span class="fw-bold text-success">{{ \App\Models\Setting::formatPrice($payment->amount) }}</span>
                                     </td>
                                     <td>
                                         <span class="badge bg-light text-dark">

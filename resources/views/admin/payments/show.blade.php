@@ -93,7 +93,7 @@
                                     <div class="detail-item">
                                         <label class="detail-label">المبلغ</label>
                                         <div class="detail-value">
-                                            <span class="fw-bold text-success fs-4">${{ number_format($payment->amount, 2) }}</span>
+                                            <span class="fw-bold text-success fs-4">{{ \App\Models\Setting::formatPrice($payment->amount) }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -228,7 +228,7 @@
                             <div class="course-details">
                                 <div class="detail-item">
                                     <label class="detail-label">السعر</label>
-                                    <div class="detail-value">${{ number_format($payment->course->price ?? 0, 2) }}</div>
+                                    <div class="detail-value">{{ \App\Models\Setting::formatPrice($payment->course->price ?? 0) }}</div>
                                 </div>
                                 <div class="detail-item">
                                     <label class="detail-label">الحالة</label>

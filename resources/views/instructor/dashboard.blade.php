@@ -73,10 +73,10 @@
                     </div>
                     <div class="stats-content">
                         <h3 class="stats-number" data-target="{{ $totalRevenue }}">0</h3>
-                        <p class="stats-label">إجمالي الأرباح ($)</p>
+                        <p class="stats-label">إجمالي الأرباح</p>
                         <div class="stats-change positive">
                             <i class="fas fa-arrow-up"></i>
-                            <span>+${{ $monthlyStats['revenue'] }} هذا الشهر</span>
+                            <span>+{{ \App\Models\Setting::formatPrice($monthlyStats['revenue']) }} هذا الشهر</span>
                         </div>
                     </div>
                 </div>
@@ -133,8 +133,8 @@
                                                     {{ $course->enrollments_count }} طالب
                                                 </span>
                                                 <span class="course-price">
-                                                    <i class="fas fa-dollar-sign me-1"></i>
-                                                    ${{ $course->getEffectivePrice() }}
+                                                    <i class="fas fa-money-bill me-1"></i>
+                                                    {{ \App\Models\Setting::formatPrice($course->getEffectivePrice()) }}
                                                 </span>
                                             </p>
                                             <div class="course-progress">
@@ -258,7 +258,7 @@
                                         <h6 class="course-name">{{ Str::limit($course->title, 30) }}</h6>
                                         <div class="course-stats">
                                             <span class="students">{{ $course->enrollments_count }} طالب</span>
-                                            <span class="revenue">${{ $course->getEffectivePrice() * $course->enrollments_count }}</span>
+                                            <span class="revenue">{{ \App\Models\Setting::formatPrice($course->getEffectivePrice() * $course->enrollments_count) }}</span>
                                         </div>
                                     </div>
                                     <div class="course-trend">
@@ -324,7 +324,7 @@
                                         <div class="progress">
                                             <div class="progress-bar bg-warning" style="width: {{ ($monthlyStats['revenue'] / 1000) * 100 }}%"></div>
                                         </div>
-                                        <span class="goal-text">${{ $monthlyStats['revenue'] }}/$1000</span>
+                                        <span class="goal-text">{{ \App\Models\Setting::formatPrice($monthlyStats['revenue']) }}/{{ \App\Models\Setting::formatPrice(1000) }}</span>
                                     </div>
                                 </div>
                             </div>

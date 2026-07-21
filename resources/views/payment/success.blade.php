@@ -38,7 +38,7 @@
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">المبلغ المدفوع:</span>
-                                <span class="detail-value">${{ session('payment_amount', '99.99') }}</span>
+                                <span class="detail-value">{{ \App\Models\Setting::formatPrice(session('payment_amount', '99.99')) }}</span>
                             </div>
                         </div>
 

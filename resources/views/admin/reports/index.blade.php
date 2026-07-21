@@ -91,15 +91,15 @@
             <div class="col-xl-3 col-md-6 mb-4">
                 <div class="stats-card stats-info" data-aos="fade-up" data-aos-delay="300">
                     <div class="stats-icon">
-                        <i class="fas fa-dollar-sign"></i>
+                        <i class="fas fa-money-bill"></i>
                     </div>
                     <div class="stats-content">
-                        <h3 class="stats-number">${{ number_format($stats['total_revenue'], 2) }}</h3>
+                        <h3 class="stats-number">{{ \App\Models\Setting::formatPrice($stats['total_revenue']) }}</h3>
                         <p class="stats-label">إجمالي الإيرادات</p>
                         <div class="stats-trend">
                             <span class="trend-up">
                                 <i class="fas fa-arrow-up me-1"></i>
-                                +${{ number_format($stats['monthly_revenue'], 2) }} هذا الشهر
+                                +{{ \App\Models\Setting::formatPrice($stats['monthly_revenue']) }} هذا الشهر
                             </span>
                         </div>
                     </div>
@@ -197,7 +197,7 @@
                                             <i class="fas fa-dollar-sign text-info"></i>
                                         </div>
                                         <div class="stat-content">
-                                            <h4 class="stat-number">${{ number_format($stats['monthly_revenue'], 2) }}</h4>
+                                            <h4 class="stat-number">{{ \App\Models\Setting::formatPrice($stats['monthly_revenue']) }}</h4>
                                             <p class="stat-label">إيرادات الشهر</p>
                                         </div>
                                     </div>
