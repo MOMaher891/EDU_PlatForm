@@ -401,12 +401,18 @@ class AdminController extends Controller
                 'level' => 'required|in:beginner,intermediate,advanced',
                 'duration_hours' => 'required|integer|min:1',
                 'is_published' => 'boolean',
-                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'preview_video' => 'nullable|file|mimes:mp4,mov,avi,webm,quicktime|max:51200'
             ]);
 
             if ($request->hasFile('thumbnail')) {
                 $thumbnailPath = $request->file('thumbnail')->store('courses/thumbnails', 'public');
                 $validated['thumbnail'] = $thumbnailPath;
+            }
+
+            if ($request->hasFile('preview_video')) {
+                $previewVideoPath = $request->file('preview_video')->store('courses/videos', 'public');
+                $validated['preview_video'] = $previewVideoPath;
             }
 
             // Normalize booleans
@@ -458,7 +464,8 @@ class AdminController extends Controller
                 'level' => 'required|in:beginner,intermediate,advanced',
                 'duration_hours' => 'required|integer|min:1',
                 'is_published' => 'boolean',
-                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+                'preview_video' => 'nullable|file|mimes:mp4,mov,avi,webm,quicktime|max:51200'
             ]);
 
             if ($request->hasFile('thumbnail')) {
@@ -468,6 +475,15 @@ class AdminController extends Controller
                 }
                 $thumbnailPath = $request->file('thumbnail')->store('courses/thumbnails', 'public');
                 $validated['thumbnail'] = $thumbnailPath;
+            }
+
+            if ($request->hasFile('preview_video')) {
+                // Delete old preview video
+                if ($course->preview_video) {
+                    Storage::disk('public')->delete($course->preview_video);
+                }
+                $previewVideoPath = $request->file('preview_video')->store('courses/videos', 'public');
+                $validated['preview_video'] = $previewVideoPath;
             }
 
             // Normalize booleans
@@ -495,6 +511,11 @@ class AdminController extends Controller
             // Delete thumbnail
             if ($course->thumbnail) {
                 Storage::disk('public')->delete($course->thumbnail);
+            }
+
+            // Delete preview video
+            if ($course->preview_video) {
+                Storage::disk('public')->delete($course->preview_video);
             }
 
             $course->delete();
