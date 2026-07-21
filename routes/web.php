@@ -207,25 +207,27 @@ Route::middleware(['auth', 'student'])->prefix('student')->name('student.')->gro
         // Stream video with security headers
         return response()->file($filePath, $headers);
     })->name('secure.video')->middleware('throttle:60,1'); // Rate limiting
+});
 
-    // Danger page route for security violations
-    Route::get('/danger-page', function() {
-        $user = auth()->user();
+// Danger page route for security violations (public)
+Route::get('/danger-page', function() {
+    $user = auth()->user();
 
-        // Log security violation
+    // Log security violation if user is authenticated
+    if ($user) {
         \Log::warning('Security violation detected', [
-            'user_id' => $user->id ?? 'unknown',
-            'user_email' => $user->email ?? 'unknown',
+            'user_id' => $user->id,
+            'user_email' => $user->email,
             'ip_address' => request()->ip(),
             'user_agent' => request()->userAgent(),
             'timestamp' => now(),
             'violation_type' => 'developer_tools_opened',
             'page' => request()->headers->get('referer')
         ]);
+    }
 
-        return view('security.danger-page', compact('user'));
-    })->name('danger.page');
-});
+    return view('security.danger-page', compact('user'));
+})->name('danger.page');
 
 // Instructor Routes
 Route::middleware(['auth', 'instructor'])->prefix('instructor')->name('instructor.')->group(function () {

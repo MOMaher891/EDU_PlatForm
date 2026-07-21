@@ -103,13 +103,6 @@
                                             <div class="form-text">عند التفعيل سيتم تعطيل اختصارات أدوات المطور ومحاولات فتحها.</div>
                                         </div>
                                     </div>
-                                    <div class="col-12">
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" role="switch" id="block_copy_text" name="block_copy_text" value="1" {{ old('block_copy_text', $settings->block_copy_text ?? false) ? 'checked' : '' }}>
-                                            <label class="form-check-label" for="block_copy_text">تفعيل منع النسخ وتحديد النص</label>
-                                            <div class="form-text">عند التفعيل سيتم تعطيل النقر بزر الفأرة الأيمن والنسخ وتحديد النص.</div>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </div>

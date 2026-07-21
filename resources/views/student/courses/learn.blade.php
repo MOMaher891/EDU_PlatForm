@@ -563,10 +563,6 @@
 class VideoSecurity {
     constructor() {
         this.video = null;
-        this.securityChecks = [];
-        this.isRecording = false;
-        this.detectionCount = 0;
-        this.lastDetectionTime = 0;
         this.init();
     }
 
@@ -577,7 +573,6 @@ class VideoSecurity {
             setTimeout(() => {
                 this.setupSecurityMeasures();
                 this.startSecurityMonitoring();
-                this.initializeAdvancedProtection();
             }, 1000);
         } else {
             console.log('No video element found, security system not initialized');
@@ -586,273 +581,43 @@ class VideoSecurity {
 
     setupSecurityMeasures() {
         try {
-            // Track user interactions to reduce false positives
-            this.lastUserInteraction = Date.now();
-
-            // Update interaction time on user activity
-            ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'].forEach(event => {
-                document.addEventListener(event, () => {
-                    this.lastUserInteraction = Date.now();
-                }, { passive: true });
-            });
-
-            // Disable right-click context menu globally
-            @if($appSettings->block_copy_text ?? false)
-            document.addEventListener('contextmenu', e => e.preventDefault());
-            @endif
+            // Disable right-click context menu and copying/selection specifically on the video element itself
             if (this.video) {
                 this.video.addEventListener('contextmenu', e => e.preventDefault());
-            }
-
-            // Disable keyboard shortcuts for recording and developer tools
-            @if($appSettings->block_devtools ?? false)
-            document.addEventListener('keydown', e => this.handleKeySecurity(e));
-            @endif
-
-            // Disable drag and drop globally
-            @if($appSettings->block_copy_text ?? false)
-            document.addEventListener('dragstart', e => e.preventDefault());
-            document.addEventListener('drop', e => e.preventDefault());
-            @endif
-            if (this.video) {
                 this.video.addEventListener('dragstart', e => e.preventDefault());
                 this.video.addEventListener('drop', e => e.preventDefault());
-            }
-
-            // Disable selection globally
-            @if($appSettings->block_copy_text ?? false)
-            document.addEventListener('selectstart', e => e.preventDefault());
-            @endif
-            if (this.video) {
                 this.video.addEventListener('selectstart', e => e.preventDefault());
-            }
-
-            // Disable copy/paste globally
-            @if($appSettings->block_copy_text ?? false)
-            document.addEventListener('copy', e => e.preventDefault());
-            document.addEventListener('cut', e => e.preventDefault());
-            document.addEventListener('paste', e => e.preventDefault());
-            @endif
-            if (this.video) {
                 this.video.addEventListener('copy', e => e.preventDefault());
                 this.video.addEventListener('cut', e => e.preventDefault());
                 this.video.addEventListener('paste', e => e.preventDefault());
             }
 
-            // Monitor for screen recording attempts
-            this.monitorScreenRecording();
-
-            // Enhanced developer tools detection
+            // Disable keyboard shortcuts for developer tools
             @if($appSettings->block_devtools ?? false)
-            this.enhancedDeveloperToolsDetection();
+            document.addEventListener('keydown', e => this.handleKeySecurity(e));
             @endif
 
             // Add watermark
             this.addWatermark();
 
-            // Add CSS protection
-            @if($appSettings->block_copy_text ?? false)
-            this.addCSSProtection();
-            @endif
-
-            console.log('Enhanced security measures initialized successfully');
+            console.log('Video security measures initialized successfully');
         } catch (error) {
             console.error('Error setting up security measures:', error);
         }
     }
 
-    initializeAdvancedProtection() {
-        // Override console methods to detect tampering
-        this.overrideConsoleMethods();
-
-        // Monitor DOM changes
-        this.monitorDOMChanges();
-
-        // Add iframe protection
-        this.addIframeProtection();
-
-        // Monitor for debugging attempts
-        this.monitorDebuggingAttempts();
-
-        // Add source code protection
-        this.protectSourceCode();
-    }
-
-    overrideConsoleMethods() {
-        const originalConsole = {
-            log: console.log,
-            warn: console.warn,
-            error: console.error,
-            info: console.info,
-            debug: console.debug
-        };
-
-        // Override console methods to detect developer tools
-        Object.keys(originalConsole).forEach(method => {
-            console[method] = (...args) => {
-                // Check if console is being used suspiciously
-                if (this.isConsoleSuspicious()) {
-                    this.handleSecurityViolation('Console manipulation detected');
-                }
-                return originalConsole[method].apply(console, args);
-            };
-        });
-    }
-
-    isConsoleSuspicious() {
-        // Check for rapid console usage
-        const now = Date.now();
-        if (now - this.lastDetectionTime < 1000) {
-            this.detectionCount++;
-            if (this.detectionCount > 10) {
-                return true;
-            }
-        } else {
-            this.detectionCount = 0;
-        }
-        this.lastDetectionTime = now;
-        return false;
-    }
-
-    monitorDOMChanges() {
-        // Monitor for suspicious DOM modifications
-        const observer = new MutationObserver((mutations) => {
-            mutations.forEach((mutation) => {
-                if (mutation.type === 'childList') {
-                    mutation.addedNodes.forEach((node) => {
-                        if (node.nodeType === Node.ELEMENT_NODE) {
-                            // Check for suspicious elements
-                            if (node.classList && (
-                                node.classList.contains('devtools') ||
-                                node.classList.contains('inspect') ||
-                                node.classList.contains('debug')
-                            )) {
-                                this.handleSecurityViolation('Suspicious DOM element detected');
-                            }
-                        }
-                    });
-                }
-            });
-        });
-
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
-    }
-
-    addIframeProtection() {
-        // Prevent the page from being embedded in iframes
-        if (window.top !== window.self) {
-            window.top.location.href = window.location.href;
-        }
-
-        // Add frame-busting code
-        const frameBuster = `
-            if (window.top !== window.self) {
-                window.top.location.href = window.location.href;
-            }
-        `;
-
-        const script = document.createElement('script');
-        script.textContent = frameBuster;
-        document.head.appendChild(script);
-    }
-
-    monitorDebuggingAttempts() {
-        // Monitor for debugger statements and breakpoints
-        let debuggerCount = 0;
-
-        setInterval(() => {
-            try {
-                const start = performance.now();
-                debugger;
-                const end = performance.now();
-
-                if (end - start > 100) {
-                    debuggerCount++;
-                    if (debuggerCount > 3) {
-                        this.handleSecurityViolation('Debugger detection');
-                    }
-                }
-            } catch (e) {
-                // Ignore errors
-            }
-        }, 2000);
-    }
-
-    protectSourceCode() {
-        // Disable view source
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === 'u') {
-                e.preventDefault();
-                this.handleSecurityViolation('View source attempt blocked');
-                return false;
-            }
-        });
-
-        // Disable save page
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === 's') {
-                e.preventDefault();
-                this.handleSecurityViolation('Save page attempt blocked');
-                return false;
-            }
-        });
-
-        // Disable print
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === 'p') {
-                e.preventDefault();
-                this.handleSecurityViolation('Print attempt blocked');
-                return false;
-            }
-        });
-    }
-
-    addCSSProtection() {
-        // Add CSS to prevent text selection and right-click
-        const style = document.createElement('style');
-        style.textContent = `
-            * {
-                -webkit-user-select: none !important;
-                -moz-user-select: none !important;
-                -ms-user-select: none !important;
-                user-select: none !important;
-                -webkit-touch-callout: none !important;
-                -webkit-user-drag: none !important;
-            }
-
-            .learning-interface {
-                -webkit-user-select: text !important;
-                -moz-user-select: text !important;
-                -ms-user-select: text !important;
-                user-select: text !important;
-            }
-
-            .security-alert {
-                -webkit-user-select: text !important;
-                -moz-user-select: text !important;
-                -ms-user-select: text !important;
-                user-select: text !important;
-            }
-        `;
-        document.head.appendChild(style);
-    }
-
     handleKeySecurity(e) {
-        // Block common recording and developer tools shortcuts
+        // Block common developer tools shortcuts
         const blockedKeys = [
             'F12', 'Ctrl+Shift+I', 'Ctrl+Shift+J', 'Ctrl+U', 'Ctrl+S',
-            'Ctrl+Shift+C', 'F5', 'Ctrl+R', 'Ctrl+Shift+R', 'Ctrl+Shift+E',
-            'Ctrl+Shift+M', 'Ctrl+Shift+P', 'Ctrl+Shift+O', 'Ctrl+Shift+K'
+            'Ctrl+Shift+C', 'Ctrl+Shift+E', 'Ctrl+Shift+M', 'Ctrl+Shift+P', 
+            'Ctrl+Shift+O', 'Ctrl+Shift+K', 'Ctrl+P'
         ];
 
         const keyCombo = this.getKeyCombo(e);
         if (blockedKeys.includes(keyCombo)) {
             e.preventDefault();
             e.stopPropagation();
-            this.handleSecurityViolation(`Blocked key combination: ${keyCombo}`);
             return false;
         }
     }
@@ -865,206 +630,6 @@ class VideoSecurity {
         if (e.metaKey) combo += 'Meta+';
         combo += e.key;
         return combo;
-    }
-
-    monitorScreenRecording() {
-        // Check for screen recording software
-        setInterval(() => {
-            this.checkScreenRecording();
-        }, 2000);
-
-        // Monitor for suspicious activities
-        if (this.video) {
-            this.video.addEventListener('play', () => {
-                this.startActivityMonitoring();
-            });
-
-            this.video.addEventListener('pause', () => {
-                this.stopActivityMonitoring();
-            });
-        }
-    }
-
-    checkScreenRecording() {
-        // Check for common screen recording indicators
-        if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
-            // Monitor for screen sharing attempts
-            const originalGetDisplayMedia = navigator.mediaDevices.getDisplayMedia;
-            navigator.mediaDevices.getDisplayMedia = function() {
-                this.handleSecurityViolation('Screen recording attempt blocked');
-                return Promise.reject(new Error('Screen recording not allowed'));
-            }.bind(this);
-        }
-    }
-
-    startActivityMonitoring() {
-        // Monitor mouse movements and clicks for suspicious patterns
-        let clickCount = 0;
-        let lastClickTime = 0;
-
-        const clickHandler = (e) => {
-            const now = Date.now();
-            if (now - lastClickTime < 100) {
-                clickCount++;
-                if (clickCount > 5) {
-                    this.handleSecurityViolation('Suspicious activity detected');
-                    if (this.video) {
-                        this.video.pause();
-                    }
-                }
-            }
-            lastClickTime = now;
-        };
-
-        if (this.video) {
-            this.video.addEventListener('click', clickHandler);
-            this.securityChecks.push(() => {
-                this.video.removeEventListener('click', clickHandler);
-            });
-        }
-    }
-
-    stopActivityMonitoring() {
-        // Clean up event listeners
-        this.securityChecks.forEach(cleanup => cleanup());
-        this.securityChecks = [];
-    }
-
-    enhancedDeveloperToolsDetection() {
-        // Multiple detection methods for developer tools
-        this.detectDevToolsBySize();
-        this.detectDevToolsByConsole();
-        this.detectDevToolsByPerformance();
-        this.detectDevToolsByElementInspection();
-        this.detectDevToolsByNetwork();
-    }
-
-    detectDevToolsBySize() {
-        let devtools = { open: false, orientation: null };
-
-        setInterval(() => {
-            const threshold = 160;
-            const widthThreshold = window.outerWidth - window.innerWidth > threshold;
-            const heightThreshold = window.outerHeight - window.innerHeight > threshold;
-
-            // Only trigger if there's a significant difference and user is actually using dev tools
-            if ((widthThreshold || heightThreshold) && !devtools.open) {
-                // Additional check to reduce false positives
-                const timeSinceLastInteraction = Date.now() - (this.lastUserInteraction || 0);
-                if (timeSinceLastInteraction > 5000) { // Only trigger if no user interaction for 5 seconds
-                    devtools.open = true;
-                    this.handleSecurityViolation('Developer tools detected by size');
-
-                    // Pause video immediately
-                    if (this.video) {
-                        this.video.pause();
-                    }
-                }
-            } else if (!widthThreshold && !heightThreshold) {
-                devtools.open = false;
-            }
-        }, 2000);
-    }
-
-    detectDevToolsByConsole() {
-        let devtools = { open: false };
-
-        setInterval(() => {
-            const start = performance.now();
-            console.log('%c', 'color: transparent');
-            console.clear();
-            const end = performance.now();
-
-            // Increased threshold to reduce false positives
-            if (end - start > 200) {
-                if (!devtools.open) {
-                    devtools.open = true;
-                    this.handleSecurityViolation('Developer tools detected by console');
-
-                    if (this.video) {
-                        this.video.pause();
-                    }
-                }
-            } else {
-                devtools.open = false;
-            }
-        }, 3000);
-    }
-
-    detectDevToolsByPerformance() {
-        setInterval(() => {
-            const start = performance.now();
-            debugger;
-            const end = performance.now();
-
-            // Increased threshold
-            if (end - start > 200) {
-                this.handleSecurityViolation('Developer tools detected by performance');
-            }
-        }, 3000);
-    }
-
-    detectDevToolsByElementInspection() {
-        // Monitor for element selection changes
-        let lastSelectedElement = null;
-        let inspectionCount = 0;
-
-        setInterval(() => {
-            const selectedElement = document.querySelector(':hover');
-            if (selectedElement && selectedElement !== lastSelectedElement) {
-                lastSelectedElement = selectedElement;
-
-                // Check if developer tools are open by monitoring element highlighting
-                const computedStyle = window.getComputedStyle(selectedElement);
-                if (computedStyle.outline && computedStyle.outline !== 'none') {
-                    inspectionCount++;
-                    // Only trigger after multiple detections to reduce false positives
-                    if (inspectionCount > 3) {
-                        this.handleSecurityViolation('Element inspection detected');
-                    }
-                }
-            }
-        }, 1000);
-    }
-
-    detectDevToolsByNetwork() {
-        // Monitor for network inspection
-        const originalFetch = window.fetch;
-        const originalXHR = window.XMLHttpRequest;
-
-        let requestCount = 0;
-        let lastRequestTime = 0;
-
-        window.fetch = function(...args) {
-            const now = Date.now();
-            if (now - lastRequestTime < 100) {
-                requestCount++;
-                // Increased threshold to reduce false positives
-                if (requestCount > 20) {
-                    // This might indicate network tab inspection
-                    if (window.videoSecurity) {
-                        window.videoSecurity.handleSecurityViolation('Network inspection detected');
-                    }
-                }
-            }
-            lastRequestTime = now;
-            return originalFetch.apply(this, args);
-        };
-    }
-
-    handleSecurityViolation(violationType) {
-        console.warn(`Security violation: ${violationType}`);
-
-        // Show security alert
-        this.showSecurityAlert(`تم اكتشاف انتهاك أمني: ${violationType}`);
-
-        // Increment violation count
-        this.detectionCount++;
-
-        // If multiple violations, take action
-        if (this.detectionCount > 5) {
-            this.redirectToDangerPage();
-        }
     }
 
     addWatermark() {
@@ -1080,27 +645,6 @@ class VideoSecurity {
         }
     }
 
-    showSecurityAlert(message) {
-        // Create security alert
-        const alert = document.createElement('div');
-        alert.className = 'security-alert';
-        alert.innerHTML = `
-            <div class="security-alert-content">
-                <i class="fas fa-exclamation-triangle"></i>
-                <span>${message}</span>
-                <button onclick="this.parentElement.parentElement.remove()">×</button>
-            </div>
-        `;
-
-        document.body.appendChild(alert);
-
-        // Auto-remove after 5 seconds
-        setTimeout(() => {
-            if (alert.parentElement) {
-                alert.remove();
-            }
-        }, 5000);
-    }
 
     startSecurityMonitoring() {
         // Continuous security monitoring
@@ -1116,88 +660,11 @@ class VideoSecurity {
             const expectedSrc = '{{ route('student.secure.video', $currentLesson) }}';
 
             if (currentSrc !== expectedSrc) {
-                this.handleSecurityViolation('Video source tampering detected');
+                console.warn('Video source tampering detected');
                 this.video.pause();
                 this.video.src = expectedSrc;
             }
         }
-    }
-
-    redirectToDangerPage() {
-        // Create danger page overlay
-        this.createDangerPage();
-
-        // Also try to redirect to external danger page if available
-        try {
-            window.location.href = '{{ route('student.danger.page') }}';
-        } catch (e) {
-            // If redirect fails, stay on danger overlay
-            console.log('Redirect failed, staying on danger overlay');
-        }
-    }
-
-    createDangerPage() {
-        // Remove existing danger overlay if any
-        const existingDanger = document.getElementById('dangerOverlay');
-        if (existingDanger) {
-            existingDanger.remove();
-        }
-
-        // Create danger page overlay
-        const dangerOverlay = document.createElement('div');
-        dangerOverlay.id = 'dangerOverlay';
-        dangerOverlay.className = 'danger-page-overlay';
-        dangerOverlay.innerHTML = `
-            <div class="danger-content">
-                <div class="danger-header">
-                    <i class="fas fa-exclamation-triangle danger-icon"></i>
-                    <h1 class="danger-title">⚠️ تحذير أمني ⚠️</h1>
-                </div>
-
-                <div class="danger-message">
-                    <h2>تم اكتشاف محاولة فتح أدوات المطور!</h2>
-                    <p>هذا الفعل يعتبر انتهاكاً لسياسة الأمان الخاصة بمنصة التعلم.</p>
-
-                    <div class="danger-details">
-                        <h3>ما حدث:</h3>
-                        <ul>
-                            <li>تم فتح أدوات المطور (Inspect Element)</li>
-                            <li>تم اكتشاف محاولة فحص الكود</li>
-                            <li>تم تسجيل هذا الحدث في النظام</li>
-                        </ul>
-                    </div>
-
-                    <div class="danger-consequences">
-                        <h3>العواقب:</h3>
-                        <ul>
-                            <li>تم إيقاف الفيديو مؤقتاً</li>
-                            <li>سيتم تسجيل هذا الانتهاك</li>
-                            <li>قد يؤدي إلى تعليق الحساب</li>
-                        </ul>
-                    </div>
-
-                    <div class="danger-actions">
-                        <button class="btn btn-danger btn-lg" onclick="this.parentElement.parentElement.parentElement.parentElement.remove(); location.reload();">
-                            <i class="fas fa-check me-2"></i>
-                            فهمت - إغلاق أدوات المطور
-                        </button>
-                    </div>
-                </div>
-
-                <div class="danger-footer">
-                    <p><small>إذا كنت بحاجة إلى مساعدة، يرجى التواصل مع الدعم الفني</small></p>
-                </div>
-            </div>
-        `;
-
-        document.body.appendChild(dangerOverlay);
-
-        // Prevent any interaction with the page
-        document.body.style.overflow = 'hidden';
-        document.body.style.pointerEvents = 'none';
-
-        // Re-enable interaction for the danger overlay
-        dangerOverlay.style.pointerEvents = 'auto';
     }
 }
 

@@ -1212,7 +1212,6 @@ class AdminController extends Controller
             } catch (\Throwable $e) {
                 $settings = (object) [
                     'block_devtools' => false,
-                    'block_copy_text' => false,
                     'platform_name' => 'A+ Academy',
                     'platform_logo' => null,
                     'support_email' => 'momaher1588@gmail.com',
@@ -1236,7 +1235,6 @@ class AdminController extends Controller
         try {
             $validated = $request->validate([
                 'block_devtools' => 'nullable|boolean',
-                'block_copy_text' => 'nullable|boolean',
                 'terms_and_conditions' => 'nullable|string',
                 'privacy_policy' => 'nullable|string',
                 'refund_and_cancellation_policy' => 'nullable|string',
@@ -1264,7 +1262,6 @@ class AdminController extends Controller
             $settings = Setting::query()->first() ?? new Setting();
             
             $settings->block_devtools = $request->has('block_devtools');
-            $settings->block_copy_text = $request->has('block_copy_text');
             $settings->terms_and_conditions = $request->input('terms_and_conditions');
             $settings->privacy_policy = $request->input('privacy_policy');
             $settings->refund_and_cancellation_policy = $request->input('refund_and_cancellation_policy');
