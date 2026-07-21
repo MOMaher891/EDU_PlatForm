@@ -47,6 +47,31 @@ class Setting extends Model
 			]);
 		});
 	}
+
+	public static function formatPrice($amount)
+	{
+		try {
+			$settings = self::getCached();
+			$currency = $settings->default_currency ?? 'USD';
+		} catch (\Throwable $e) {
+			$currency = 'USD';
+		}
+		
+		switch ($currency) {
+			case 'USD':
+				return '$' . number_format($amount, 2);
+			case 'EGP':
+				return number_format($amount, 2) . ' ج.م';
+			case 'SAR':
+				return number_format($amount, 2) . ' ر.س';
+			case 'EUR':
+				return '€' . number_format($amount, 2);
+			case 'GBP':
+				return '£' . number_format($amount, 2);
+			default:
+				return $currency . ' ' . number_format($amount, 2);
+		}
+	}
 }
 
 

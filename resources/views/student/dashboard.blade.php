@@ -413,7 +413,7 @@
                                         <h6 class="mb-1 small">{{ Str::limit($course->title, 40) }}</h6>
                                         <small class="text-muted">{{ $course->instructor->name }}</small>
                                         <div class="d-flex justify-content-between align-items-center mt-1">
-                                            <small class="text-primary fw-bold">${{ $course->getEffectivePrice() }}</small>
+                                            <small class="text-primary fw-bold">{{ \App\Models\Setting::formatPrice($course->getEffectivePrice()) }}</small>
                                             <a href="{{ route('student.courses.show', $course) }}" class="btn btn-sm btn-outline-primary">
                                                 عرض
                                             </a>
