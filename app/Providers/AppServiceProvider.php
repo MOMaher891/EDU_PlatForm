@@ -31,7 +31,6 @@ class AppServiceProvider extends ServiceProvider
                 // In case migrations haven't run yet
                 $settings = (object) [
                     'block_devtools' => false,
-                    'block_copy_text' => false,
                     'platform_name' => 'A+ Academy',
                     'platform_logo' => null,
                     'support_email' => 'momaher1588@gmail.com',

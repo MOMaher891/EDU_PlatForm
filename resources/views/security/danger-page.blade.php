@@ -393,8 +393,8 @@
                 </div>
 
                 <div class="danger-actions">
-                    <a href="{{ route('student.dashboard') }}" class="btn btn-danger">
-                        <span>✅ فهمت - العودة إلى لوحة التحكم</span>
+                    <a href="{{ auth()->check() ? (auth()->user()->isAdmin() ? route('admin.dashboard') : (auth()->user()->isInstructor() ? route('instructor.dashboard') : route('student.dashboard'))) : url('/') }}" class="btn btn-danger">
+                        <span>✅ فهمت - العودة إلى الصفحة الرئيسية/لوحة التحكم</span>
                     </a>
                 </div>
             </div>
@@ -407,48 +407,9 @@
     </div>
 
     <script>
-        // Additional security measures
-        document.addEventListener('keydown', function(e) {
-            // Block common developer shortcuts
-            const blockedKeys = [
-                'F12', 'Ctrl+Shift+I', 'Ctrl+Shift+J', 'Ctrl+U', 'Ctrl+S',
-                'Ctrl+Shift+C', 'F5', 'Ctrl+R', 'Ctrl+Shift+R'
-            ];
-
-            const keyCombo = getKeyCombo(e);
-            if (blockedKeys.includes(keyCombo)) {
-                e.preventDefault();
-                alert('تم حظر هذه العملية لأسباب أمنية');
-                return false;
-            }
-        });
-
-        function getKeyCombo(e) {
-            let combo = '';
-            if (e.ctrlKey) combo += 'Ctrl+';
-            if (e.shiftKey) combo += 'Shift+';
-            if (e.altKey) combo += 'Alt+';
-            combo += e.key;
-            return combo;
-        }
-
-        // Prevent leaving the page
-        window.addEventListener('beforeunload', function(e) {
-            e.preventDefault();
-            e.returnValue = 'هل أنت متأكد من أنك تريد مغادرة صفحة التحذير الأمني؟';
-        });
-
-        // Log any additional security violations
+        // Log security warning
         console.log('%cSTOP!', 'color: red; font-size: 50px; font-weight: bold;');
-        console.log('%cThis is a protected page. Any attempt to inspect or modify this page will be logged and reported.', 'color: red; font-size: 20px;');
-
-        // Monitor for developer tools
-        setInterval(function() {
-            if (window.outerHeight - window.innerHeight > 200 || window.outerWidth - window.innerWidth > 200) {
-                alert('تم اكتشاف أدوات المطور مرة أخرى!');
-                location.reload();
-            }
-        }, 1000);
+        console.log('%cThis is a security warning page.', 'color: red; font-size: 20px;');
     </script>
 </body>
 </html>

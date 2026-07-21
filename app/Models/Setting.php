@@ -11,7 +11,6 @@ class Setting extends Model
 
 	protected $fillable = [
 		'block_devtools',
-		'block_copy_text',
 		'terms_and_conditions',
 		'privacy_policy',
 		'refund_and_cancellation_policy',
@@ -39,7 +38,6 @@ class Setting extends Model
 		return cache()->remember('app_settings_singleton', 60, function () {
 			return static::query()->first() ?? static::create([
 				'block_devtools' => false,
-				'block_copy_text' => false,
 				'platform_name' => 'منصة التعلم الإلكتروني',
 				'support_email' => 'support@example.com',
 				'support_phone' => '+966 50 123 4567',
