@@ -32,6 +32,11 @@ class AppServiceProvider extends ServiceProvider
                 $settings = (object) [
                     'block_devtools' => false,
                     'block_copy_text' => false,
+                    'platform_name' => 'A+ Academy',
+                    'platform_logo' => null,
+                    'support_email' => 'momaher1588@gmail.com',
+                    'support_phone' => '+201113050566',
+                    'platform_description' => 'منصة تعليمية متكاملة تقدم دورات تعليمية عالية الجودة',
                 ];
             }
             $view->with('appSettings', $settings);

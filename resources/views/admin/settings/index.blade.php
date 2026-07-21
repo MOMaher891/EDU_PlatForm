@@ -32,7 +32,7 @@
     </div>
 
     <div class="container-fluid">
-        <form id="settingsForm" method="POST" action="{{ route('admin.settings.update') }}">
+        <form id="settingsForm" method="POST" action="{{ route('admin.settings.update') }}" enctype="multipart/form-data">
             @csrf
             @method('PUT')
 
@@ -53,7 +53,7 @@
                                         <div class="form-group">
                                             <label class="form-label fw-semibold">اسم المنصة</label>
                                             <input type="text" class="form-control" name="platform_name"
-                                                   value="{{ old('platform_name', 'منصة التعلم الإلكتروني') }}"
+                                                   value="{{ old('platform_name', $settings->platform_name ?? 'منصة التعلم الإلكتروني') }}"
                                                    placeholder="اسم المنصة">
                                             <small class="form-text text-muted">اسم المنصة الذي سيظهر في العنوان والهيدر</small>
                                         </div>
@@ -61,6 +61,11 @@
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label class="form-label fw-semibold">شعار المنصة</label>
+                                            @if(!empty($settings->platform_logo))
+                                                <div class="mb-2">
+                                                    <img src="{{ asset('storage/' . $settings->platform_logo) }}" alt="Logo" class="img-thumbnail" style="max-height: 60px; object-fit: contain;">
+                                                </div>
+                                            @endif
                                             <input type="file" class="form-control" name="platform_logo" accept="image/*">
                                             <small class="form-text text-muted">شعار المنصة (PNG, JPG, SVG)</small>
                                         </div>
@@ -69,7 +74,7 @@
                                         <div class="form-group">
                                             <label class="form-label fw-semibold">البريد الإلكتروني للدعم</label>
                                             <input type="email" class="form-control" name="support_email"
-                                                   value="{{ old('support_email', 'support@example.com') }}"
+                                                   value="{{ old('support_email', $settings->support_email ?? 'support@example.com') }}"
                                                    placeholder="support@example.com">
                                             <small class="form-text text-muted">البريد الإلكتروني للدعم الفني</small>
                                         </div>
@@ -78,7 +83,7 @@
                                         <div class="form-group">
                                             <label class="form-label fw-semibold">رقم الهاتف للدعم</label>
                                             <input type="tel" class="form-control" name="support_phone"
-                                                   value="{{ old('support_phone', '+966 50 123 4567') }}"
+                                                   value="{{ old('support_phone', $settings->support_phone ?? '+966 50 123 4567') }}"
                                                    placeholder="+966 50 123 4567">
                                             <small class="form-text text-muted">رقم الهاتف للدعم الفني</small>
                                         </div>
@@ -87,7 +92,7 @@
                                         <div class="form-group">
                                             <label class="form-label fw-semibold">وصف المنصة</label>
                                             <textarea class="form-control" name="platform_description" rows="3"
-                                                      placeholder="وصف مختصر عن المنصة">{{ old('platform_description', 'منصة تعليمية متكاملة تقدم دورات تعليمية عالية الجودة') }}</textarea>
+                                                      placeholder="وصف مختصر عن المنصة">{{ old('platform_description', $settings->platform_description ?? 'منصة تعليمية متكاملة تقدم دورات تعليمية عالية الجودة') }}</textarea>
                                             <small class="form-text text-muted">وصف مختصر عن المنصة يظهر في الصفحة الرئيسية</small>
                                         </div>
                                     </div>
@@ -125,7 +130,7 @@
                                         <div class="form-group">
                                             <label class="form-label fw-semibold">الحد الأقصى للكورسات لكل مدرس</label>
                                             <input type="number" class="form-control" name="max_courses_per_instructor"
-                                                   value="{{ old('max_courses_per_instructor', 10) }}" min="1" max="100">
+                                                   value="{{ old('max_courses_per_instructor', $settings->max_courses_per_instructor ?? 10) }}" min="1" max="100">
                                             <small class="form-text text-muted">الحد الأقصى لعدد الكورسات التي يمكن للمدرس إنشاؤها</small>
                                         </div>
                                     </div>
@@ -133,7 +138,7 @@
                                         <div class="form-group">
                                             <label class="form-label fw-semibold">الحد الأقصى للدروس لكل كورس</label>
                                             <input type="number" class="form-control" name="max_lessons_per_course"
-                                                   value="{{ old('max_lessons_per_course', 50) }}" min="1" max="200">
+                                                   value="{{ old('max_lessons_per_course', $settings->max_lessons_per_course ?? 50) }}" min="1" max="200">
                                             <small class="form-text text-muted">الحد الأقصى لعدد الدروس في كل كورس</small>
                                         </div>
                                     </div>
@@ -141,10 +146,10 @@
                                         <div class="form-group">
                                             <label class="form-label fw-semibold">الحد الأقصى لحجم الملف</label>
                                             <select class="form-select" name="max_file_size">
-                                                <option value="5" {{ old('max_file_size', '10') == '5' ? 'selected' : '' }}>5 ميجابايت</option>
-                                                <option value="10" {{ old('max_file_size', '10') == '10' ? 'selected' : '' }}>10 ميجابايت</option>
-                                                <option value="25" {{ old('max_file_size', '10') == '25' ? 'selected' : '' }}>25 ميجابايت</option>
-                                                <option value="50" {{ old('max_file_size', '10') == '50' ? 'selected' : '' }}>50 ميجابايت</option>
+                                                <option value="5" {{ old('max_file_size', $settings->max_file_size ?? '10') == '5' ? 'selected' : '' }}>5 ميجابايت</option>
+                                                <option value="10" {{ old('max_file_size', $settings->max_file_size ?? '10') == '10' ? 'selected' : '' }}>10 ميجابايت</option>
+                                                <option value="25" {{ old('max_file_size', $settings->max_file_size ?? '10') == '25' ? 'selected' : '' }}>25 ميجابايت</option>
+                                                <option value="50" {{ old('max_file_size', $settings->max_file_size ?? '10') == '50' ? 'selected' : '' }}>50 ميجابايت</option>
                                             </select>
                                             <small class="form-text text-muted">الحد الأقصى لحجم الملفات المرفوعة</small>
                                         </div>
@@ -153,7 +158,7 @@
                                         <div class="form-group">
                                             <label class="form-label fw-semibold">أنواع الملفات المسموحة</label>
                                             <input type="text" class="form-control" name="allowed_file_types"
-                                                   value="{{ old('allowed_file_types', 'pdf,doc,docx,ppt,pptx,mp4,avi,mov') }}"
+                                                   value="{{ old('allowed_file_types', $settings->allowed_file_types ?? 'pdf,doc,docx,ppt,pptx,mp4,avi,mov') }}"
                                                    placeholder="pdf,doc,docx,ppt,pptx,mp4,avi,mov">
                                             <small class="form-text text-muted">أنواع الملفات المسموحة (مفصولة بفواصل)</small>
                                         </div>
@@ -178,10 +183,11 @@
                                         <div class="form-group">
                                             <label class="form-label fw-semibold">العملة الافتراضية</label>
                                             <select class="form-select" name="default_currency">
-                                                <option value="USD" {{ old('default_currency', 'USD') == 'USD' ? 'selected' : '' }}>دولار أمريكي (USD)</option>
-                                                <option value="SAR" {{ old('default_currency', 'USD') == 'SAR' ? 'selected' : '' }}>ريال سعودي (SAR)</option>
-                                                <option value="EUR" {{ old('default_currency', 'USD') == 'EUR' ? 'selected' : '' }}>يورو (EUR)</option>
-                                                <option value="GBP" {{ old('default_currency', 'USD') == 'GBP' ? 'selected' : '' }}>جنيه إسترليني (GBP)</option>
+                                                <option value="USD" {{ old('default_currency', $settings->default_currency ?? 'USD') == 'USD' ? 'selected' : '' }}>دولار أمريكي (USD)</option>
+                                                <option value="EGP" {{ old('default_currency', $settings->default_currency ?? 'USD') == 'EGP' ? 'selected' : '' }}>جنيه مصري (EGP)</option>
+                                                <option value="SAR" {{ old('default_currency', $settings->default_currency ?? 'USD') == 'SAR' ? 'selected' : '' }}>ريال سعودي (SAR)</option>
+                                                <option value="EUR" {{ old('default_currency', $settings->default_currency ?? 'USD') == 'EUR' ? 'selected' : '' }}>يورو (EUR)</option>
+                                                <option value="GBP" {{ old('default_currency', $settings->default_currency ?? 'USD') == 'GBP' ? 'selected' : '' }}>جنيه إسترليني (GBP)</option>
                                             </select>
                                             <small class="form-text text-muted">العملة الافتراضية للمنصة</small>
                                         </div>
@@ -190,7 +196,7 @@
                                         <div class="form-group">
                                             <label class="form-label fw-semibold">نسبة العمولة (%)</label>
                                             <input type="number" class="form-control" name="commission_rate"
-                                                   value="{{ old('commission_rate', 10) }}" min="0" max="50" step="0.1">
+                                                   value="{{ old('commission_rate', $settings->commission_rate ?? 10) }}" min="0" max="50" step="0.1">
                                             <small class="form-text text-muted">نسبة العمولة التي تأخذها المنصة من كل عملية دفع</small>
                                         </div>
                                     </div>
@@ -198,7 +204,7 @@
                                         <div class="form-group">
                                             <label class="form-label fw-semibold">الحد الأدنى للسحب</label>
                                             <input type="number" class="form-control" name="minimum_withdrawal"
-                                                   value="{{ old('minimum_withdrawal', 50) }}" min="0" step="0.01">
+                                                   value="{{ old('minimum_withdrawal', $settings->minimum_withdrawal ?? 50) }}" min="0" step="0.01">
                                             <small class="form-text text-muted">الحد الأدنى لمبلغ السحب للمدرسين</small>
                                         </div>
                                     </div>
@@ -206,7 +212,7 @@
                                         <div class="form-group">
                                             <label class="form-label fw-semibold">فترة معالجة الدفع (أيام)</label>
                                             <input type="number" class="form-control" name="payment_processing_days"
-                                                   value="{{ old('payment_processing_days', 7) }}" min="1" max="30">
+                                                   value="{{ old('payment_processing_days', $settings->payment_processing_days ?? 7) }}" min="1" max="30">
                                             <small class="form-text text-muted">عدد الأيام المطلوبة لمعالجة المدفوعات</small>
                                         </div>
                                     </div>
@@ -230,9 +236,9 @@
                                         <div class="form-group">
                                             <label class="form-label fw-semibold">مزود البريد الإلكتروني</label>
                                             <select class="form-select" name="mail_provider">
-                                                <option value="smtp" {{ old('mail_provider', 'smtp') == 'smtp' ? 'selected' : '' }}>SMTP</option>
-                                                <option value="mailgun" {{ old('mail_provider', 'smtp') == 'mailgun' ? 'selected' : '' }}>Mailgun</option>
-                                                <option value="sendgrid" {{ old('mail_provider', 'smtp') == 'sendgrid' ? 'selected' : '' }}>SendGrid</option>
+                                                <option value="smtp" {{ old('mail_provider', $settings->mail_provider ?? 'smtp') == 'smtp' ? 'selected' : '' }}>SMTP</option>
+                                                <option value="mailgun" {{ old('mail_provider', $settings->mail_provider ?? 'smtp') == 'mailgun' ? 'selected' : '' }}>Mailgun</option>
+                                                <option value="sendgrid" {{ old('mail_provider', $settings->mail_provider ?? 'smtp') == 'sendgrid' ? 'selected' : '' }}>SendGrid</option>
                                             </select>
                                             <small class="form-text text-muted">مزود خدمة البريد الإلكتروني</small>
                                         </div>
@@ -241,7 +247,7 @@
                                         <div class="form-group">
                                             <label class="form-label fw-semibold">عنوان البريد الإلكتروني المرسل</label>
                                             <input type="email" class="form-control" name="from_email"
-                                                   value="{{ old('from_email', 'noreply@example.com') }}"
+                                                   value="{{ old('from_email', $settings->from_email ?? 'noreply@example.com') }}"
                                                    placeholder="noreply@example.com">
                                             <small class="form-text text-muted">عنوان البريد الإلكتروني الذي سيظهر كمرسل</small>
                                         </div>
@@ -250,7 +256,7 @@
                                         <div class="form-group">
                                             <label class="form-label fw-semibold">اسم المرسل</label>
                                             <input type="text" class="form-control" name="from_name"
-                                                   value="{{ old('from_name', 'منصة التعلم') }}"
+                                                   value="{{ old('from_name', $settings->from_name ?? 'منصة التعلم') }}"
                                                    placeholder="منصة التعلم">
                                             <small class="form-text text-muted">اسم المرسل الذي سيظهر في رسائل البريد الإلكتروني</small>
                                         </div>
@@ -260,7 +266,7 @@
                                             <label class="form-label fw-semibold">تفعيل إشعارات البريد الإلكتروني</label>
                                             <div class="form-check form-switch">
                                                 <input class="form-check-input" type="checkbox" name="email_notifications"
-                                                       value="1" {{ old('email_notifications', true) ? 'checked' : '' }}>
+                                                       value="1" {{ old('email_notifications', $settings->email_notifications ?? true) ? 'checked' : '' }}>
                                                 <label class="form-check-label">تفعيل إشعارات البريد الإلكتروني</label>
                                             </div>
                                             <small class="form-text text-muted">تفعيل إرسال إشعارات البريد الإلكتروني للمستخدمين</small>

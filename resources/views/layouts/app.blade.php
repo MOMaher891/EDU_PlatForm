@@ -22,7 +22,13 @@
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
 
-    <title>@yield('title', 'منصة التعلم الإلكتروني')</title>
+    <title>
+        @hasSection('title')
+            @yield('title') | {{ $appSettings->platform_name ?? 'منصة التعلم الإلكتروني' }}
+        @else
+            {{ $appSettings->platform_name ?? 'منصة التعلم الإلكتروني' }}
+        @endif
+    </title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -884,9 +890,13 @@
     <!-- Modern Navigation -->
     <nav class="navbar navbar-expand-lg fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="{{ route('home') }}">
-                <i class="fas fa-graduation-cap me-2"></i>
-                A+ Academy
+            <a class="navbar-brand d-flex align-items-center" href="{{ route('home') }}">
+                @if(!empty($appSettings->platform_logo))
+                    <img src="{{ asset('storage/' . $appSettings->platform_logo) }}" alt="Logo" class="me-2" style="height: 35px; max-width: 120px; object-fit: contain;">
+                @else
+                    <i class="fas fa-graduation-cap me-2"></i>
+                @endif
+                <span>{{ $appSettings->platform_name ?? 'A+ Academy' }}</span>
             </a>
 
             <!-- Mobile Controls Group (visible on mobile only) -->
@@ -1083,18 +1093,25 @@
     <!-- Modern Footer -->
     <footer class="footer py-5">
         @php
-            $whatsappNumbers = ['201113050566', '201501036198'];
-            $randomWhatsapp = $whatsappNumbers[array_rand($whatsappNumbers)];
+            $supportPhone = $appSettings->support_phone ?? '+966 50 123 4567';
+            $whatsappNumber = preg_replace('/[^0-9]/', '', $supportPhone);
+            if (empty($whatsappNumber)) {
+                $whatsappNumber = '966501234567';
+            }
         @endphp
         <div class="container">
             <div class="row g-4">
                 <div class="col-lg-4">
-                    <h5 class="fw-bold mb-3">
-                        <i class="fas fa-graduation-cap me-2"></i>
-                        A+ Academy
+                    <h5 class="fw-bold mb-3 d-flex align-items-center">
+                        @if(!empty($appSettings->platform_logo))
+                            <img src="{{ asset('storage/' . $appSettings->platform_logo) }}" alt="Logo" class="me-2" style="height: 35px; max-width: 120px; object-fit: contain;">
+                        @else
+                            <i class="fas fa-graduation-cap me-2"></i>
+                        @endif
+                        <span>{{ $appSettings->platform_name ?? 'A+ Academy' }}</span>
                     </h5>
                     <p class="text-light opacity-75">
-                        منصة التعلم الإلكتروني الرائدة في المنطقة. نوفر أفضل الكورسات التعليمية مع خبراء متخصصين.
+                        {{ $appSettings->platform_description ?? 'منصة التعلم الإلكتروني الرائدة في المنطقة. نوفر أفضل الكورسات التعليمية مع خبراء متخصصين.' }}
                     </p>
                     <div class="social-links">
                         <a href="https://www.facebook.com/share/1bEryWohy3/" target="_blank" class="btn btn-outline-light btn-sm me-2" title="فيسبوك">
@@ -1106,13 +1123,13 @@
                         <a href="https://www.instagram.com/momaher158?igsh=dG83Z3ltMDZjaHVi" target="_blank" class="btn btn-outline-light btn-sm me-2" title="إنستجرام">
                             <i class="fab fa-instagram"></i>
                         </a>
-                        <a href="https://wa.me/{{ $randomWhatsapp }}" target="_blank" class="btn btn-outline-light btn-sm me-2" title="واتساب الدعم">
+                        <a href="https://wa.me/{{ $whatsappNumber }}" target="_blank" class="btn btn-outline-light btn-sm me-2" title="واتساب الدعم">
                             <i class="fab fa-whatsapp"></i>
                         </a>
                         <a href="https://x.com/Mohamed99873441" target="_blank" class="btn btn-outline-light btn-sm me-2" title="إكس (تويتر)">
                             <i class="fab fa-x-twitter"></i>
                         </a>
-                        <a href="mailto:obamedmaher213@gmail.com" class="btn btn-outline-light btn-sm" title="البريد الإلكتروني">
+                        <a href="mailto:{{ $appSettings->support_email ?? 'support@example.com' }}" class="btn btn-outline-light btn-sm" title="البريد الإلكتروني">
                             <i class="fas fa-envelope"></i>
                         </a>
                     </div>
@@ -1133,7 +1150,7 @@
                         <li class="mb-2"><a href="{{ route('compliance.privacy') }}" class="text-light opacity-75 text-decoration-none">سياسة الخصوصية</a></li>
                         <li class="mb-2"><a href="{{ route('compliance.refund') }}" class="text-light opacity-75 text-decoration-none">سياسة الاسترجاع</a></li>
                         <li class="mb-2">
-                            <a href="https://wa.me/{{ $randomWhatsapp }}" target="_blank" class="text-light opacity-75 text-decoration-none d-inline-flex align-items-center gap-2" title="الدعم الفني (واتساب)">
+                            <a href="https://wa.me/{{ $whatsappNumber }}" target="_blank" class="text-light opacity-75 text-decoration-none d-inline-flex align-items-center gap-2" title="الدعم الفني (واتساب)">
                                 <i class="fab fa-whatsapp text-success"></i>
                                 <span>الدعم الفني (واتساب)</span>
                             </a>
@@ -1155,7 +1172,7 @@
             <div class="row align-items-center">
                 <div class="col-md-6">
                     <p class="mb-0 text-light opacity-75">
-                        &copy; {{ date('Y') }} A+ Academy. جميع الحقوق محفوظة.
+                        &copy; {{ date('Y') }} {{ $appSettings->platform_name ?? 'A+ Academy' }}. جميع الحقوق محفوظة.
                     </p>
                 </div>
                 <div class="col-md-6 text-md-end">

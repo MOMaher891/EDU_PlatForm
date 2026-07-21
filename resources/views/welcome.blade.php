@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'الصفحة الرئيسية - منصة التعلم الإلكتروني')
+@section('title', 'الصفحة الرئيسية')
 
 @section('content')
 <!-- Hero Section -->
