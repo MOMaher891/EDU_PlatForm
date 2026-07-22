@@ -789,6 +789,7 @@ class AdminController extends Controller
             Log::error('Error in store lesson: ' , [
                 'user_id' => auth()->id(),
                 'section_id' => $section->id ?? null,
+                'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
 
@@ -804,6 +805,7 @@ class AdminController extends Controller
             Log::error('Error in edit lesson form: ' , [
                 'user_id' => auth()->id(),
                 'lesson_id' => $lesson->id ?? null,
+                'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
 
@@ -878,6 +880,7 @@ class AdminController extends Controller
             Log::error('Error in update lesson: ' , [
                 'user_id' => auth()->id(),
                 'lesson_id' => $lesson->id ?? null,
+                'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
 
