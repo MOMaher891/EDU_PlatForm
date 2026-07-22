@@ -161,9 +161,17 @@ class AdminController extends Controller
     public function updateUser(Request $request, User $user)
     {
         try {
+            if ($request->filled('phone')) {
+                $request->merge([
+                    'phone' => preg_replace('/[^0-9]/', '', (string) $request->phone)
+                ]);
+            }
+
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+                'phone' => 'nullable|string|min:6|max:15|regex:/^[0-9]{6,15}$/',
+                'country_code' => 'nullable|string|max:10',
                 'role' => 'required|in:student,instructor,admin',
                 'is_active' => 'boolean'
             ]);
@@ -272,9 +280,17 @@ class AdminController extends Controller
     public function storeUser(Request $request)
     {
         try {
+            if ($request->filled('phone')) {
+                $request->merge([
+                    'phone' => preg_replace('/[^0-9]/', '', (string) $request->phone)
+                ]);
+            }
+
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
                 'email' => 'required|string|email|max:255|unique:users',
+                'phone' => 'nullable|string|min:6|max:15|regex:/^[0-9]{6,15}$/',
+                'country_code' => 'nullable|string|max:10',
                 'password' => 'required|string|min:8|confirmed',
                 'role_id' => 'required|exists:roles,id',
                 'is_active' => 'boolean'
@@ -285,6 +301,7 @@ class AdminController extends Controller
             $user = User::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
+                'phone' => $validated['phone'] ?: null,
                 'password' => Hash::make($validated['password']),
                 // keep legacy role string for now
                 'role' => $role?->slug,
@@ -772,6 +789,7 @@ class AdminController extends Controller
             Log::error('Error in store lesson: ' , [
                 'user_id' => auth()->id(),
                 'section_id' => $section->id ?? null,
+                'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
 
@@ -787,6 +805,7 @@ class AdminController extends Controller
             Log::error('Error in edit lesson form: ' , [
                 'user_id' => auth()->id(),
                 'lesson_id' => $lesson->id ?? null,
+                'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
 
@@ -861,6 +880,7 @@ class AdminController extends Controller
             Log::error('Error in update lesson: ' , [
                 'user_id' => auth()->id(),
                 'lesson_id' => $lesson->id ?? null,
+                'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
 

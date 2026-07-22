@@ -212,6 +212,9 @@
                                                     <div class="user-details">
                                                         <h6 class="user-name">{{ $user->name }}</h6>
                                                         <p class="user-email">{{ $user->email }}</p>
+                                                        @if($user->phone)
+                                                            <small class="text-muted d-block" style="font-size: 0.8rem;"><i class="fas fa-phone me-1"></i>{{ $user->phone }}</small>
+                                                        @endif
                                                     </div>
                                                 </div>
                                             </td>
@@ -673,6 +676,12 @@ document.getElementById('selectAll').addEventListener('change', function() {
     });
 });
 
+document.getElementById('addUserModal')?.addEventListener('shown.bs.modal', function() {
+    if (typeof initIntlTelInputs === 'function') {
+        initIntlTelInputs(this);
+    }
+});
+
 // Edit user function
 function editUser(userId) {
     fetch(`/admin/users/${userId}/edit`)
@@ -681,10 +690,23 @@ function editUser(userId) {
             document.getElementById('editName').value = user.name;
             document.getElementById('editEmail').value = user.email;
             document.getElementById('editRole').value = user.role;
-            document.getElementById('editPhone').value = user.phone || '';
+            const phoneInput = document.getElementById('editPhone');
+            phoneInput.value = user.phone || '';
+            
+            const modalEl = document.getElementById('editUserModal');
+            const modalInstance = new bootstrap.Modal(modalEl);
+            modalEl.addEventListener('shown.bs.modal', function onShown() {
+                modalEl.removeEventListener('shown.bs.modal', onShown);
+                if (typeof initIntlTelInputs === 'function') {
+                    initIntlTelInputs(modalEl);
+                }
+                if (phoneInput.itiInstance && (user.country_code || user.phone)) {
+                    phoneInput.itiInstance.setNumber((user.country_code || '+20') + (user.phone || ''));
+                }
+            });
+            
             document.getElementById('editUserForm').action = `/admin/users/${userId}`;
-
-            new bootstrap.Modal(document.getElementById('editUserModal')).show();
+            modalInstance.show();
         })
         .catch(error => {
             console.error('Error:', error);

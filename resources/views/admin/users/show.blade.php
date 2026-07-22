@@ -101,6 +101,11 @@
 
                         <div class="user-info-list text-start">
                             <div class="info-item mb-2">
+                                <i class="fas fa-phone text-primary me-2"></i>
+                                <span class="fw-bold">رقم الهاتف:</span>
+                                <span class="text-muted">{{ $user->phone ?? 'غير محدد' }}</span>
+                            </div>
+                            <div class="info-item mb-2">
                                 <i class="fas fa-calendar-alt text-primary me-2"></i>
                                 <span class="fw-bold">تاريخ التسجيل:</span>
                                 <span class="text-muted">{{ $user->created_at->format('Y/m/d') }}</span>
