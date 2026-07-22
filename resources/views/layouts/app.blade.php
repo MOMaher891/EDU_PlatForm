@@ -41,6 +41,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- AOS Animation -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <!-- IntlTelInput CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.css">
 
     @if($appSettings->block_devtools ?? false)
     <script src="https://cdn.jsdelivr.net/npm/disable-devtool"></script>
@@ -722,8 +724,60 @@
             color: #f8fafc !important;
         }
 
-        [data-bs-theme="dark"] .demo-accounts h6 {
-            color: #f8fafc !important;
+        /* IntlTelInput CSS Adjustments & RTL Fixes */
+        .iti {
+            width: 100%;
+            display: block;
+        }
+        .iti__country-list {
+            color: #1e293b;
+            z-index: 1070;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            font-family: 'Cairo', sans-serif;
+            max-width: 340px;
+            white-space: normal;
+        }
+        html[dir="rtl"] .iti__country-list,
+        [dir="rtl"] .iti__country-list {
+            left: 0 !important;
+            right: auto !important;
+            text-align: right;
+        }
+        [dir="rtl"] .iti__country-name {
+            margin-right: 6px;
+            margin-left: 6px;
+        }
+        [dir="rtl"] .iti__flag-box {
+            margin-right: 0;
+            margin-left: 6px;
+        }
+        [data-bs-theme="dark"] .iti__country-list {
+            background-color: #1e293b;
+            color: #f8fafc;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        [data-bs-theme="dark"] .iti__country-name,
+        [data-bs-theme="dark"] .iti__dial-code {
+            color: #f8fafc;
+        }
+        [data-bs-theme="dark"] .iti__country.iti__highlight {
+            background-color: #334155;
+        }
+        /* Fix Bootstrap validation icon positioning inside intl-tel-input */
+        .iti input.is-valid,
+        html[dir="rtl"] .iti input.is-valid,
+        [dir="rtl"] .iti input.is-valid {
+            background-position: right 12px center !important;
+            background-size: 18px 18px !important;
+            padding-right: 36px !important;
+        }
+        .iti input.is-invalid,
+        html[dir="rtl"] .iti input.is-invalid,
+        [dir="rtl"] .iti input.is-invalid {
+            background-position: right 12px center !important;
+            background-size: 18px 18px !important;
+            padding-right: 36px !important;
         }
     </style>
 
@@ -1140,6 +1194,134 @@
                     }
                 }
             });
+        });
+    </script>
+    <!-- International Telephone Input JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
+    <script>
+        function initIntlTelInputs(container = document) {
+            if (typeof window.intlTelInput === 'undefined') return;
+            const phoneInputs = container.querySelectorAll('input[type="tel"], #phone, .phone-input');
+            phoneInputs.forEach(function(input) {
+                if (input.dataset.itiInitialized) return;
+                input.dataset.itiInitialized = "true";
+
+                const form = input.closest('form');
+                let countryCodeInput = form ? form.querySelector('input[name="country_code"]') : null;
+                if (form && !countryCodeInput) {
+                    countryCodeInput = document.createElement('input');
+                    countryCodeInput.type = 'hidden';
+                    countryCodeInput.name = 'country_code';
+                    countryCodeInput.id = input.id ? (input.id + '_country_code') : 'country_code';
+                    countryCodeInput.value = '+20';
+                    form.appendChild(countryCodeInput);
+                }
+
+                const iti = window.intlTelInput(input, {
+                    initialCountry: "auto",
+                    geoIpLookup: function(success, failure) {
+                        fetch("https://ipapi.co/json/")
+                            .then(res => res.json())
+                            .then(data => success(data.country_code ? data.country_code.toLowerCase() : "eg"))
+                            .catch(() => success("eg"));
+                    },
+                    preferredCountries: ["eg", "sa", "ae", "kw", "qa", "om", "bh", "jo", "iq", "ly", "sd", "ma", "dz", "tn", "us", "gb", "tr"],
+                    separateDialCode: true,
+                    utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"
+                });
+
+                input.itiInstance = iti;
+
+                function updateCountryCode() {
+                    const countryData = iti.getSelectedCountryData();
+                    if (countryData && countryData.dialCode && countryCodeInput) {
+                        countryCodeInput.value = '+' + countryData.dialCode;
+                    }
+                }
+
+                function showPhoneErrorMessage(msg) {
+                    let parent = input.closest('.mb-3') || input.parentElement;
+                    let errDiv = parent.querySelector('.phone-error-feedback');
+                    if (!errDiv) {
+                        errDiv = document.createElement('div');
+                        errDiv.className = 'invalid-feedback d-block phone-error-feedback mt-1 text-danger fw-semibold';
+                        parent.appendChild(errDiv);
+                    }
+                    errDiv.textContent = msg;
+                    input.classList.add('is-invalid');
+                    input.classList.remove('is-valid');
+                }
+
+                function removePhoneErrorMessage() {
+                    let parent = input.closest('.mb-3') || input.parentElement;
+                    let errDiv = parent.querySelector('.phone-error-feedback');
+                    if (errDiv) {
+                        errDiv.remove();
+                    }
+                    input.classList.remove('is-invalid');
+                }
+
+                function validatePhone() {
+                    const cleanVal = input.value.replace(/[^0-9]/g, '');
+                    if (!cleanVal) {
+                        removePhoneErrorMessage();
+                        return true;
+                    }
+
+                    if (cleanVal.length < 6 || cleanVal.length > 15 || !iti.isValidNumber()) {
+                        showPhoneErrorMessage('رقم الهاتف غير صحيح للدولة المحددة');
+                        return false;
+                    } else {
+                        removePhoneErrorMessage();
+                        input.classList.add('is-valid');
+                        return true;
+                    }
+                }
+
+                // Sanitize input live & limit max digits to 15
+                input.addEventListener('input', function() {
+                    this.value = this.value.replace(/[^0-9]/g, '');
+                    if (this.value.length > 15) {
+                        this.value = this.value.slice(0, 15);
+                    }
+                    updateCountryCode();
+                    if (this.value.length >= 5) {
+                        validatePhone();
+                    } else if (this.value.length === 0) {
+                        removePhoneErrorMessage();
+                    }
+                });
+
+                input.addEventListener('blur', function() {
+                    if (input.value.trim().length > 0) {
+                        validatePhone();
+                    }
+                });
+
+                input.addEventListener('countrychange', function() {
+                    updateCountryCode();
+                    if (input.value.trim().length > 0) {
+                        validatePhone();
+                    }
+                });
+
+                if (form) {
+                    form.addEventListener('submit', function(e) {
+                        updateCountryCode();
+                        if (input.value.trim().length > 0 && !validatePhone()) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            input.focus();
+                            return false;
+                        }
+                    });
+                }
+                updateCountryCode();
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initIntlTelInputs();
         });
     </script>
     @stack('scripts')

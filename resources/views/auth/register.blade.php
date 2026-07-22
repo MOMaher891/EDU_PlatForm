@@ -59,32 +59,20 @@
                                         @enderror
                                     </div>
 
-                                    <!-- Role Selection -->
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">
-                                            <i class="fas fa-user-tag me-2"></i>
-                                            نوع الحساب
+                                    <!-- Phone Field -->
+                                    <div class="mb-3 text-start">
+                                        <label for="phone" class="form-label fw-semibold text-secondary small mb-1">
+                                            <i class="fas fa-phone me-1"></i>
+                                            رقم الهاتف
                                         </label>
-                                        <div class="row g-2">
-                                            <div class="col-6">
-                                                <input type="radio" class="btn-check" name="role" id="student" value="student" checked>
-                                                <label class="btn btn-outline-primary w-100 py-3" for="student">
-                                                    <i class="fas fa-user-graduate d-block mb-2 fa-2x"></i>
-                                                    <span class="fw-semibold">طالب</span>
-                                                    <small class="d-block text-muted">للتعلم والدراسة</small>
-                                                </label>
-                                            </div>
-                                            <div class="col-6">
-                                                <input type="radio" class="btn-check" name="role" id="instructor" value="instructor">
-                                                <label class="btn btn-outline-success w-100 py-3" for="instructor">
-                                                    <i class="fas fa-chalkboard-teacher d-block mb-2 fa-2x"></i>
-                                                    <span class="fw-semibold">مدرب</span>
-                                                    <small class="d-block text-muted">لتقديم الكورسات</small>
-                                                </label>
-                                            </div>
-                                        </div>
-                                        @error('role')
-                                            <div class="text-danger small mt-1">{{ $message }}</div>
+                                        <input type="tel"
+                                               class="form-control @error('phone') is-invalid @enderror"
+                                               id="phone"
+                                               name="phone"
+                                               value="{{ old('phone') }}"
+                                               placeholder="0100 000 0000">
+                                        @error('phone')
+                                            <div class="invalid-feedback d-block">{{ $message }}</div>
                                         @enderror
                                     </div>
 
