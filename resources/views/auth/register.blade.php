@@ -77,7 +77,7 @@
                                     </div>
 
                                     <!-- Password Field -->
-                                    <div class="form-floating mb-3">
+                                    <div class="form-floating mb-2">
                                         <input type="password"
                                                class="form-control @error('password') is-invalid @enderror"
                                                id="password"
@@ -96,8 +96,20 @@
                                         @enderror
                                     </div>
 
+                                    <!-- Password Requirements Indicator Widget -->
+                                    <div class="password-requirements mb-3 p-3 bg-light rounded-3 text-start small border">
+                                        <div class="fw-semibold text-secondary mb-2">شروط كلمة المرور:</div>
+                                        <div class="row g-2">
+                                            <div class="col-6 text-muted" id="req-length"><i class="fas fa-times-circle text-danger me-1"></i> 8 أحرف على الأقل</div>
+                                            <div class="col-6 text-muted" id="req-upper"><i class="fas fa-times-circle text-danger me-1"></i> حرف كبير (A-Z)</div>
+                                            <div class="col-6 text-muted" id="req-lower"><i class="fas fa-times-circle text-danger me-1"></i> حرف صغير (a-z)</div>
+                                            <div class="col-6 text-muted" id="req-number"><i class="fas fa-times-circle text-danger me-1"></i> رقم (0-9)</div>
+                                            <div class="col-12 text-muted" id="req-symbol"><i class="fas fa-times-circle text-danger me-1"></i> رمز خاص (!@#$%^&*)</div>
+                                        </div>
+                                    </div>
+
                                     <!-- Confirm Password Field -->
-                                    <div class="form-floating mb-3">
+                                    <div class="form-floating mb-1">
                                         <input type="password"
                                                class="form-control"
                                                id="password_confirmation"
@@ -112,24 +124,25 @@
                                             <i class="fas fa-eye"></i>
                                         </button>
                                     </div>
+                                    <div id="confirm-match-feedback" class="small mb-3 text-start d-none"></div>
 
                                     <!-- Terms and Conditions -->
-                                    <div class="form-check mb-4">
+                                    <div class="form-check mb-4 text-start">
                                         <input class="form-check-input" type="checkbox" id="terms" name="terms" required>
                                         <label class="form-check-label" for="terms">
                                             أوافق على
-                                            <a href="#" class="text-primary text-decoration-none">الشروط والأحكام</a>
+                                            <a href="{{ route('terms') }}" class="text-primary text-decoration-none fw-semibold" target="_blank">الشروط والأحكام</a>
                                             و
-                                            <a href="#" class="text-primary text-decoration-none">سياسة الخصوصية</a>
+                                            <a href="{{ route('privacy') }}" class="text-primary text-decoration-none fw-semibold" target="_blank">سياسة الخصوصية</a>
                                         </label>
                                         @error('terms')
-                                            <div class="text-danger small">{{ $message }}</div>
+                                            <div class="text-danger small mt-1">{{ $message }}</div>
                                         @enderror
                                     </div>
 
                                     <!-- Submit Button -->
                                     <div class="d-grid mb-4">
-                                        <button type="submit" class="btn btn-primary btn-lg py-3">
+                                        <button type="submit" id="registerSubmitBtn" class="btn btn-primary btn-lg py-3 opacity-50" disabled>
                                             <i class="fas fa-user-plus me-2"></i>
                                             إنشاء الحساب
                                         </button>
@@ -343,36 +356,133 @@
 <script>
     function togglePassword(fieldId) {
         const field = document.getElementById(fieldId);
-        const toggle = field.nextElementSibling.nextElementSibling;
-        const icon = toggle.querySelector('i');
+        if (!field) return;
+        const toggle = field.parentElement.querySelector('.password-toggle i');
 
         if (field.type === 'password') {
             field.type = 'text';
-            icon.classList.remove('fa-eye');
-            icon.classList.add('fa-eye-slash');
+            if (toggle) {
+                toggle.classList.remove('fa-eye');
+                toggle.classList.add('fa-eye-slash');
+            }
         } else {
             field.type = 'password';
-            icon.classList.remove('fa-eye-slash');
-            icon.classList.add('fa-eye');
+            if (toggle) {
+                toggle.classList.remove('fa-eye-slash');
+                toggle.classList.add('fa-eye');
+            }
         }
     }
 
-    // Form validation
-    document.querySelector('form').addEventListener('submit', function(e) {
-        const password = document.getElementById('password').value;
-        const confirmPassword = document.getElementById('password_confirmation').value;
+    // Password and Form Live Validation
+    document.addEventListener('DOMContentLoaded', function() {
+        const nameInput = document.getElementById('name');
+        const emailInput = document.getElementById('email');
+        const phoneInput = document.getElementById('phone');
+        const passwordInput = document.getElementById('password');
+        const confirmInput = document.getElementById('password_confirmation');
+        const termsCheckbox = document.getElementById('terms');
+        const submitBtn = document.getElementById('registerSubmitBtn');
 
-        if (password !== confirmPassword) {
-            e.preventDefault();
-            alert('كلمات المرور غير متطابقة');
-            return false;
+        function checkFormValidity() {
+            const nameVal = nameInput ? nameInput.value.trim() : '';
+            const emailVal = emailInput ? emailInput.value.trim() : '';
+            const phoneVal = phoneInput ? phoneInput.value.trim() : '';
+            const passVal = passwordInput ? passwordInput.value : '';
+            const confirmVal = confirmInput ? confirmInput.value : '';
+            const termsChecked = termsCheckbox ? termsCheckbox.checked : false;
+
+            // Check password requirements
+            const hasMinLength = passVal.length >= 8;
+            const hasUpper = /[A-Z]/.test(passVal);
+            const hasLower = /[a-z]/.test(passVal);
+            const hasNumber = /[0-9]/.test(passVal);
+            const hasSymbol = /[^A-Za-z0-9]/.test(passVal);
+
+            updateRequirement('req-length', hasMinLength);
+            updateRequirement('req-upper', hasUpper);
+            updateRequirement('req-lower', hasLower);
+            updateRequirement('req-number', hasNumber);
+            updateRequirement('req-symbol', hasSymbol);
+
+            const isPasswordValid = hasMinLength && hasUpper && hasLower && hasNumber && hasSymbol;
+
+            // Check password confirmation match
+            const confirmFeedback = document.getElementById('confirm-match-feedback');
+            let isConfirmValid = false;
+            if (confirmVal.length > 0) {
+                if (confirmVal === passVal && isPasswordValid) {
+                    isConfirmValid = true;
+                    if (confirmFeedback) {
+                        confirmFeedback.className = 'small mb-3 text-start text-success fw-semibold d-block';
+                        confirmFeedback.innerHTML = '<i class="fas fa-check-circle me-1"></i> كلمة المرور متطابقة';
+                    }
+                } else {
+                    isConfirmValid = false;
+                    if (confirmFeedback) {
+                        confirmFeedback.className = 'small mb-3 text-start text-danger fw-semibold d-block';
+                        confirmFeedback.innerHTML = '<i class="fas fa-times-circle me-1"></i> كلمة المرور غير متطابقة';
+                    }
+                }
+            } else if (confirmFeedback) {
+                confirmFeedback.className = 'small mb-3 text-start d-none';
+            }
+
+            // Check phone validity
+            let isPhoneValid = phoneVal.length >= 6;
+            if (phoneInput && phoneInput.itiInstance) {
+                isPhoneValid = phoneInput.value.trim().length > 0 && phoneInput.itiInstance.isValidNumber();
+            }
+
+            const isEmailValid = emailVal.length > 0 && emailVal.includes('@') && emailVal.includes('.');
+            const isNameValid = nameVal.length >= 2;
+
+            const isFormValid = isNameValid && isEmailValid && isPhoneValid && isPasswordValid && isConfirmValid && termsChecked;
+
+            if (submitBtn) {
+                submitBtn.disabled = !isFormValid;
+                if (isFormValid) {
+                    submitBtn.classList.remove('opacity-50');
+                } else {
+                    submitBtn.classList.add('opacity-50');
+                }
+            }
         }
 
-        if (password.length < 8) {
-            e.preventDefault();
-            alert('كلمة المرور يجب أن تكون 8 أحرف على الأقل');
-            return false;
+        function updateRequirement(elemId, isValid) {
+            const elem = document.getElementById(elemId);
+            if (!elem) return;
+            const icon = elem.querySelector('i');
+            if (isValid) {
+                elem.className = elem.className.replace('text-danger', 'text-success').replace('text-muted', 'text-success');
+                elem.classList.add('text-success', 'fw-semibold');
+                if (icon) {
+                    icon.className = 'fas fa-check-circle text-success me-1';
+                }
+            } else {
+                elem.classList.remove('text-success', 'fw-semibold');
+                elem.classList.add('text-muted');
+                if (icon) {
+                    icon.className = 'fas fa-times-circle text-danger me-1';
+                }
+            }
         }
+
+        const formInputs = [nameInput, emailInput, phoneInput, passwordInput, confirmInput, termsCheckbox];
+        formInputs.forEach(input => {
+            if (input) {
+                input.addEventListener('input', checkFormValidity);
+                input.addEventListener('change', checkFormValidity);
+                input.addEventListener('keyup', checkFormValidity);
+            }
+        });
+
+        if (phoneInput) {
+            phoneInput.addEventListener('countrychange', checkFormValidity);
+        }
+
+        // Run initial check
+        checkFormValidity();
     });
 </script>
 @endpush

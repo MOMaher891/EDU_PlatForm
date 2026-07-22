@@ -257,8 +257,10 @@ Route::get('/courses', [StudentController::class, 'courses'])->name('student.cou
 Route::get('/courses/{course}', [StudentController::class, 'showCourse'])->name('student.courses.show');
 
 // Public Compliance Routes
-Route::get('/terms', [ComplianceController::class, 'terms'])->name('compliance.terms');
-Route::get('/privacy-policy', [ComplianceController::class, 'privacy'])->name('compliance.privacy');
+Route::get('/terms', [ComplianceController::class, 'terms'])->name('terms');
+Route::get('/terms-and-conditions', [ComplianceController::class, 'terms'])->name('compliance.terms');
+Route::get('/privacy-policy', [ComplianceController::class, 'privacy'])->name('privacy');
+Route::get('/privacy', [ComplianceController::class, 'privacy'])->name('compliance.privacy');
 Route::get('/refund-policy', [ComplianceController::class, 'refund'])->name('compliance.refund');
 
 // Payment Routes

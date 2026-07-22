@@ -174,6 +174,52 @@
             transform: translateY(0) scale(0.98);
         }
 
+        .btn-outline-secondary {
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            color: #ffffff !important;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(8px);
+            font-weight: 600;
+        }
+        .btn-outline-secondary:hover {
+            background: #ffffff;
+            color: #1e293b !important;
+            border-color: #ffffff;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .page-header .btn-outline-secondary,
+        .header-actions .btn-outline-secondary,
+        .header-actions .btn-secondary {
+            border-color: rgba(255, 255, 255, 0.5) !important;
+            color: #ffffff !important;
+            background: rgba(255, 255, 255, 0.18) !important;
+            backdrop-filter: blur(8px);
+            font-weight: 600;
+        }
+        .page-header .btn-outline-secondary:hover,
+        .header-actions .btn-outline-secondary:hover,
+        .header-actions .btn-secondary:hover {
+            background: #ffffff !important;
+            color: #1e293b !important;
+            border-color: #ffffff !important;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Secondary button inside plain white cards */
+        .card-body .btn-outline-secondary,
+        .modal-body .btn-outline-secondary {
+            border-color: #cbd5e1 !important;
+            color: #334155 !important;
+            background: #f8fafc !important;
+        }
+        .card-body .btn-outline-secondary:hover,
+        .modal-body .btn-outline-secondary:hover {
+            border-color: var(--primary-color) !important;
+            color: #ffffff !important;
+            background: var(--primary-color) !important;
+        }
+
         .form-control, .form-select { border-radius: var(--border-radius); border: 2px solid #e2e8f0; padding: 12px 16px; transition: all 0.3s ease; }
         .form-control:focus, .form-select:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
         .badge { border-radius: 20px; padding: 6px 12px; font-weight: 500; }

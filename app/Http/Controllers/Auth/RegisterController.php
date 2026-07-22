@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Password;
 
 class RegisterController extends Controller
 {
@@ -51,13 +52,18 @@ class RegisterController extends Controller
         return Validator::make($data, [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'phone' => ['nullable', 'string', 'min:6', 'max:15', 'regex:/^[0-9]{6,15}$/'],
+            'phone' => ['required', 'string', 'min:6', 'max:15', 'regex:/^[0-9]{6,15}$/'],
             'country_code' => ['nullable', 'string', 'max:10'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
+            'password' => ['required', 'string', 'confirmed', Password::min(8)->mixedCase()->numbers()->symbols()],
         ], [
+            'phone.required' => 'رقم الهاتف مطلوب للتسجيل.',
             'phone.regex' => 'رقم الهاتف يجب أن يحتوي على أرقام فقط بين 6 و 15 رقم.',
             'phone.min' => 'رقم الهاتف قصير جداً.',
             'phone.max' => 'رقم الهاتف طويل جداً (الحد الأقصى 15 رقم).',
+            'password.min' => 'كلمة المرور يجب أن تتكون من 8 أحرف على الأقل.',
+            'password.mixed' => 'كلمة المرور يجب أن تحتوي على أحرف كبيرة (Uppercase) وأحرف صغيرة (Lowercase).',
+            'password.numbers' => 'كلمة المرور يجب أن تحتوي على رقم واحد على الأقل.',
+            'password.symbols' => 'كلمة المرور يجب أن تحتوي على رمز خاص (Symbol) واحد على الأقل.',
         ]);
     }
 
