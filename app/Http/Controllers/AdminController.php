@@ -418,8 +418,8 @@ class AdminController extends Controller
                 'level' => 'required|in:beginner,intermediate,advanced',
                 'duration_hours' => 'required|integer|min:1',
                 'is_published' => 'boolean',
-                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-                'preview_video' => 'nullable|file|mimes:mp4,mov,avi,webm,quicktime|max:51200'
+                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:' . Setting::getMaxFileSizeKB(),
+                'preview_video' => 'nullable|file|mimes:mp4,mov,avi,webm,quicktime|max:' . Setting::getMaxFileSizeKB()
             ]);
 
             if ($request->hasFile('thumbnail')) {
@@ -481,8 +481,8 @@ class AdminController extends Controller
                 'level' => 'required|in:beginner,intermediate,advanced',
                 'duration_hours' => 'required|integer|min:1',
                 'is_published' => 'boolean',
-                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-                'preview_video' => 'nullable|file|mimes:mp4,mov,avi,webm,quicktime|max:51200'
+                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:' . Setting::getMaxFileSizeKB(),
+                'preview_video' => 'nullable|file|mimes:mp4,mov,avi,webm,quicktime|max:' . Setting::getMaxFileSizeKB()
             ]);
 
             if ($request->hasFile('thumbnail')) {
@@ -735,7 +735,7 @@ class AdminController extends Controller
                 'price' => 'nullable|numeric|min:0',
                 'is_free' => 'boolean',
                 'is_active' => 'boolean',
-                'lesson_file' => 'nullable|file|max:102400' // 100MB max - removed mimes validation for now
+                'lesson_file' => 'nullable|file|max:' . Setting::getMaxFileSizeKB()
             ]);
 
             $data = $request->all();
@@ -827,7 +827,7 @@ class AdminController extends Controller
                 'price' => 'nullable|numeric|min:0',
                 'is_free' => 'boolean',
                 'is_active' => 'boolean',
-                'lesson_file' => 'nullable|file|max:102400' // 100MB max - removed mimes validation for now
+                'lesson_file' => 'nullable|file|max:' . Setting::getMaxFileSizeKB()
             ]);
 
             $data = $request->all();
@@ -1260,14 +1260,14 @@ class AdminController extends Controller
                 'refund_and_cancellation_policy' => 'nullable|string',
                 
                 'platform_name' => 'nullable|string|max:255',
-                'platform_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                'platform_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:' . Setting::getMaxFileSizeKB(),
                 'support_email' => 'nullable|email|max:255',
                 'support_phone' => 'nullable|string|max:255',
                 'platform_description' => 'nullable|string',
                 
                 'max_courses_per_instructor' => 'nullable|integer|min:1',
                 'max_lessons_per_course' => 'nullable|integer|min:1',
-                'max_file_size' => 'nullable|integer|in:5,10,25,50',
+                'max_file_size' => 'nullable|integer|in:5,10,25,50,100,150,200',
                 'allowed_file_types' => 'nullable|string|max:255',
                 'default_currency' => 'nullable|string|max:10',
                 'commission_rate' => 'nullable|numeric|min:0|max:100',
@@ -1312,6 +1312,7 @@ class AdminController extends Controller
             }
 
             $settings->save();
+            \Illuminate\Support\Facades\Cache::forget('app_settings_singleton');
 
             cache()->forget('app_settings_singleton');
 

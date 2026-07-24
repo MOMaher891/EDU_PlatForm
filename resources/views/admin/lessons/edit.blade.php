@@ -156,7 +156,7 @@
                                     <div class="upload-content">
                                         <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
                                         <p class="upload-text" id="uploadAreaText">اسحب وأفلت الملف هنا أو اضغط للاختيار</p>
-                                        <small class="text-muted" id="uploadAreaHelp">الحد الأقصى 100MB</small>
+                                        <small class="text-muted" id="uploadAreaHelp">الحد الأقصى {{ $appSettings->max_file_size ?? 10 }}MB</small>
                                     </div>
                                     <input type="file" class="form-control @error('lesson_file') is-invalid @enderror"
                                            id="lesson_file" name="lesson_file" style="display: none;">
@@ -355,7 +355,7 @@
                 if (input) input.setAttribute('accept', 'video/*');
                 if (fileUploadLabel) fileUploadLabel.innerHTML = 'رفع ملف فيديو جديد (اختياري)';
                 if (uploadAreaText) uploadAreaText.textContent = 'اسحب وأفلت ملف الفيديو هنا أو اضغط للاختيار';
-                if (uploadAreaHelp) uploadAreaHelp.textContent = 'الحد الأقصى 100MB (يدعم mp4, webm, avi)';
+                if (uploadAreaHelp) uploadAreaHelp.textContent = 'الحد الأقصى {{ $appSettings->max_file_size ?? 10 }}MB (يدعم mp4, webm, avi)';
             } else {
                 videoUrlWrapper.style.display = 'block';
                 if (currentFileWrapper) currentFileWrapper.style.display = 'none';
@@ -366,7 +366,7 @@
             if (input) input.setAttribute('accept', '.pdf');
             if (fileUploadLabel) fileUploadLabel.innerHTML = 'رفع ملف PDF جديد (اختياري)';
             if (uploadAreaText) uploadAreaText.textContent = 'اسحب وأفلت ملف PDF هنا أو اضغط للاختيار';
-            if (uploadAreaHelp) uploadAreaHelp.textContent = 'الحد الأقصى 100MB';
+            if (uploadAreaHelp) uploadAreaHelp.textContent = 'الحد الأقصى {{ $appSettings->max_file_size ?? 10 }}MB';
         } else if (fileType === 'image') {
             fileUploadWrapper.style.display = 'block';
             if (currentFileWrapper) currentFileWrapper.style.display = 'block';
@@ -495,9 +495,10 @@
         const file = input.files[0];
         if (!file) return;
 
-        const maxSize = 100 * 1024 * 1024; // 100MB
+        const maxMb = {{ $appSettings->max_file_size ?? 10 }};
+        const maxSize = maxMb * 1024 * 1024;
         if (file.size > maxSize) {
-            alert('حجم الملف كبير جداً. الحد الأقصى 100MB');
+            alert('حجم الملف كبير جداً. الحد الأقصى ' + maxMb + 'MB');
             input.value = '';
             return;
         }
