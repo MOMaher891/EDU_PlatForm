@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\CourseSection;
 use App\Models\Lesson;
 use App\Models\User;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -111,7 +112,7 @@ class InstructorController extends Controller
             'discount_price' => 'nullable|numeric|min:0|lt:price',
             'level' => 'required|in:beginner,intermediate,advanced',
             'duration_hours' => 'required|integer|min:1',
-            'thumbnail' => 'nullable|image|max:2048'
+            'thumbnail' => 'nullable|image|max:' . Setting::getMaxFileSizeKB()
         ]);
         
         $data = $request->all();
@@ -168,7 +169,7 @@ class InstructorController extends Controller
             'discount_price' => 'nullable|numeric|min:0|lt:price',
             'level' => 'required|in:beginner,intermediate,advanced',
             'duration_hours' => 'required|integer|min:1',
-            'thumbnail' => 'nullable|image|max:2048',
+            'thumbnail' => 'nullable|image|max:' . Setting::getMaxFileSizeKB(),
             'is_published' => 'boolean'
         ]);
         

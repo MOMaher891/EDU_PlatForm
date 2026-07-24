@@ -143,6 +143,9 @@
                                                 <option value="10" {{ old('max_file_size', $settings->max_file_size ?? '10') == '10' ? 'selected' : '' }}>10 ميجابايت</option>
                                                 <option value="25" {{ old('max_file_size', $settings->max_file_size ?? '10') == '25' ? 'selected' : '' }}>25 ميجابايت</option>
                                                 <option value="50" {{ old('max_file_size', $settings->max_file_size ?? '10') == '50' ? 'selected' : '' }}>50 ميجابايت</option>
+                                                <option value="100" {{ old('max_file_size', $settings->max_file_size ?? '10') == '100' ? 'selected' : '' }}>100 ميجابايت</option>
+                                                <option value="150" {{ old('max_file_size', $settings->max_file_size ?? '10') == '150' ? 'selected' : '' }}>150 ميجابايت</option>
+                                                <option value="200" {{ old('max_file_size', $settings->max_file_size ?? '10') == '200' ? 'selected' : '' }}>200 ميجابايت</option>
                                             </select>
                                             <small class="form-text text-muted">الحد الأقصى لحجم الملفات المرفوعة</small>
                                         </div>

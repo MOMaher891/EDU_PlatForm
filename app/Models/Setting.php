@@ -46,6 +46,17 @@ class Setting extends Model
 		});
 	}
 
+	public static function getMaxFileSizeKB(): int
+	{
+		try {
+			$settings = static::getCached();
+			$maxMb = (int) ($settings->max_file_size ?? 10);
+			return ($maxMb > 0 ? $maxMb : 10) * 1024;
+		} catch (\Throwable $e) {
+			return 10 * 1024;
+		}
+	}
+
 	public static function formatPrice($amount)
 	{
 		try {
