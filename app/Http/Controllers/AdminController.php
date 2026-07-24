@@ -1288,7 +1288,16 @@ class AdminController extends Controller
             
             $settings->platform_name = $request->input('platform_name');
             $settings->support_email = $request->input('support_email');
-            $settings->support_phone = $request->input('support_phone');
+            if ($request->filled('support_phone')) {
+                $phone = trim($request->input('support_phone'));
+                $countryCode = $request->input('country_code', '+20');
+                if (!str_starts_with($phone, '+')) {
+                    $phone = $countryCode . preg_replace('/^0+/', '', $phone);
+                }
+                $settings->support_phone = $phone;
+            } else {
+                $settings->support_phone = null;
+            }
             $settings->platform_description = $request->input('platform_description');
             
             $settings->max_courses_per_instructor = (int) $request->input('max_courses_per_instructor', 10);

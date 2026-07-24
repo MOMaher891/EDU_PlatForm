@@ -1264,13 +1264,7 @@
                 }
 
                 const iti = window.intlTelInput(input, {
-                    initialCountry: "auto",
-                    geoIpLookup: function(success, failure) {
-                        fetch("https://ipapi.co/json/")
-                            .then(res => res.json())
-                            .then(data => success(data.country_code ? data.country_code.toLowerCase() : "eg"))
-                            .catch(() => success("eg"));
-                    },
+                    initialCountry: "eg",
                     preferredCountries: ["eg", "sa", "ae", "kw", "qa", "om", "bh", "jo", "iq", "ly", "sd", "ma", "dz", "tn", "us", "gb", "tr"],
                     separateDialCode: true,
                     utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"
@@ -1282,8 +1276,35 @@
                     const countryData = iti.getSelectedCountryData();
                     if (countryData && countryData.dialCode && countryCodeInput) {
                         countryCodeInput.value = '+' + countryData.dialCode;
+                    } else if (countryCodeInput && !countryCodeInput.value) {
+                        countryCodeInput.value = '+20';
                     }
                 }
+
+                // Initial number and country resolution
+                const rawVal = input.value ? input.value.trim() : '';
+                if (rawVal) {
+                    if (rawVal.startsWith('+')) {
+                        iti.setNumber(rawVal);
+                    } else {
+                        const code = (countryCodeInput && countryCodeInput.value) ? countryCodeInput.value : '+20';
+                        const cleanNum = rawVal.replace(/^0+/, '');
+                        iti.setNumber(code + cleanNum);
+                    }
+                } else if (countryCodeInput && countryCodeInput.value) {
+                    const dialCode = countryCodeInput.value.replace('+', '');
+                    const allCountries = window.intlTelInputGlobals ? window.intlTelInputGlobals.getCountryData() : [];
+                    const found = allCountries.find(c => c.dialCode === dialCode);
+                    if (found) {
+                        iti.setCountry(found.iso2);
+                    } else {
+                        iti.setCountry('eg');
+                    }
+                } else {
+                    iti.setCountry('eg');
+                }
+
+                updateCountryCode();
 
                 function showPhoneErrorMessage(msg) {
                     let parent = input.closest('.mb-3') || input.parentElement;
@@ -1362,7 +1383,6 @@
                         }
                     });
                 }
-                updateCountryCode();
             });
         }
 
