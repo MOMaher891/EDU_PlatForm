@@ -276,7 +276,7 @@
                             <!-- Course Summary Header -->
                             <div class="course-summary-card mb-4">
                                 <div class="course-thumbnail-wrap">
-                                    <img src="{{ $course->thumbnail ? asset('storage/' . $course->thumbnail) : 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' }}"
+                                    <img src="{{ $course->thumbnail_url }}"
                                          alt="{{ $course->title }}" class="img-fluid">
                                 </div>
                                 <div class="course-brief mt-3">

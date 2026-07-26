@@ -197,7 +197,7 @@
                                                 <div class="course-info">
                                                     <div class="course-thumbnail">
                                                         @if($course->thumbnail)
-                                                            <img src="{{ asset('storage/' . $course->thumbnail) }}"
+                                                            <img src="{{ $course->thumbnail_url }}"
                                                                  alt="{{ $course->title }}" class="rounded">
                                                         @else
                                                             <div class="course-thumbnail-placeholder rounded">

@@ -846,7 +846,11 @@ class StudentController extends Controller
                 return redirect()->back()->with('error', 'No file available for download.');
             }
 
-            $filePath = storage_path('app/public/' . $lesson->file_path);
+            if (Storage::disk('permanent')->exists($lesson->file_path)) {
+                $filePath = Storage::disk('permanent')->path($lesson->file_path);
+            } else {
+                $filePath = storage_path('app/public/' . $lesson->file_path);
+            }
 
             if (!file_exists($filePath)) {
                 return redirect()->back()->with('error', 'File not found.');

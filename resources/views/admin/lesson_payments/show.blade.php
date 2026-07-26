@@ -28,7 +28,7 @@
             <div class="card">
                 <div class="card-header">المرفق</div>
                 <div class="card-body">
-                    <a class="btn btn-outline-secondary" href="{{ asset('storage/' . ltrim($payment->attachment_path, '/')) }}" target="_blank">عرض / تنزيل المرفق</a>
+                    <a class="btn btn-outline-secondary" href="{{ $payment->attachment_url }}" target="_blank">عرض / تنزيل المرفق</a>
                 </div>
             </div>
         </div>

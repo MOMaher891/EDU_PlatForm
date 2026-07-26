@@ -60,8 +60,13 @@ class Lesson extends Model
      */
     public function getFileUrlAttribute()
     {
-        if ($this->file_path && Storage::disk('public')->exists($this->file_path)) {
-            return asset('storage/' . ltrim($this->file_path, '/'));
+        if ($this->file_path) {
+            if (Storage::disk('permanent')->exists($this->file_path)) {
+                return Storage::disk('permanent')->url($this->file_path);
+            }
+            if (Storage::disk('public')->exists($this->file_path)) {
+                return Storage::disk('public')->url($this->file_path);
+            }
         }
         return null;
     }
@@ -92,7 +97,7 @@ class Lesson extends Model
      */
     public function hasFile()
     {
-        return !empty($this->file_path) && Storage::disk('public')->exists($this->file_path);
+        return !empty($this->file_path) && (Storage::disk('permanent')->exists($this->file_path) || Storage::disk('public')->exists($this->file_path));
     }
 
     /**
@@ -266,6 +271,9 @@ class Lesson extends Model
         parent::boot();
 
         static::deleting(function ($lesson) {
+            if ($lesson->file_path && Storage::disk('permanent')->exists($lesson->file_path)) {
+                Storage::disk('permanent')->delete($lesson->file_path);
+            }
             if ($lesson->file_path && Storage::disk('public')->exists($lesson->file_path)) {
                 Storage::disk('public')->delete($lesson->file_path);
             }

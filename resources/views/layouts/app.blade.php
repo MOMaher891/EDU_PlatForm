@@ -835,7 +835,7 @@
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="{{ route('home') }}">
                 @if(!empty($appSettings->platform_logo))
-                    <img src="{{ asset('storage/' . $appSettings->platform_logo) }}" alt="Logo" class="me-2" style="height: 35px; max-width: 120px; object-fit: contain;">
+                    <img src="{{ $appSettings->platform_logo_url }}" alt="Logo" class="me-2" style="height: 35px; max-width: 120px; object-fit: contain;">
                 @else
                     <i class="fas fa-graduation-cap me-2"></i>
                 @endif
@@ -1047,7 +1047,7 @@
                 <div class="col-lg-4">
                     <h5 class="fw-bold mb-3 d-flex align-items-center">
                         @if(!empty($appSettings->platform_logo))
-                            <img src="{{ asset('storage/' . $appSettings->platform_logo) }}" alt="Logo" class="me-2" style="height: 35px; max-width: 120px; object-fit: contain;">
+                            <img src="{{ $appSettings->platform_logo_url }}" alt="Logo" class="me-2" style="height: 35px; max-width: 120px; object-fit: contain;">
                         @else
                             <i class="fas fa-graduation-cap me-2"></i>
                         @endif

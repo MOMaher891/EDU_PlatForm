@@ -33,6 +33,20 @@ class Setting extends Model
 		'email_notifications',
 	];
 
+	public function getPlatformLogoUrlAttribute()
+	{
+		if ($this->platform_logo) {
+			if (str_starts_with($this->platform_logo, 'http://') || str_starts_with($this->platform_logo, 'https://')) {
+				return $this->platform_logo;
+			}
+			if (\Illuminate\Support\Facades\Storage::disk('permanent')->exists($this->platform_logo)) {
+				return \Illuminate\Support\Facades\Storage::disk('permanent')->url($this->platform_logo);
+			}
+			return \Illuminate\Support\Facades\Storage::disk('public')->url($this->platform_logo);
+		}
+		return null;
+	}
+
 	public static function getCached(): self
 	{
 		return cache()->remember('app_settings_singleton', 60, function () {

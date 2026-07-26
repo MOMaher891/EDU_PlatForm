@@ -38,17 +38,7 @@
                                 @endif
                             @elseif($lesson->file_path)
                             @php
-                                $path = ltrim((string) $lesson->file_path, '/');
-                                $videoSrc = null;
-                                if (\Illuminate\Support\Str::startsWith($path, ['http://', 'https://'])) {
-                                    $videoSrc = $path;
-                                } elseif (\Illuminate\Support\Str::startsWith($path, 'public/storage/')) {
-                                    $videoSrc = asset(substr($path, strlen('public/')));
-                                } elseif (\Illuminate\Support\Str::startsWith($path, 'storage/')) {
-                                    $videoSrc = asset($path);
-                                } else {
-                                    $videoSrc = asset('storage/' . $path);
-                                }
+                                $videoSrc = $lesson->file_url;
                             @endphp
                             @if($videoSrc)
                             <video id="videoPreview" class="w-100 h-100" controls playsinline preload="metadata" style="object-fit: cover;">

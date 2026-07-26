@@ -21,6 +21,8 @@
 /storage/app/public/*
 !/storage/app/public/.gitignore
 !/storage/app/public/*/.gitignore
+/public/media/*
+!/public/media/.gitkeep
 /vendor
 Homestead.json
 Homestead.yaml

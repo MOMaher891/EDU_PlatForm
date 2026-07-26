@@ -119,7 +119,7 @@
                                 @foreach($recentCourses as $course)
                                     <div class="course-item">
                                         <div class="course-thumbnail">
-                                            <img src="{{ $course->thumbnail ? asset('storage/' . $course->thumbnail) : 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' }}" 
+                                            <img src="{{ $course->thumbnail_url }}" 
                                                  alt="{{ $course->title }}">
                                             <div class="course-status {{ $course->is_published ? 'published' : 'draft' }}">
                                                 {{ $course->is_published ? 'منشور' : 'مسودة' }}

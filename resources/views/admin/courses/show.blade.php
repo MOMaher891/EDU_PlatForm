@@ -62,7 +62,7 @@
                     <div class="card-body p-0">
                         <div class="course-header">
                             <div class="course-thumbnail">
-                                <img src="{{ $course->thumbnail ? asset('storage/' . $course->thumbnail) : 'https://via.placeholder.com/400x250' }}"
+                                <img src="{{ $course->thumbnail_url }}"
                                      alt="{{ $course->title }}" class="w-100">
                                 @if($course->preview_video)
                                     <div class="video-overlay">
@@ -385,7 +385,7 @@
             </div>
             <div class="modal-body">
                 <video id="previewVideo" controls class="w-100">
-                    <source src="{{ asset('storage/' . $course->preview_video) }}" type="video/mp4">
+                    <source src="{{ $course->preview_video_url }}" type="video/mp4">
                     متصفحك لا يدعم تشغيل الفيديو.
                 </video>
             </div>

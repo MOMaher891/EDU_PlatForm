@@ -184,7 +184,7 @@
                                                 <tr>
                                                     <td>
                                                         <div class="d-flex align-items-center">
-                                                            <img src="{{ $enrollment->course->thumbnail ? asset('storage/' . $enrollment->course->thumbnail) : 'https://via.placeholder.com/40x40' }}"
+                                                            <img src="{{ $enrollment->course->thumbnail_url }}"
                                                                  alt="{{ $enrollment->course->title }}"
                                                                  class="rounded me-2" style="width: 40px; height: 40px; object-fit: cover;">
                                                             <div>
@@ -239,7 +239,7 @@
                                                 <tr>
                                                     <td>
                                                         <div class="d-flex align-items-center">
-                                                            <img src="{{ $course->thumbnail ? asset('storage/' . $course->thumbnail) : 'https://via.placeholder.com/40x40' }}"
+                                                            <img src="{{ $course->thumbnail_url }}"
                                                                  alt="{{ $course->title }}"
                                                                  class="rounded me-2" style="width: 40px; height: 40px; object-fit: cover;">
                                                             <div>
@@ -303,7 +303,7 @@
                                                 <tr>
                                                     <td>
                                                         <div class="d-flex align-items-center">
-                                                            <img src="{{ $payment->course->thumbnail ? asset('storage/' . $payment->course->thumbnail) : 'https://via.placeholder.com/40x40' }}"
+                                                            <img src="{{ $payment->course->thumbnail_url }}"
                                                                  alt="{{ $payment->course->title }}"
                                                                  class="rounded me-2" style="width: 40px; height: 40px; object-fit: cover;">
                                                             <div>

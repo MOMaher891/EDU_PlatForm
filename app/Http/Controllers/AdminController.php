@@ -423,12 +423,12 @@ class AdminController extends Controller
             ]);
 
             if ($request->hasFile('thumbnail')) {
-                $thumbnailPath = $request->file('thumbnail')->store('courses/thumbnails', 'public');
+                $thumbnailPath = $request->file('thumbnail')->store('courses/thumbnails', 'permanent');
                 $validated['thumbnail'] = $thumbnailPath;
             }
 
             if ($request->hasFile('preview_video')) {
-                $previewVideoPath = $request->file('preview_video')->store('courses/videos', 'public');
+                $previewVideoPath = $request->file('preview_video')->store('courses/videos', 'permanent');
                 $validated['preview_video'] = $previewVideoPath;
             }
 
@@ -467,72 +467,76 @@ class AdminController extends Controller
         }
     }
 
-    public function updateCourse(Request $request, Course $course)
-    {
-        try {
-            $validated = $request->validate([
-                'title' => 'required|string|max:255',
-                'description' => 'required|string',
-                'short_description' => 'required|string|max:500',
-                'category_id' => 'required|exists:categories,id',
-                'instructor_id' => 'required|exists:users,id',
-                'price' => 'required|numeric|min:0',
-                'discount_price' => 'nullable|numeric|min:0|lt:price',
-                'level' => 'required|in:beginner,intermediate,advanced',
-                'duration_hours' => 'required|integer|min:1',
-                'is_published' => 'boolean',
-                'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:' . Setting::getMaxFileSizeKB(),
-                'preview_video' => 'nullable|file|mimes:mp4,mov,avi,webm,quicktime|max:' . Setting::getMaxFileSizeKB()
-            ]);
+public function updateCourse(Request $request, Course $course)
+{
+    try {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'short_description' => 'required|string|max:500',
+            'category_id' => 'required|exists:categories,id',
+            'instructor_id' => 'required|exists:users,id',
+            'price' => 'required|numeric|min:0',
+            'discount_price' => 'nullable|numeric|min:0|lt:price',
+            'level' => 'required|in:beginner,intermediate,advanced',
+            'duration_hours' => 'required|integer|min:1',
+            'is_published' => 'boolean',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:' . Setting::getMaxFileSizeKB(),
+            'preview_video' => 'nullable|file|mimes:mp4,mov,avi,webm,quicktime|max:' . Setting::getMaxFileSizeKB()
+        ]);
 
-            if ($request->hasFile('thumbnail')) {
-                // Delete old thumbnail
-                if ($course->thumbnail) {
-                    Storage::disk('public')->delete($course->thumbnail);
-                }
-                $thumbnailPath = $request->file('thumbnail')->store('courses/thumbnails', 'public');
-                $validated['thumbnail'] = $thumbnailPath;
+        // 1. معالجة الصورة (Thumbnail)
+        if ($request->hasFile('thumbnail')) {
+            // مسح الصورة القديمة من الـ permanent disk
+            if ($course->thumbnail) {
+                Storage::disk('permanent')->delete($course->thumbnail);
             }
-
-            if ($request->hasFile('preview_video')) {
-                // Delete old preview video
-                if ($course->preview_video) {
-                    Storage::disk('public')->delete($course->preview_video);
-                }
-                $previewVideoPath = $request->file('preview_video')->store('courses/videos', 'public');
-                $validated['preview_video'] = $previewVideoPath;
-            }
-
-            // Normalize booleans
-            $validated['is_published'] = $request->has('is_published');
-            $validated['is_featured'] = $request->has('is_featured');
-
-            $course->update($validated);
-
-            return redirect()->route('admin.courses.index')
-                ->with('success', 'تم تحديث الكورس بنجاح');
-        } catch (\Exception $e) {
-            Log::error('Error in update course: ' , [
-                'user_id' => auth()->id(),
-                'course_id' => $course->id ?? null,
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            return redirect()->back()->with('error', 'حدث خطأ أثناء تحديث الكورس. يرجى المحاولة مرة أخرى.');
+            // التعديل: استخدام thumbnail بدلاً من image واستخدام permanent disk
+            $thumbnailPath = $request->file('thumbnail')->store('courses', 'permanent');
+            $validated['thumbnail'] = $thumbnailPath;
         }
+
+        // 2. معالجة الفيديو (Preview Video)
+        if ($request->hasFile('preview_video')) {
+            // مسح الفيديو القديم من الـ permanent disk
+            if ($course->preview_video) {
+                Storage::disk('permanent')->delete($course->preview_video);
+            }
+            // التعديل: استخدام permanent disk للرفع
+            $previewVideoPath = $request->file('preview_video')->store('courses/videos', 'permanent');
+            $validated['preview_video'] = $previewVideoPath;
+        }
+
+        // Normalize booleans
+        $validated['is_published'] = $request->has('is_published');
+        $validated['is_featured'] = $request->has('is_featured');
+
+        $course->update($validated);
+
+        return redirect()->route('admin.courses.index')
+            ->with('success', 'تم تحديث الكورس بنجاح');
+    } catch (\Exception $e) {
+        Log::error('Error in update course: ' , [
+            'user_id' => auth()->id(),
+            'course_id' => $course->id ?? null,
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return redirect()->back()->with('error', 'حدث خطأ أثناء تحديث الكورس. يرجى المحاولة مرة أخرى.');
     }
+}
 
     public function destroyCourse(Course $course)
     {
         try {
             // Delete thumbnail
             if ($course->thumbnail) {
-                Storage::disk('public')->delete($course->thumbnail);
+                Storage::disk('permanent')->delete($course->thumbnail);
             }
 
             // Delete preview video
             if ($course->preview_video) {
-                Storage::disk('public')->delete($course->preview_video);
+                Storage::disk('permanent')->delete($course->preview_video);
             }
 
             $course->delete();
@@ -747,7 +751,7 @@ class AdminController extends Controller
             if ($request->hasFile('lesson_file') && $request->file('lesson_file')->isValid()) {
                 $file = $request->file('lesson_file');
                 $fileName = time() . '_' . $file->getClientOriginalName();
-                $filePath = $file->storeAs('lessons', $fileName, 'public');
+                $filePath = $file->storeAs('lessons', $fileName, 'permanent');
 
                 $data['file_path'] = $filePath;
                 $data['file_name'] = $file->getClientOriginalName();
@@ -837,13 +841,13 @@ class AdminController extends Controller
             // Handle file upload
             if ($request->hasFile('lesson_file') && $request->file('lesson_file')->isValid()) {
                 // Delete old file if exists
-                if ($lesson->file_path && Storage::disk('public')->exists($lesson->file_path)) {
-                    Storage::disk('public')->delete($lesson->file_path);
+                if ($lesson->file_path && Storage::disk('permanent')->exists($lesson->file_path)) {
+                    Storage::disk('permanent')->delete($lesson->file_path);
                 }
 
                 $file = $request->file('lesson_file');
                 $fileName = time() . '_' . $file->getClientOriginalName();
-                $filePath = $file->storeAs('lessons', $fileName, 'public');
+                $filePath = $file->storeAs('lessons', $fileName, 'permanent');
 
                 $data['file_path'] = $filePath;
                 $data['file_name'] = $file->getClientOriginalName();
@@ -894,8 +898,8 @@ class AdminController extends Controller
             $section = $lesson->section;
 
             // Delete the associated file if it exists
-            if ($lesson->file_path && Storage::disk('public')->exists($lesson->file_path)) {
-                Storage::disk('public')->delete($lesson->file_path);
+            if ($lesson->file_path && Storage::disk('permanent')->exists($lesson->file_path)) {
+                Storage::disk('permanent')->delete($lesson->file_path);
             }
 
             $lesson->delete();
@@ -947,7 +951,11 @@ class AdminController extends Controller
                 abort(404, 'File not found.');
             }
 
-            $filePath = storage_path('app/public/' . $lesson->file_path);
+            if (Storage::disk('permanent')->exists($lesson->file_path)) {
+                $filePath = Storage::disk('permanent')->path($lesson->file_path);
+            } else {
+                $filePath = storage_path('app/public/' . $lesson->file_path);
+            }
 
             if (!file_exists($filePath)) {
                 abort(404, 'File not found.');
@@ -1314,10 +1322,10 @@ class AdminController extends Controller
             $settings->email_notifications = $request->has('email_notifications');
 
             if ($request->hasFile('platform_logo')) {
-                if ($settings->platform_logo) {
-                    Storage::disk('public')->delete($settings->platform_logo);
+                if ($settings->platform_logo && Storage::disk('permanent')->exists($settings->platform_logo)) {
+                    Storage::disk('permanent')->delete($settings->platform_logo);
                 }
-                $settings->platform_logo = $request->file('platform_logo')->store('settings', 'public');
+                $settings->platform_logo = $request->file('platform_logo')->store('settings', 'permanent');
             }
 
             $settings->save();

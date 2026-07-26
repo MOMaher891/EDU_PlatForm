@@ -63,7 +63,7 @@
                                             <label class="form-label fw-semibold">شعار المنصة</label>
                                             @if(!empty($settings->platform_logo))
                                                 <div class="mb-2">
-                                                    <img src="{{ asset('storage/' . $settings->platform_logo) }}" alt="Logo" class="img-thumbnail" style="max-height: 60px; object-fit: contain;">
+                                                    <img src="{{ $settings->platform_logo_url }}" alt="Logo" class="img-thumbnail" style="max-height: 60px; object-fit: contain;">
                                                 </div>
                                             @endif
                                             <input type="file" class="form-control" name="platform_logo" accept="image/*">

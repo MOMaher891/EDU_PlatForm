@@ -108,7 +108,7 @@
                     <div class="card-body p-4">
                         @forelse($inProgressCourses->take(3) as $enrollment)
                             <div class="course-progress-item d-flex align-items-center mb-4 p-3 rounded-3" style="background: rgba(99, 102, 241, 0.05);">
-                                <img src="{{ $enrollment->course->thumbnail ? asset('storage/' . $enrollment->course->thumbnail) : 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&q=80' }}"
+                                <img src="{{ $enrollment->course->thumbnail_url }}"
                                      class="rounded-3 me-3" style="width: 80px; height: 60px; object-fit: cover;"
                                      alt="{{ $enrollment->course->title }}">
                                 <div class="flex-grow-1">
@@ -167,7 +167,7 @@
                                     <div class="enrolled-course-card p-4 rounded-4 mb-4" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(6, 182, 212, 0.05)); border: 1px solid rgba(99, 102, 241, 0.1);">
                                         <div class="row align-items-center">
                                             <div class="col-md-3">
-                                                <img src="{{ $enrollment->course->thumbnail ? asset('storage/' . $enrollment->course->thumbnail) : 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80' }}"
+                                                <img src="{{ $enrollment->course->thumbnail_url }}"
                                                      class="img-fluid rounded-3" style="width: 100%; height: 120px; object-fit: cover;"
                                                      alt="{{ $enrollment->course->title }}">
                                             </div>
@@ -406,7 +406,7 @@
                         @foreach($recommendedCourses as $course)
                             <div class="recommended-course mb-3 p-3 rounded-3" style="background: rgba(0, 0, 0, 0.02);">
                                 <div class="d-flex align-items-center">
-                                    <img src="{{ $course->thumbnail ? asset('storage/' . $course->thumbnail) : 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=60&q=80' }}"
+                                    <img src="{{ $course->thumbnail_url }}"
                                          class="rounded me-3" style="width: 50px; height: 40px; object-fit: cover;"
                                          alt="{{ $course->title }}">
                                     <div class="flex-grow-1">

@@ -123,7 +123,7 @@ class LessonPaymentController extends Controller
             return (float) ($l->price ?? 0);
         });
 
-        $path = $request->file('attachment')->store('lesson-payments', 'public');
+        $path = $request->file('attachment')->store('lesson-payments', 'permanent');
 
         $payment = LessonPayment::create([
             'student_id' => Auth::id(),

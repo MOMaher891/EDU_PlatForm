@@ -143,7 +143,7 @@
 
                                 <!-- Course Image -->
                                 <div class="course-image mb-3">
-                                    <img src="{{ $enrollment->course->thumbnail ? asset('storage/' . $enrollment->course->thumbnail) : 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' }}"
+                                    <img src="{{ $enrollment->course->thumbnail_url }}"
                                          class="img-fluid rounded-3" style="width: 100%; height: 180px; object-fit: cover;"
                                          alt="{{ $enrollment->course->title }}">
 

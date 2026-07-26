@@ -53,21 +53,7 @@
                         @else
                         <div class="ratio ratio-16x9 rounded overflow-hidden">
                             @php
-                                $src = null;
-                                if ($lesson->video_url) {
-                                    $src = $lesson->video_url;
-                                } elseif ($lesson->file_path) {
-                                    $path = ltrim((string) $lesson->file_path, '/');
-                                    if (\Illuminate\Support\Str::startsWith($path, ['http://', 'https://'])) {
-                                        $src = $path;
-                                    } elseif (\Illuminate\Support\Str::startsWith($path, 'public/storage/')) {
-                                        $src = asset(substr($path, strlen('public/')));
-                                    } elseif (\Illuminate\Support\Str::startsWith($path, 'storage/')) {
-                                        $src = asset($path);
-                                    } else {
-                                        $src = asset('storage/' . $path);
-                                    }
-                                }
+                                $src = $lesson->video_url ?: $lesson->file_url;
                             @endphp
                             @if($src)
                             <video class="w-100 h-100" controls playsinline preload="metadata" style="object-fit: cover;">

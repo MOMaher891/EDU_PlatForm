@@ -23,6 +23,20 @@ class LessonPayment extends Model
         'status' => 'integer',
     ];
 
+    public function getAttachmentUrlAttribute()
+    {
+        if ($this->attachment_path) {
+            if (str_starts_with($this->attachment_path, 'http://') || str_starts_with($this->attachment_path, 'https://')) {
+                return $this->attachment_path;
+            }
+            if (\Illuminate\Support\Facades\Storage::disk('permanent')->exists($this->attachment_path)) {
+                return \Illuminate\Support\Facades\Storage::disk('permanent')->url($this->attachment_path);
+            }
+            return \Illuminate\Support\Facades\Storage::disk('public')->url($this->attachment_path);
+        }
+        return null;
+    }
+
     public function student()
     {
         return $this->belongsTo(User::class, 'student_id');

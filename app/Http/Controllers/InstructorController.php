@@ -120,7 +120,7 @@ class InstructorController extends Controller
         $data['is_published'] = false; // Default to draft
         
         if ($request->hasFile('thumbnail')) {
-            $data['thumbnail'] = $request->file('thumbnail')->store('courses/thumbnails', 'public');
+            $data['thumbnail'] = $request->file('thumbnail')->store('courses/thumbnails', 'permanent');
         }
         
         $course = Course::create($data);
@@ -176,10 +176,10 @@ class InstructorController extends Controller
         $data = $request->all();
         
         if ($request->hasFile('thumbnail')) {
-            if ($course->thumbnail) {
-                Storage::disk('public')->delete($course->thumbnail);
+            if ($course->thumbnail && Storage::disk('permanent')->exists($course->thumbnail)) {
+                Storage::disk('permanent')->delete($course->thumbnail);
             }
-            $data['thumbnail'] = $request->file('thumbnail')->store('courses/thumbnails', 'public');
+            $data['thumbnail'] = $request->file('thumbnail')->store('courses/thumbnails', 'permanent');
         }
         
         $course->update($data);
@@ -199,12 +199,12 @@ class InstructorController extends Controller
             return back()->with('error', 'لا يمكن حذف كورس يحتوي على طلاب مسجلين');
         }
         
-        if ($course->thumbnail) {
-            Storage::disk('public')->delete($course->thumbnail);
+        if ($course->thumbnail && Storage::disk('permanent')->exists($course->thumbnail)) {
+            Storage::disk('permanent')->delete($course->thumbnail);
         }
 
-        if ($course->preview_video) {
-            Storage::disk('public')->delete($course->preview_video);
+        if ($course->preview_video && Storage::disk('permanent')->exists($course->preview_video)) {
+            Storage::disk('permanent')->delete($course->preview_video);
         }
         
         $course->delete();

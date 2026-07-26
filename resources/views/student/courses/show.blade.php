@@ -79,7 +79,7 @@
                     <div class="course-preview-card">
                         <!-- Course Preview Video/Image -->
                         <div class="preview-container position-relative mb-3">
-                            <img src="{{ $course->thumbnail ? asset('storage/' . $course->thumbnail) : 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80' }}"
+                            <img src="{{ $course->thumbnail_url }}"
                                  class="img-fluid rounded-4 shadow-lg" alt="{{ $course->title }}" style="width: 100%; height: 250px; object-fit: cover;">
                             <div class="position-absolute top-50 start-50 translate-middle">
                                 <button class="btn btn-light btn-lg rounded-circle" data-bs-toggle="modal" data-bs-target="#previewModal">
@@ -644,7 +644,7 @@
                 <div class="ratio ratio-16x9">
                     @if($course->preview_video)
                         <video id="previewLocalVideo" controls class="w-100 rounded-bottom">
-                            <source src="{{ asset('storage/' . $course->preview_video) }}" type="video/mp4">
+                            <source src="{{ $course->preview_video_url }}" type="video/mp4">
                             متصفحك لا يدعم تشغيل الفيديو.
                         </video>
                     @else

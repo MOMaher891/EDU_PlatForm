@@ -32,7 +32,7 @@ return [
 
         'local' => [
             'driver' => 'local',
-            'root' => storage_path('app/private'),
+            'root' => storage_path('app'),
             'serve' => true,
             'throw' => false,
             'report' => false,
@@ -46,7 +46,15 @@ return [
             'throw' => false,
             'report' => false,
         ],
-
+        
+        'permanent' => [
+            'driver' => 'local',
+            'root' => env('UPLOADS_PATH', public_path('media')),
+            'url' => env('APP_URL').'/media',
+            'visibility' => 'public',
+            'throw' => false,
+        ],
+        
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

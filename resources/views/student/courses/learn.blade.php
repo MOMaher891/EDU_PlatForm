@@ -360,7 +360,7 @@
         <!-- Course Header -->
         <div class="sidebar-header">
             <div class="course-info">
-                <img src="{{ $course->thumbnail ? asset('storage/' . $course->thumbnail) : 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=300&q=80' }}"
+                <img src="{{ $course->thumbnail_url }}"
                      alt="{{ $course->title }}" class="course-thumbnail">
                 <div class="course-details">
                     <h6 class="course-title">{{ $course->title }}</h6>

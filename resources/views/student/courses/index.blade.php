@@ -178,7 +178,7 @@
                 <div class="col-lg-4 col-md-6 course-item" data-aos="fade-up" data-aos-delay="{{ ($index % 6 + 1) * 100 }}">
                     <div class="card course-card h-100 border-0 shadow-sm">
                         <div class="position-relative overflow-hidden">
-                            <img src="{{ $course->thumbnail ? asset('storage/' . $course->thumbnail) : 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80' }}"
+                            <img src="{{ $course->thumbnail_url }}"
                                  class="card-img-top" alt="{{ $course->title }}" style="height: 250px; object-fit: cover;">
 
                             <!-- Course Level Badge -->

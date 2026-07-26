@@ -146,6 +146,34 @@ class Course extends Model
         return 0;
     }
 
+    public function getThumbnailUrlAttribute()
+    {
+        if ($this->thumbnail) {
+            if (str_starts_with($this->thumbnail, 'http://') || str_starts_with($this->thumbnail, 'https://')) {
+                return $this->thumbnail;
+            }
+            if (\Illuminate\Support\Facades\Storage::disk('permanent')->exists($this->thumbnail)) {
+                return \Illuminate\Support\Facades\Storage::disk('permanent')->url($this->thumbnail);
+            }
+            return \Illuminate\Support\Facades\Storage::disk('public')->url($this->thumbnail);
+        }
+        return asset('images/default.png');
+    }
+
+    public function getPreviewVideoUrlAttribute()
+    {
+        if ($this->preview_video) {
+            if (str_starts_with($this->preview_video, 'http://') || str_starts_with($this->preview_video, 'https://')) {
+                return $this->preview_video;
+            }
+            if (\Illuminate\Support\Facades\Storage::disk('permanent')->exists($this->preview_video)) {
+                return \Illuminate\Support\Facades\Storage::disk('permanent')->url($this->preview_video);
+            }
+            return \Illuminate\Support\Facades\Storage::disk('public')->url($this->preview_video);
+        }
+        return null;
+    }
+
     public function getAverageRating()
     {
         return $this->reviews()->avg('rating') ?? 0;

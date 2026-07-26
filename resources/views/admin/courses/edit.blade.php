@@ -101,7 +101,7 @@
 
                                     @if($course->thumbnail)
                                         <div class="current-thumbnail mb-3">
-                                            <img src="{{ asset('storage/' . $course->thumbnail) }}"
+                                            <img src="{{ $course->thumbnail_url }}"
                                                  alt="Current thumbnail" class="img-thumbnail" style="max-height: 150px;">
                                         </div>
                                     @endif
@@ -121,7 +121,7 @@
                                     @if($course->preview_video)
                                         <div class="current-video mb-3">
                                             <video controls class="img-thumbnail" style="max-height: 150px;">
-                                                <source src="{{ asset('storage/' . $course->preview_video) }}" type="video/mp4">
+                                                <source src="{{ $course->preview_video_url }}" type="video/mp4">
                                                 متصفحك لا يدعم تشغيل الفيديو.
                                             </video>
                                         </div>
