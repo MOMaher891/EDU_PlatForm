@@ -120,7 +120,7 @@ class InstructorController extends Controller
         $data['is_published'] = false; // Default to draft
         
         if ($request->hasFile('thumbnail')) {
-            $data['thumbnail'] = $request->file('thumbnail')->store('courses', 'public');
+            $data['thumbnail'] = $request->file('thumbnail')->store('courses/thumbnails', 'public');
         }
         
         $course = Course::create($data);
@@ -179,7 +179,7 @@ class InstructorController extends Controller
             if ($course->thumbnail) {
                 Storage::disk('public')->delete($course->thumbnail);
             }
-            $data['thumbnail'] = $request->file('thumbnail')->store('courses', 'public');
+            $data['thumbnail'] = $request->file('thumbnail')->store('courses/thumbnails', 'public');
         }
         
         $course->update($data);
