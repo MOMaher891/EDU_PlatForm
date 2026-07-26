@@ -49,11 +49,11 @@
                         </div>
                         <div class="d-flex align-items-center text-white">
                             <i class="fas fa-users me-2"></i>
-                            <span>{{ $course->enrollments->count() }} طالب</span>
+                            <span>{{ $course->enrollments_count ?? $course->enrollments->count() }} طالب</span>
                         </div>
                         <div class="d-flex align-items-center text-white">
                             <i class="fas fa-clock me-2"></i>
-                            <span>{{ $course->duration_hours }} ساعة</span>
+                            <span>{{ $course->getFormattedDurationHours() }} ساعة</span>
                         </div>
                         <div class="d-flex align-items-center text-white">
                             <i class="fas fa-play-circle me-2"></i>
@@ -202,7 +202,7 @@
                                 <div class="d-flex justify-content-between align-items-center mb-4">
                                     <h4 class="fw-bold mb-0">محتوى الكورس</h4>
                                     <div class="text-muted">
-                                        <small>{{ $course->sections->count() }} قسم • {{ $totalLessons }} درس • {{ $course->duration_hours }} ساعة</small>
+                                        <small>{{ $course->sections->count() }} قسم • {{ $totalLessons }} درس • {{ $course->getFormattedDurationHours() }} ساعة</small>
                                     </div>
                                 </div>
 
@@ -360,7 +360,7 @@
                                             </div>
                                             <div class="col-6 col-md-3">
                                                 <div class="text-center">
-                                                    <h5 class="fw-bold text-success mb-1">{{ rand(1000, 5000) }}</h5>
+                                                    <h5 class="fw-bold text-success mb-1">{{ $instructorStudentsCount ?? \App\Models\CourseEnrollment::whereIn('course_id', $course->instructor->instructedCourses()->pluck('id'))->distinct('user_id')->count('user_id') }}</h5>
                                                     <small class="text-muted">طالب</small>
                                                 </div>
                                             </div>
@@ -582,7 +582,7 @@
                             </li>
                             <li class="d-flex align-items-center mb-3">
                                 <i class="fas fa-clock text-success me-3"></i>
-                                <span>{{ $course->duration_hours }} ساعة من المحتوى</span>
+                                <span>{{ $course->getFormattedDurationHours() }} ساعة من المحتوى</span>
                             </li>
                             <li class="d-flex align-items-center mb-3">
                                 <i class="fas fa-infinity text-info me-3"></i>

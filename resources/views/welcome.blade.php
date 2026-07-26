@@ -255,6 +255,7 @@
                 $featuredCourses = \App\Models\Course::where('is_published', true)
                     ->where('is_featured', true)
                     ->with(['instructor', 'category'])
+                    ->withCount('enrollments')
                     ->take(6)
                     ->get();
             @endphp
@@ -307,15 +308,15 @@
                             <div class="course-meta d-flex justify-content-between align-items-center mb-3">
                                 <small class="text-muted">
                                     <i class="fas fa-clock me-1"></i>
-                                    {{ $course->duration_hours }} ساعة
+                                    {{ $course->getFormattedDurationHours() }} ساعة
                                 </small>
                                 <small class="text-muted">
                                     <i class="fas fa-users me-1"></i>
-                                    {{ rand(50, 500) }} طالب
+                                    {{ $course->enrollments_count ?? $course->enrollments()->count() }} طالب
                                 </small>
                                 <small class="text-muted">
                                     <i class="fas fa-play-circle me-1"></i>
-                                    {{ rand(20, 100) }} درس
+                                    {{ $course->getTotalLessons() }} درس
                                 </small>
                             </div>
 

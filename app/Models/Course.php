@@ -122,9 +122,28 @@ class Course extends Model
 
     public function getTotalLessons()
     {
-        return $this->sections->sum(function ($section) {
-            return $section->lessons->count();
-        });
+        if ($this->relationLoaded('sections')) {
+            return $this->sections->sum(function ($section) {
+                return $section->relationLoaded('lessons') ? $section->lessons->count() : $section->lessons()->count();
+            });
+        }
+
+        return \App\Models\Lesson::whereIn('section_id', $this->sections()->pluck('id'))->count();
+    }
+
+    public function getFormattedDurationHours()
+    {
+        if ($this->duration_hours && $this->duration_hours > 0) {
+            return $this->duration_hours;
+        }
+
+        $totalSeconds = \App\Models\Lesson::whereIn('section_id', $this->sections()->pluck('id'))->sum('video_duration');
+        if ($totalSeconds > 0) {
+            $hours = round($totalSeconds / 3600, 1);
+            return $hours > 0 ? $hours : 1;
+        }
+
+        return 0;
     }
 
     public function getAverageRating()
