@@ -153,7 +153,8 @@ class StudentController extends Controller
 
             // Build query for courses
             $query = Course::where('is_published', true)
-                ->with(['instructor', 'category']);
+                ->with(['instructor', 'category'])
+                ->withCount('enrollments');
 
             // Apply search filter
             if (request('search')) {
@@ -417,7 +418,12 @@ class StudentController extends Controller
             // Load course data
             $course->load(['sections.lessons' => function($query) {
                 $query->orderBy('order_index');
-            }, 'instructor', 'category']);
+            }, 'instructor', 'category'])->loadCount('enrollments');
+
+            // Calculate total distinct students enrolled in instructor's courses
+            $instructorStudentsCount = CourseEnrollment::whereIn('course_id', $course->instructor->instructedCourses()->pluck('id'))
+                ->distinct('user_id')
+                ->count('user_id');
 
             // Calculate total lessons
             $totalLessons = $course->getTotalLessons();
@@ -451,7 +457,8 @@ class StudentController extends Controller
                 'reviews',
                 'averageRating',
                 'totalReviews',
-                'paidLessonIds'
+                'paidLessonIds',
+                'instructorStudentsCount'
             ));
         } catch (\Exception $e) {
             Log::error('Error in show course: ' , [

@@ -204,11 +204,11 @@
                                 <div class="d-flex justify-content-between align-items-center">
                                     <small>
                                         <i class="fas fa-play-circle me-1"></i>
-                                        {{ rand(15, 50) }} درس
+                                        {{ $course->getTotalLessons() }} درس
                                     </small>
                                     <small>
                                         <i class="fas fa-clock me-1"></i>
-                                        {{ $course->duration_hours }}ساعة
+                                        {{ $course->getFormattedDurationHours() }} ساعة
                                     </small>
                                 </div>
                             </div>
@@ -239,7 +239,7 @@
                                 <div class="d-flex justify-content-between text-muted small">
                                     <span>
                                         <i class="fas fa-users me-1"></i>
-                                        {{ rand(50, 500) }} طالب
+                                        {{ $course->enrollments_count ?? $course->enrollments()->count() }} طالب
                                     </span>
                                     <span>
                                         <i class="fas fa-language me-1"></i>
