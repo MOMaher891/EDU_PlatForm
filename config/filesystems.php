@@ -49,7 +49,7 @@ return [
         
         'permanent' => [
             'driver' => 'local',
-            'root' => env('UPLOADS_PATH', public_path('media')),
+            'root' => env('UPLOADS_PATH', storage_path('app/public/media')),
             'url' => env('APP_URL').'/media',
             'visibility' => 'public',
             'throw' => false,
