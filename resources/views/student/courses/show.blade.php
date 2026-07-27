@@ -504,7 +504,7 @@
                                     </div>
                                 </div>
                                 <div class="d-grid gap-2 mb-4">
-                                    <a href="{{ route('student.courses.learn', $course) }}" class="btn btn-success btn-lg">
+                                    <a href="{{ route('student.courses.learn', ['course' => $course->id, 'lesson' => $paidLessonIds[0] ?? null]) }}" class="btn btn-success btn-lg">
                                         <i class="fas fa-play me-2"></i>
                                         مشاهدة الدروس المشتراة
                                     </a>

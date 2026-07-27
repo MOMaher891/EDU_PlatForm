@@ -439,8 +439,9 @@ class StudentController extends Controller
                 ->where('status', 1)
                 ->get()
                 ->flatMap(function ($p) {
-                    return collect(explode(',', (string) $p->lessons_ids))
-                        ->filter()
+                    $cleanStr = preg_replace('/[^0-9,]/', '', (string) $p->lessons_ids);
+                    return collect(explode(',', $cleanStr))
+                        ->filter(fn($id) => $id !== '')
                         ->map(fn($id) => (int) $id);
                 })
                 ->unique()
@@ -492,8 +493,9 @@ class StudentController extends Controller
                 ->where('status', 1)
                 ->get()
                 ->flatMap(function ($p) {
-                    return collect(explode(',', (string) $p->lessons_ids))
-                        ->filter()
+                    $cleanStr = preg_replace('/[^0-9,]/', '', (string) $p->lessons_ids);
+                    return collect(explode(',', $cleanStr))
+                        ->filter(fn($id) => $id !== '')
                         ->map(fn($id) => (int) $id);
                 })
                 ->unique()
@@ -515,10 +517,12 @@ class StudentController extends Controller
             } else {
                 // Build sections containing only paid lessons
                 $accessibleSections = $course->sections->map(function ($section) use ($paidLessonIds) {
-                    $section->setRelation('lessons', $section->lessons->filter(function ($lesson) use ($paidLessonIds) {
-                        return in_array($lesson->id, $paidLessonIds);
-                    })->values());
-                    return $section;
+                    $clonedSection = clone $section;
+                    $filteredLessons = $section->lessons->filter(function ($lesson) use ($paidLessonIds) {
+                        return in_array((int) $lesson->id, $paidLessonIds);
+                    })->values();
+                    $clonedSection->setRelation('lessons', $filteredLessons);
+                    return $clonedSection;
                 })->filter(function ($section) {
                     return $section->lessons->count() > 0;
                 })->values();
@@ -528,19 +532,38 @@ class StudentController extends Controller
             $currentLesson = null;
 
             if (request('lesson')) {
-                $currentLesson = Lesson::findOrFail(request('lesson'));
+                $currentLesson = Lesson::find(request('lesson'));
 
-                // Check if user has access to this lesson (section access or paid lesson)
-                $hasLessonAccess = $user->isAdmin() || $user->isInstructor() || $this->sectionAccessService->hasLessonAccess($user, $currentLesson->id) || in_array($currentLesson->id, $paidLessonIds);
-                if (!$hasLessonAccess) {
-                    return redirect()->route('student.courses.show', $course)
-                        ->with('error', 'You do not have access to this lesson.');
+                if ($currentLesson) {
+                    // Check if user has access to this lesson (section access or paid lesson)
+                    $hasLessonAccess = $user->isAdmin() || $user->isInstructor() || $this->sectionAccessService->hasLessonAccess($user, $currentLesson->id) || in_array((int) $currentLesson->id, $paidLessonIds);
+                    if (!$hasLessonAccess) {
+                        return redirect()->route('student.courses.show', $course)
+                            ->with('error', 'You do not have access to this lesson.');
+                    }
                 }
-            } else {
-                // Get first accessible lesson
+            }
+
+            if (!$currentLesson) {
+                // Get first accessible lesson from accessibleSections
                 foreach ($accessibleSections as $section) {
                     if ($section->lessons->count() > 0) {
                         $currentLesson = $section->lessons->first();
+                        break;
+                    }
+                }
+            }
+
+            // Fallback: If no current lesson found yet, but student has paid lessons
+            if (!$currentLesson && count($paidLessonIds) > 0) {
+                $currentLesson = Lesson::whereIn('id', $paidLessonIds)->first();
+            }
+
+            // Fallback 2: Full course access fallback
+            if (!$currentLesson && ($user->isAdmin() || $user->isInstructor() || $enrollment || $hasSectionAccess)) {
+                foreach ($course->sections as $sec) {
+                    if ($sec->lessons->count() > 0) {
+                        $currentLesson = $sec->lessons->first();
                         break;
                     }
                 }
