@@ -22,6 +22,28 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
+// Dynamic Storage Route: Serves files directly from storage/app/public even without symlink
+Route::get('/storage/{path}', function ($path) {
+    if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+        return \Illuminate\Support\Facades\Storage::disk('public')->response($path);
+    }
+    abort(404);
+})->where('path', '.*');
+
+// Dynamic Media Route: Serves files from permanent or public storage
+Route::get('/media/{path}', function ($path) {
+    if (\Illuminate\Support\Facades\Storage::disk('permanent')->exists($path)) {
+        return \Illuminate\Support\Facades\Storage::disk('permanent')->response($path);
+    }
+    if (\Illuminate\Support\Facades\Storage::disk('public')->exists('media/' . $path)) {
+        return \Illuminate\Support\Facades\Storage::disk('public')->response('media/' . $path);
+    }
+    if (\Illuminate\Support\Facades\Storage::disk('public')->exists($path)) {
+        return \Illuminate\Support\Facades\Storage::disk('public')->response($path);
+    }
+    abort(404);
+})->where('path', '.*');
+
 // General Public Pages
 Route::get('/about', [PageController::class, 'about'])->name('about');
 Route::get('/contact', [PageController::class, 'contact'])->name('contact');

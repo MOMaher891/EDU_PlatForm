@@ -29,10 +29,8 @@ class LessonPayment extends Model
             if (str_starts_with($this->attachment_path, 'http://') || str_starts_with($this->attachment_path, 'https://')) {
                 return $this->attachment_path;
             }
-            if (\Illuminate\Support\Facades\Storage::disk('permanent')->exists($this->attachment_path)) {
-                return \Illuminate\Support\Facades\Storage::disk('permanent')->url($this->attachment_path);
-            }
-            return \Illuminate\Support\Facades\Storage::disk('public')->url($this->attachment_path);
+            $cleanPath = ltrim(str_replace(['/storage/', '/media/'], '', $this->attachment_path), '/');
+            return url('media/' . $cleanPath);
         }
         return null;
     }

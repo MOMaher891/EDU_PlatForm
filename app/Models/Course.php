@@ -152,10 +152,8 @@ class Course extends Model
             if (str_starts_with($this->thumbnail, 'http://') || str_starts_with($this->thumbnail, 'https://')) {
                 return $this->thumbnail;
             }
-            if (\Illuminate\Support\Facades\Storage::disk('permanent')->exists($this->thumbnail)) {
-                return \Illuminate\Support\Facades\Storage::disk('permanent')->url($this->thumbnail);
-            }
-            return \Illuminate\Support\Facades\Storage::disk('public')->url($this->thumbnail);
+            $cleanPath = ltrim(str_replace(['/storage/', '/media/'], '', $this->thumbnail), '/');
+            return url('media/' . $cleanPath);
         }
         return asset('images/default.png');
     }
@@ -166,10 +164,8 @@ class Course extends Model
             if (str_starts_with($this->preview_video, 'http://') || str_starts_with($this->preview_video, 'https://')) {
                 return $this->preview_video;
             }
-            if (\Illuminate\Support\Facades\Storage::disk('permanent')->exists($this->preview_video)) {
-                return \Illuminate\Support\Facades\Storage::disk('permanent')->url($this->preview_video);
-            }
-            return \Illuminate\Support\Facades\Storage::disk('public')->url($this->preview_video);
+            $cleanPath = ltrim(str_replace(['/storage/', '/media/'], '', $this->preview_video), '/');
+            return url('media/' . $cleanPath);
         }
         return null;
     }

@@ -39,10 +39,8 @@ class Setting extends Model
 			if (str_starts_with($this->platform_logo, 'http://') || str_starts_with($this->platform_logo, 'https://')) {
 				return $this->platform_logo;
 			}
-			if (\Illuminate\Support\Facades\Storage::disk('permanent')->exists($this->platform_logo)) {
-				return \Illuminate\Support\Facades\Storage::disk('permanent')->url($this->platform_logo);
-			}
-			return \Illuminate\Support\Facades\Storage::disk('public')->url($this->platform_logo);
+			$cleanPath = ltrim(str_replace(['/storage/', '/media/'], '', $this->platform_logo), '/');
+			return url('media/' . $cleanPath);
 		}
 		return null;
 	}
