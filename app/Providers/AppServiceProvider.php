@@ -48,29 +48,41 @@ class AppServiceProvider extends ServiceProvider
     }
 
     /**
-     * Ensure public/storage symbolic link exists and is not a physical directory.
+     * Ensure public symbolic links (storage, media) exist and are not physical directories.
      */
     protected function ensureStorageLinkExists(): void
     {
-        $publicStoragePath = public_path('storage');
-        $targetPath = storage_path('app/public');
+        $links = config('filesystems.links', [
+            public_path('storage') => storage_path('app/public'),
+            public_path('media') => env('UPLOADS_PATH', storage_path('app/public/media')),
+        ]);
+
+        foreach ($links as $link => $target) {
+            $this->createLinkIfNeeded($link, $target);
+        }
+    }
+
+    protected function createLinkIfNeeded(string $linkPath, string $targetPath): void
+    {
+        if (!file_exists($targetPath)) {
+            File::makeDirectory($targetPath, 0755, true, true);
+        }
 
         $targetReal = realpath($targetPath);
-        $publicReal = (file_exists($publicStoragePath) || is_link($publicStoragePath)) ? realpath($publicStoragePath) : false;
+        $linkReal = (file_exists($linkPath) || is_link($linkPath)) ? realpath($linkPath) : false;
 
-        $isValidLink = $publicReal !== false && $targetReal !== false && $publicReal === $targetReal;
+        $isValidLink = $linkReal !== false && $targetReal !== false && $linkReal === $targetReal;
 
         if (!$isValidLink) {
-            if (file_exists($publicStoragePath) || is_link($publicStoragePath)) {
-                $linkTarget = @readlink($publicStoragePath);
+            if (file_exists($linkPath) || is_link($linkPath)) {
+                $linkTarget = @readlink($linkPath);
                 if ($linkTarget !== false && realpath($linkTarget) === $targetReal) {
                     return;
                 }
 
-                // If unlink/rmdir fail (because it's a physical non-empty directory), delete the physical directory
-                if (!@unlink($publicStoragePath) && !@rmdir($publicStoragePath)) {
-                    if (is_dir($publicStoragePath)) {
-                        File::deleteDirectory($publicStoragePath);
+                if (!@unlink($linkPath) && !@rmdir($linkPath)) {
+                    if (is_dir($linkPath)) {
+                        File::deleteDirectory($linkPath);
                     }
                 }
             }

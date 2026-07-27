@@ -206,11 +206,31 @@ Route::middleware(['auth', 'student'])->prefix('student')->name('student.')->gro
         }
 
         // Check if lesson has video file
-        if (!$lesson->file_path || !Storage::disk('public')->exists($lesson->file_path)) {
+        if (!$lesson->file_path) {
             abort(404, 'Video not found');
         }
 
-        $filePath = Storage::disk('public')->path($lesson->file_path);
+        $filePath = null;
+        if (Storage::disk('permanent')->exists($lesson->file_path)) {
+            $filePath = Storage::disk('permanent')->path($lesson->file_path);
+        } elseif (Storage::disk('public')->exists($lesson->file_path)) {
+            $filePath = Storage::disk('public')->path($lesson->file_path);
+        } else {
+            $cleanPath = ltrim(str_replace(['/storage/', '/media/'], '', $lesson->file_path), '/');
+            if (Storage::disk('permanent')->exists($cleanPath)) {
+                $filePath = Storage::disk('permanent')->path($cleanPath);
+            } elseif (Storage::disk('public')->exists($cleanPath)) {
+                $filePath = Storage::disk('public')->path($cleanPath);
+            } elseif (file_exists(public_path('media/' . $cleanPath))) {
+                $filePath = public_path('media/' . $cleanPath);
+            } elseif (file_exists(public_path($lesson->file_path))) {
+                $filePath = public_path($lesson->file_path);
+            }
+        }
+
+        if (!$filePath || !file_exists($filePath)) {
+            abort(404, 'Video not found');
+        }
         $mimeType = $lesson->mime_type ?? 'video/mp4';
 
         // Set security headers
