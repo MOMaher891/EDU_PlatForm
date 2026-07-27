@@ -1,15 +1,5 @@
 <IfModule mod_rewrite.c>
-    <IfModule mod_negotiation.c>
-        Options -MultiViews -Indexes +FollowSymLinks
-    </IfModule>
-
     RewriteEngine On
-
-    # 1. استثناء الملفات والفولدرات الحقيقية (زي الصور اللي جوه public) من التحويل
-    RewriteCond %{REQUEST_FILENAME} -f [OR]
-    RewriteCond %{REQUEST_FILENAME} -d
-    RewriteRule ^ - [L]
-
-    # 2. تحويل باقي الطلبات لمجلد public
+    RewriteCond %{REQUEST_URI} !^/public/
     RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
