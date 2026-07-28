@@ -44,6 +44,43 @@ class LessonPayment extends Model
     {
         return $this->belongsTo(Course::class);
     }
+
+    protected $selectedLessonsCache = null;
+
+    public function getSelectedLessonsAttribute()
+    {
+        if ($this->selectedLessonsCache !== null) {
+            return $this->selectedLessonsCache;
+        }
+
+        $ids = array_filter(array_map('trim', explode(',', (string) $this->lessons_ids)));
+        if (empty($ids)) {
+            return $this->selectedLessonsCache = collect();
+        }
+
+        return $this->selectedLessonsCache = Lesson::with('section')->whereIn('id', $ids)->get();
+    }
+
+    public function getSectionsNamesAttribute()
+    {
+        $lessons = $this->selected_lessons;
+        if ($lessons->isEmpty()) {
+            return '-';
+        }
+
+        $sections = $lessons->pluck('section.title')->filter()->unique();
+        return $sections->isNotEmpty() ? $sections->implode(', ') : '-';
+    }
+
+    public function getLessonsNamesAttribute()
+    {
+        $lessons = $this->selected_lessons;
+        if ($lessons->isEmpty()) {
+            return '-';
+        }
+
+        return $lessons->pluck('title')->implode(', ');
+    }
 }
 
 

@@ -13,6 +13,7 @@
                         <th>#</th>
                         <th>الطالب</th>
                         <th>الكورس</th>
+                        <th>القسم</th>
                         <th>الدروس</th>
                         <th>الإجمالي</th>
                         <th>الحالة</th>
@@ -26,7 +27,8 @@
                             <td>{{ $payment->id }}</td>
                             <td>{{ $payment->student->name ?? '-' }}</td>
                             <td>{{ $payment->course->title ?? '-' }}</td>
-                            <td>{{ $payment->lessons_ids }}</td>
+                            <td>{{ $payment->sections_names }}</td>
+                            <td>{{ $payment->lessons_names }}</td>
                             <td>{{ number_format($payment->total_cost, 2) }}</td>
                             <td>
                                 @php $status = (int) $payment->status; @endphp
@@ -40,7 +42,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="8" class="text-center py-4">لا توجد طلبات</td></tr>
+                        <tr><td colspan="9" class="text-center py-4">لا توجد طلبات</td></tr>
                     @endforelse
                 </tbody>
             </table>

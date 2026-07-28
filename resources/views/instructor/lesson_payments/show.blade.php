@@ -12,7 +12,8 @@
                 <div class="card-body">
                     <div class="mb-2"><strong>الطالب:</strong> {{ $payment->student->name ?? '-' }} ({{ $payment->student->email ?? '-' }})</div>
                     <div class="mb-2"><strong>الكورس:</strong> {{ $payment->course->title ?? '-' }}</div>
-                    <div class="mb-2"><strong>الدروس المختارة:</strong> {{ $payment->lessons_ids }}</div>
+                    <div class="mb-2"><strong>القسم:</strong> {{ $payment->sections_names }}</div>
+                    <div class="mb-2"><strong>الدروس المختارة:</strong> {{ $payment->lessons_names }}</div>
                     <div class="mb-2"><strong>الإجمالي:</strong> {{ number_format($payment->total_cost, 2) }}</div>
                     <div class="mb-2">
                         <strong>الحالة:</strong>
