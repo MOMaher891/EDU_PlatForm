@@ -86,7 +86,7 @@
                         </div>
                     </div>
                     <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                         alt="التعلم الإلكتروني" class="img-fluid rounded-4 shadow-lg">
+                         alt="التعلم الإلكتروني" class="img-fluid rounded-4 shadow-lg" loading="lazy" decoding="async">
                 </div>
             </div>
         </div>
@@ -265,7 +265,7 @@
                     <div class="card course-card h-100 border-0 shadow-sm">
                         <div class="position-relative overflow-hidden">
                             <img src="{{ $course->thumbnail_url }}"
-                                 class="card-img-top" alt="{{ $course->title }}" style="height: 250px; object-fit: cover;">
+                                 class="card-img-top" alt="{{ $course->title }}" loading="lazy" decoding="async" style="height: 250px; object-fit: cover;">
 
                             <!-- Course Level Badge -->
                             <span class="badge position-absolute top-0 start-0 m-3
@@ -300,7 +300,7 @@
                                 </div>
                             </div>
 
-                            <h5 class="card-title fw-bold mb-3">{{ $course->title }}</h5>
+                            <h3 class="h5 card-title fw-bold mb-3">{{ $course->title }}</h3>
                             <p class="card-text text-muted mb-3">
                                 {{ Str::limit($course->short_description, 100) }}
                             </p>
@@ -323,7 +323,7 @@
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <div class="instructor d-flex align-items-center">
                                     <img src="https://ui-avatars.com/api/?name={{ urlencode($course->instructor->name) }}&background=6366f1&color=fff"
-                                         class="rounded-circle me-2" width="32" height="32" alt="{{ $course->instructor->name }}">
+                                         class="rounded-circle me-2" width="32" height="32" alt="{{ $course->instructor->name }}" loading="lazy" decoding="async">
                                     <small class="text-muted">{{ $course->instructor->name }}</small>
                                 </div>
                                 <div class="price">

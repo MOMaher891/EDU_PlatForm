@@ -72,7 +72,7 @@
 
                     <div class="instructor-info d-flex align-items-center">
                         <img src="https://ui-avatars.com/api/?name={{ urlencode($course->instructor->name) }}&background=ffffff&color=6366f1&size=60"
-                             class="rounded-circle me-3" alt="{{ $course->instructor->name }}">
+                             class="rounded-circle me-3" alt="{{ $course->instructor->name }}" loading="lazy" decoding="async">
                         <div class="text-white">
                             <h6 class="mb-1">{{ $course->instructor->name }}</h6>
                             <small class="opacity-75">مدرب معتمد</small>
@@ -85,7 +85,7 @@
                         <!-- Course Preview Video/Image -->
                         <div class="preview-container position-relative mb-3">
                             <img src="{{ $course->thumbnail_url }}"
-                                 class="img-fluid rounded-4 shadow-lg" alt="{{ $course->title }}" style="width: 100%; height: 250px; object-fit: cover;">
+                                 class="img-fluid rounded-4 shadow-lg" alt="{{ $course->title }}" loading="lazy" decoding="async" style="width: 100%; height: 250px; object-fit: cover;">
                             <div class="position-absolute top-50 start-50 translate-middle">
                                 <button class="btn btn-light btn-lg rounded-circle" data-bs-toggle="modal" data-bs-target="#previewModal">
                                     <i class="fas fa-play text-primary"></i>
@@ -138,7 +138,7 @@
                     <div class="tab-pane fade show active" id="overview" role="tabpanel" data-aos="fade-up">
                         <div class="card border-0 shadow-sm mb-4">
                             <div class="card-body p-4">
-                                <h4 class="fw-bold mb-3">وصف الكورس</h4>
+                                <h2 class="h4 fw-bold mb-3">وصف الكورس</h2>
                                 <div class="course-description">
                                     {!! nl2br(e($course->description)) !!}
                                 </div>
@@ -148,7 +148,7 @@
                         <!-- What You'll Learn -->
                         <div class="card border-0 shadow-sm mb-4">
                             <div class="card-body p-4">
-                                <h4 class="fw-bold mb-3">ما ستتعلمه في هذا الكورس</h4>
+                                <h2 class="h4 fw-bold mb-3">ما ستتعلمه في هذا الكورس</h2>
                                 <div class="row g-3">
                                     <div class="col-md-6">
                                         <div class="d-flex align-items-start">
@@ -181,7 +181,7 @@
                         <!-- Requirements -->
                         <div class="card border-0 shadow-sm">
                             <div class="card-body p-4">
-                                <h4 class="fw-bold mb-3">المتطلبات</h4>
+                                <h2 class="h4 fw-bold mb-3">المتطلبات</h2>
                                 <ul class="list-unstyled">
                                     <li class="mb-2">
                                         <i class="fas fa-laptop text-primary me-2"></i>
@@ -205,7 +205,7 @@
                         <div class="card border-0 shadow-sm">
                             <div class="card-body p-4">
                                 <div class="d-flex justify-content-between align-items-center mb-4">
-                                    <h4 class="fw-bold mb-0">محتوى الكورس</h4>
+                                    <h2 class="h4 fw-bold mb-0">محتوى الكورس</h2>
                                     <div class="text-muted">
                                         <small>{{ $course->sections->count() }} قسم • {{ $totalLessons }} درس • {{ $course->getFormattedDurationHours() }} ساعة</small>
                                     </div>
@@ -345,12 +345,12 @@
                                 <div class="row">
                                     <div class="col-md-3 text-center mb-4">
                                         <img src="https://ui-avatars.com/api/?name={{ urlencode($course->instructor->name) }}&background=6366f1&color=fff&size=150"
-                                             class="rounded-circle mb-3" alt="{{ $course->instructor->name }}">
-                                        <h5 class="fw-bold">{{ $course->instructor->name }}</h5>
+                                             class="rounded-circle mb-3" alt="{{ $course->instructor->name }}" loading="lazy" decoding="async">
+                                        <h3 class="h5 fw-bold">{{ $course->instructor->name }}</h3>
                                         <p class="text-muted">مدرب معتمد</p>
                                     </div>
                                     <div class="col-md-9">
-                                        <h4 class="fw-bold mb-3">نبذة عن المدرب</h4>
+                                        <h2 class="h4 fw-bold mb-3">نبذة عن المدرب</h2>
                                         <p class="text-muted mb-4">
                                             مدرب خبير في مجال {{ $course->category->name }} مع أكثر من 10 سنوات من الخبرة العملية.
                                             حاصل على شهادات متخصصة ومعتمدة دولياً. قام بتدريب آلاف الطلاب وساعدهم في تطوير مهاراتهم المهنية.

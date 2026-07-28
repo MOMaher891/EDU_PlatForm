@@ -62,6 +62,14 @@ class Course extends Model
                 $course->slug = Str::slug($course->title);
             }
         });
+
+        static::saved(function () {
+            \Illuminate\Support\Facades\Cache::forget('public_all_categories');
+        });
+
+        static::deleted(function () {
+            \Illuminate\Support\Facades\Cache::forget('public_all_categories');
+        });
     }
 
     /**
@@ -163,6 +171,13 @@ class Course extends Model
                 return $this->thumbnail;
             }
             $cleanPath = ltrim(str_replace(['/storage/', '/media/'], '', $this->thumbnail), '/');
+
+            // Automatic WebP fallback detection for optimized image delivery
+            $webpPath = preg_replace('/\.(jpg|jpeg|png)$/i', '.webp', $cleanPath);
+            if ($webpPath !== $cleanPath && file_exists(public_path('media/' . $webpPath))) {
+                return url('media/' . $webpPath);
+            }
+
             return url('media/' . $cleanPath);
         }
         return asset('images/default.png');

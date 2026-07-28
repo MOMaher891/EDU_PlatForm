@@ -179,7 +179,7 @@
                     <div class="card course-card h-100 border-0 shadow-sm">
                         <div class="position-relative overflow-hidden">
                             <img src="{{ $course->thumbnail_url }}"
-                                 class="card-img-top" alt="{{ $course->title }}" style="height: 250px; object-fit: cover;">
+                                 class="card-img-top" alt="{{ $course->title }}" loading="lazy" decoding="async" style="height: 250px; object-fit: cover;">
 
                             <!-- Course Level Badge -->
                             <span class="badge position-absolute top-0 start-0 m-3
@@ -225,7 +225,7 @@
                                 </div>
                             </div>
 
-                            <h5 class="card-title fw-bold mb-3 line-clamp-2">{{ $course->title }}</h5>
+                            <h2 class="h5 card-title fw-bold mb-3 line-clamp-2">{{ $course->title }}</h2>
                             <p class="card-text text-muted mb-3 line-clamp-3">
                                 {{ Str::limit($course->short_description, 120) }}
                             </p>
@@ -233,7 +233,7 @@
                             <div class="course-meta mb-3">
                                 <div class="d-flex align-items-center mb-2">
                                     <img src="https://ui-avatars.com/api/?name={{ urlencode($course->instructor->name) }}&background=6366f1&color=fff"
-                                         class="rounded-circle me-2" width="24" height="24" alt="{{ $course->instructor->name }}">
+                                         class="rounded-circle me-2" width="24" height="24" alt="{{ $course->instructor->name }}" loading="lazy" decoding="async">
                                     <small class="text-muted">{{ $course->instructor->name }}</small>
                                 </div>
                                 <div class="d-flex justify-content-between text-muted small">
