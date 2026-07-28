@@ -66,22 +66,22 @@
                     <div class="floating-cards">
                         <div class="card glass position-absolute" style="top: 10%; right: 10%; width: 200px;" data-aos="fade-up" data-aos-delay="200">
                             <div class="card-body text-center">
-                                <i class="fas fa-code text-primary fa-2x mb-2"></i>
-                                <div class="h6 fw-bold mb-0">البرمجة</div>
+                                <i class="fas fa-atom text-primary fa-2x mb-2"></i>
+                                <div class="h6 fw-bold mb-0">الفيزياء</div>
                                 <small class="text-muted">120+ كورس</small>
                             </div>
                         </div>
                         <div class="card glass position-absolute" style="bottom: 20%; left: 10%; width: 180px;" data-aos="fade-up" data-aos-delay="400">
                             <div class="card-body text-center">
-                                <i class="fas fa-paint-brush text-success fa-2x mb-2"></i>
-                                <div class="h6 fw-bold mb-0">التصميم</div>
+                                <i class="fas fa-flask text-success fa-2x mb-2"></i>
+                                <div class="h6 fw-bold mb-0">الكيمياء</div>
                                 <small class="text-muted">85+ كورس</small>
                             </div>
                         </div>
                         <div class="card glass position-absolute" style="top: 40%; left: 30%; width: 160px;" data-aos="fade-up" data-aos-delay="600">
                             <div class="card-body text-center">
-                                <i class="fas fa-chart-line text-warning fa-2x mb-2"></i>
-                                <div class="h6 fw-bold mb-0">التسويق</div>
+                                <i class="fas fa-calculator text-warning fa-2x mb-2"></i>
+                                <div class="h6 fw-bold mb-0">الرياضيات</div>
                                 <small class="text-muted">65+ كورس</small>
                             </div>
                         </div>
