@@ -1,7 +1,21 @@
 {{-- Technical SEO Head Partial --}}
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="csrf-token" content="{{ csrf_token() }}">
+
+{{-- Performance Resource Hints for Fast Mobile Connection --}}
+<link rel="dns-prefetch" href="//fonts.googleapis.com">
+<link rel="dns-prefetch" href="//fonts.gstatic.com">
+<link rel="dns-prefetch" href="//cdn.jsdelivr.net">
+<link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+<link rel="dns-prefetch" href="//unpkg.com">
+<link rel="dns-prefetch" href="//images.unsplash.com">
+<link rel="dns-prefetch" href="//ui-avatars.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+
 
 {{-- Dynamic Title Tag --}}
 <title>@hasSection('meta_title')@yield('meta_title') | {{ $appSettings->platform_name ?? config('app.name', 'منصة التعلم الإلكتروني') }}@else{{ $appSettings->platform_name ?? config('app.name', 'منصة التعلم الإلكتروني') }} - منصة التعليم الذكي والتدريب الإلكتروني@endif</title>

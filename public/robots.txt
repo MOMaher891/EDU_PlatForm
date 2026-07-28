@@ -47,4 +47,5 @@ Disallow: /api
 Disallow: /api/*
 
 # Sitemap Reference
-Sitemap: sitemap.xml
+Sitemap: http://127.0.0.1:8000/sitemap.xml
+
