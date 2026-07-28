@@ -369,17 +369,23 @@
             </div>
 
             <!-- Progress Overview -->
+            @php
+                $totalAccessibleLessons = isset($accessibleSections) ? $accessibleSections->sum(fn($sec) => $sec->lessons->count()) : $course->getTotalLessons();
+                $totalCompletedLessons = isset($lessonProgress) ? count(array_filter($lessonProgress)) : 0;
+                $calculatedProgress = $totalAccessibleLessons > 0 ? round(($totalCompletedLessons / $totalAccessibleLessons) * 100) : 0;
+                $displayProgress = ($enrollment && $enrollment->progress > 0) ? round($enrollment->progress) : $calculatedProgress;
+            @endphp
             <div class="progress-overview">
                 <div class="progress-stats">
-                    <span class="completed-lessons">{{ array_sum($lessonProgress) }}</span>
-                    <span class="total-lessons">/ {{ $course->getTotalLessons() }}</span>
+                    <span class="completed-lessons">{{ $totalCompletedLessons }}</span>
+                    <span class="total-lessons">/ {{ $totalAccessibleLessons }}</span>
                     <span class="progress-text">دروس مكتملة</span>
                 </div>
                 <div class="progress-bar-wrapper">
                     <div class="progress-bar">
-                        <div class="progress-fill" style="width: {{ $enrollment->progress ?? 0 }}%"></div>
+                        <div class="progress-fill" style="width: {{ $displayProgress }}%"></div>
                     </div>
-                    <span class="progress-percentage">{{ round($enrollment->progress ?? 0) }}%</span>
+                    <span class="progress-percentage">{{ $displayProgress }}%</span>
                 </div>
             </div>
         </div>
