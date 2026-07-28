@@ -26,7 +26,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap"></noscript>
 
-    <!-- CSS Stylesheets (Asynchronous Non-blocking for Non-Critical Styles) -->
+    <!-- CSS Stylesheets -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" media="print" onload="this.media='all'">
     <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"></noscript>
@@ -52,6 +52,16 @@
 
     <!-- App UI Styles (always on) -->
     <style>
+        /* Force font-display: swap for Font Awesome Webfonts */
+        @font-face {
+            font-family: 'Font Awesome 6 Free';
+            font-display: swap !important;
+        }
+        @font-face {
+            font-family: 'Font Awesome 6 Brands';
+            font-display: swap !important;
+        }
+
         :root {
             --primary-color: #6366f1;
             --primary-dark: #4f46e5;
