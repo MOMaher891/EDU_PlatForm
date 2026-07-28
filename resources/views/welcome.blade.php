@@ -5,7 +5,7 @@
 @section('content')
 <!-- Hero Section -->
 <section class="hero-section position-relative overflow-hidden">
-    <div class="container py-5">
+    <div class="container py-5 position-relative" style="z-index: 2;">
         <div class="row align-items-center min-vh-100">
             <div class="col-lg-6" data-aos="fade-right">
                 <div class="hero-content">
@@ -86,17 +86,18 @@
                             </div>
                         </div>
                     </div>
-                    <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                         srcset="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=75 500w, https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80 800w"
-                         sizes="(max-width: 768px) 100vw, 600px"
-                         alt="منصة التعلم الإلكتروني والتدريب" class="img-fluid rounded-4 shadow-lg" fetchpriority="high" decoding="async" width="800" height="533">
+                    <picture>
+                        <source media="(max-width: 991.98px)" srcset="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=380&h=253&q=55&fm=webp">
+                        <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=550&h=367&q=60&fm=webp"
+                             alt="منصة التعلم الإلكتروني والتدريب" class="img-fluid rounded-4 shadow-lg" loading="eager" fetchpriority="high" decoding="async" width="550" height="367">
+                    </picture>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Background Elements -->
-    <div class="position-absolute top-0 start-0 w-100 h-100 overflow-hidden" style="z-index: -1;">
+    <div class="position-absolute top-0 start-0 w-100 h-100 overflow-hidden" style="z-index: 1; pointer-events: none; contain: strict;">
         <div class="position-absolute" style="top: 10%; right: 10%; width: 100px; height: 100px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 50%; opacity: 0.1;"></div>
         <div class="position-absolute" style="bottom: 20%; left: 15%; width: 150px; height: 150px; background: linear-gradient(135deg, #f093fb, #f5576c); border-radius: 50%; opacity: 0.1;"></div>
         <div class="position-absolute" style="top: 50%; left: 5%; width: 80px; height: 80px; background: linear-gradient(135deg, #4facfe, #00f2fe); border-radius: 50%; opacity: 0.1;"></div>
@@ -478,7 +479,7 @@
             </div>
             <div class="modal-body p-0">
                 <div class="ratio ratio-16x9">
-                    <iframe src="https://www.youtube.com/embed/ScMzIvxBSi4" allowfullscreen loading="lazy" title="فيديو تعريفي عن المنصة"></iframe>
+                    <iframe id="youtubeVideoIframe" data-src="https://www.youtube-nocookie.com/embed/ScMzIvxBSi4?autoplay=1" allowfullscreen allow="autoplay" loading="lazy" title="فيديو تعريفي عن المنصة"></iframe>
                 </div>
             </div>
         </div>
@@ -486,7 +487,8 @@
 </div>
 
 @push('styles')
-<link rel="preload" as="image" href="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" fetchpriority="high">
+<link rel="preload" as="image" href="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=380&h=253&q=55&fm=webp" media="(max-width: 991.98px)" fetchpriority="high">
+<link rel="preload" as="image" href="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=550&h=367&q=60&fm=webp" media="(min-width: 992px)" fetchpriority="high">
 <style>
     .hero-section {
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.9));
@@ -555,9 +557,18 @@
         });
     });
 
-    const statsSection = document.querySelector('.counter').closest('section');
-    if (statsSection) {
-        observer.observe(statsSection);
+    // Dynamic YouTube Modal Lazy Loader (No third-party cookies on initial page load)
+    const videoModal = document.getElementById('videoModal');
+    const youtubeIframe = document.getElementById('youtubeVideoIframe');
+    if (videoModal && youtubeIframe) {
+        videoModal.addEventListener('show.bs.modal', function () {
+            if (youtubeIframe.dataset.src) {
+                youtubeIframe.src = youtubeIframe.dataset.src;
+            }
+        });
+        videoModal.addEventListener('hide.bs.modal', function () {
+            youtubeIframe.src = '';
+        });
     }
 </script>
 @endpush
