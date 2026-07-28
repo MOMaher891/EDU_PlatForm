@@ -53,7 +53,8 @@
                                 <span>إنشاء حساب مجاني</span>
                             </a>
                         @endguest
-                        <button class="btn btn-link btn-lg text-decoration-none w-100 w-md-auto d-inline-flex align-items-center justify-content-center" data-bs-toggle="modal" data-bs-target="#videoModal">
+                        <button class="btn btn-link btn-lg text-decoration-none w-100 w-md-auto d-inline-flex align-items-center justify-content-center" 
+                                data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="شاهد الفيديو التعريفي للمنصة">
                             <i class="fas fa-play-circle me-2"></i>
                             <span>شاهد الفيديو التعريفي</span>
                         </button>
@@ -86,7 +87,7 @@
                         </div>
                     </div>
                     <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                         alt="التعلم الإلكتروني" class="img-fluid rounded-4 shadow-lg" loading="lazy" decoding="async">
+                         alt="منصة التعلم الإلكتروني والتدريب" class="img-fluid rounded-4 shadow-lg" fetchpriority="high" decoding="async" width="800" height="533">
                 </div>
             </div>
         </div>
@@ -265,7 +266,7 @@
                     <div class="card course-card h-100 border-0 shadow-sm">
                         <div class="position-relative overflow-hidden">
                             <img src="{{ $course->thumbnail_url }}"
-                                 class="card-img-top" alt="{{ $course->title }}" loading="lazy" decoding="async" style="height: 250px; object-fit: cover;">
+                                 class="card-img-top" alt="{{ $course->title }}" loading="lazy" decoding="async" width="400" height="250" style="height: 250px; object-fit: cover;">
 
                             <!-- Course Level Badge -->
                             <span class="badge position-absolute top-0 start-0 m-3

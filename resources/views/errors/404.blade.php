@@ -47,8 +47,8 @@
                         <i class="fas fa-graduation-cap me-2"></i> تصفح جميع الكورسات
                     </a>
                     @if(Route::has('contact'))
-                    <a href="{{ route('contact') }}" class="btn btn-outline-secondary btn-lg rounded-pill px-4 shadow-sm">
-                        <i class="fas fa-headset me-2"></i> اتصل بالدعم الفني
+                    <a href="{{ route('contact') }}" class="btn btn-outline-dark btn-lg rounded-pill px-4 shadow-sm">
+                        <i class="fas fa-headset me-2 text-primary"></i> اتصل بالدعم الفني
                     </a>
                     @endif
                 </div>

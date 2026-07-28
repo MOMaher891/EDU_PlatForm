@@ -72,7 +72,7 @@
 
                     <div class="instructor-info d-flex align-items-center">
                         <img src="https://ui-avatars.com/api/?name={{ urlencode($course->instructor->name) }}&background=ffffff&color=6366f1&size=60"
-                             class="rounded-circle me-3" alt="{{ $course->instructor->name }}" loading="lazy" decoding="async">
+                             class="rounded-circle me-3" alt="{{ $course->instructor->name }}" loading="lazy" decoding="async" width="60" height="60">
                         <div class="text-white">
                             <h6 class="mb-1">{{ $course->instructor->name }}</h6>
                             <small class="opacity-75">مدرب معتمد</small>
@@ -85,9 +85,9 @@
                         <!-- Course Preview Video/Image -->
                         <div class="preview-container position-relative mb-3">
                             <img src="{{ $course->thumbnail_url }}"
-                                 class="img-fluid rounded-4 shadow-lg" alt="{{ $course->title }}" loading="lazy" decoding="async" style="width: 100%; height: 250px; object-fit: cover;">
+                                 class="img-fluid rounded-4 shadow-lg" alt="{{ $course->title }}" fetchpriority="high" decoding="async" width="800" height="450" style="width: 100%; height: 250px; object-fit: cover;">
                             <div class="position-absolute top-50 start-50 translate-middle">
-                                <button class="btn btn-light btn-lg rounded-circle" data-bs-toggle="modal" data-bs-target="#previewModal">
+                                <button class="btn btn-light btn-lg rounded-circle" data-bs-toggle="modal" data-bs-target="#previewModal" aria-label="معاينة كورس {{ $course->title }}">
                                     <i class="fas fa-play text-primary"></i>
                                 </button>
                             </div>
@@ -345,7 +345,7 @@
                                 <div class="row">
                                     <div class="col-md-3 text-center mb-4">
                                         <img src="https://ui-avatars.com/api/?name={{ urlencode($course->instructor->name) }}&background=6366f1&color=fff&size=150"
-                                             class="rounded-circle mb-3" alt="{{ $course->instructor->name }}" loading="lazy" decoding="async">
+                                             class="rounded-circle mb-3" alt="{{ $course->instructor->name }}" loading="lazy" decoding="async" width="150" height="150">
                                         <h3 class="h5 fw-bold">{{ $course->instructor->name }}</h3>
                                         <p class="text-muted">مدرب معتمد</p>
                                     </div>
@@ -617,16 +617,16 @@
                             شارك الكورس
                         </h6>
                         <div class="d-flex gap-2">
-                            <button class="btn btn-outline-primary flex-fill" onclick="shareOnFacebook()">
+                            <button class="btn btn-outline-primary flex-fill" onclick="shareOnFacebook()" aria-label="مشاركة عبر فيسبوك">
                                 <i class="fab fa-facebook"></i>
                             </button>
-                            <button class="btn btn-outline-info flex-fill" onclick="shareOnTwitter()">
+                            <button class="btn btn-outline-info flex-fill" onclick="shareOnTwitter()" aria-label="مشاركة عبر تويتر">
                                 <i class="fab fa-twitter"></i>
                             </button>
-                            <button class="btn btn-outline-success flex-fill" onclick="shareOnWhatsApp()">
+                            <button class="btn btn-outline-success flex-fill" onclick="shareOnWhatsApp()" aria-label="مشاركة عبر واتساب">
                                 <i class="fab fa-whatsapp"></i>
                             </button>
-                            <button class="btn btn-outline-secondary flex-fill" onclick="copyLink()">
+                            <button class="btn btn-outline-secondary flex-fill" onclick="copyLink()" aria-label="نسخ رابط الكورس">
                                 <i class="fas fa-link"></i>
                             </button>
                         </div>

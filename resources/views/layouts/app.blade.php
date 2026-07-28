@@ -26,14 +26,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Bootstrap RTL CSS -->
+    <!-- CSS Stylesheets -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- AOS Animation -->
-    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-    <!-- IntlTelInput CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.css">
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.css"></noscript>
 
     @if($appSettings->block_devtools ?? false)
     <script src="https://cdn.jsdelivr.net/npm/disable-devtool"></script>
@@ -166,17 +164,16 @@
         }
 
         .btn-outline-secondary {
-            border: 2px solid rgba(255, 255, 255, 0.4);
-            color: #ffffff !important;
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(8px);
+            border: 2px solid #cbd5e1;
+            color: #334155 !important;
+            background: #f8fafc;
             font-weight: 600;
         }
         .btn-outline-secondary:hover {
-            background: #ffffff;
-            color: #1e293b !important;
-            border-color: #ffffff;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            background: #334155;
+            color: #ffffff !important;
+            border-color: #334155;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .page-header .btn-outline-secondary,
@@ -1126,14 +1123,18 @@
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
     <!-- Error Handler Script -->
-    <script src="{{ asset('js/error-handler.js') }}"></script>
+    <script defer src="{{ asset('js/error-handler.js') }}"></script>
 
     <script>
-        // Initialize AOS
-        AOS.init({
-            duration: 800,
-            easing: 'ease-in-out',
-            once: true
+        // Initialize AOS safely after DOM load
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof AOS !== 'undefined') {
+                AOS.init({
+                    duration: 800,
+                    easing: 'ease-in-out',
+                    once: true
+                });
+            }
         });
 
         // Auto-hide alerts
@@ -1234,7 +1235,7 @@
         });
     </script>
     <!-- International Telephone Input JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
     <script>
         function initIntlTelInputs(container = document) {
             if (typeof window.intlTelInput === 'undefined') return;
