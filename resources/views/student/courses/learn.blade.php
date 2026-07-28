@@ -375,7 +375,7 @@
                 if (isset($accessibleSections) && isset($lessonProgress)) {
                     foreach ($accessibleSections as $sec) {
                         foreach ($sec->lessons as $l) {
-                            if (!empty($lessonProgress[$l->id])) {
+                            if (!empty($lessonProgress[$l->id]) && ($lessonProgress[$l->id] == 1 || $lessonProgress[$l->id] === true)) {
                                 $totalCompletedLessons++;
                             }
                         }
@@ -417,7 +417,7 @@
                             $totalCount = $sectionLessons->count();
                             $completedCount = 0;
                             foreach ($sectionLessons as $sl) {
-                                if (!empty($lessonProgress[$sl->id])) {
+                                if (!empty($lessonProgress[$sl->id]) && ($lessonProgress[$sl->id] == 1 || $lessonProgress[$sl->id] === true)) {
                                     $completedCount++;
                                 }
                             }
@@ -593,8 +593,6 @@ class VideoSecurity {
                 this.setupSecurityMeasures();
                 this.startSecurityMonitoring();
             }, 1000);
-        } else {
-            console.log('No video element found, security system not initialized');
         }
     }
 
@@ -618,8 +616,6 @@ class VideoSecurity {
 
             // Add watermark
             this.addWatermark();
-
-            console.log('Video security measures initialized successfully');
         } catch (error) {
             console.error('Error setting up security measures:', error);
         }
@@ -698,28 +694,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize video security system
     window.videoSecurity = new VideoSecurity();
 
-    // Video initialization
-    console.log('Learning interface loaded with security measures');
-
     // Check if video element exists and set up event listeners
     const video = document.getElementById('lessonVideo');
     if (video) {
-        console.log('Video element found with security protection');
-
         // Add error handling
         video.addEventListener('error', function(e) {
             console.error('Video error occurred:', e);
-            console.error('Video error details:', video.error);
-        });
-
-        // Add load event
-        video.addEventListener('loadeddata', function() {
-            console.log('Video data loaded successfully');
-        });
-
-        // Add canplay event
-        video.addEventListener('canplay', function() {
-            console.log('Video can start playing');
         });
     }
 });

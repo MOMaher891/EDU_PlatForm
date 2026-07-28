@@ -36,20 +36,13 @@ class LearningInterface {
         // Video progress tracking
         const video = document.getElementById('lessonVideo');
         if (video) {
-            console.log('Setting up video event listeners');
             video.addEventListener('timeupdate', () => this.trackVideoProgress());
             video.addEventListener('ended', () => this.onVideoEnded());
             video.addEventListener('play', () => this.onVideoPlay());
             video.addEventListener('pause', () => this.onVideoPause());
             video.addEventListener('error', (e) => {
                 console.error('Video error:', e);
-                console.error('Video error details:', video.error);
             });
-            video.addEventListener('loadeddata', () => {
-                console.log('Video data loaded successfully');
-            });
-        } else {
-            console.log('No video element found for event listeners');
         }
 
         // Progress update buttons
@@ -77,27 +70,8 @@ class LearningInterface {
     initializeVideoPlayer() {
         const video = document.getElementById('lessonVideo');
         if (!video) {
-            console.log('No video element found with id "lessonVideo"');
-            // Check if there are any video elements on the page
-            const allVideos = document.querySelectorAll('video');
-            console.log('Total video elements on page:', allVideos.length);
-            allVideos.forEach((v, index) => {
-                console.log(`Video ${index}:`, v);
-                console.log(`Video ${index} src:`, v.src);
-                console.log(`Video ${index} sources:`, v.querySelectorAll('source'));
-            });
             return;
         }
-
-        console.log('Video element found:', video);
-        console.log('Video src:', video.src);
-        console.log('Video sources:', video.querySelectorAll('source'));
-
-        // Log source details
-        const sources = video.querySelectorAll('source');
-        sources.forEach((source, index) => {
-            console.log(`Source ${index}:`, source.src, 'Type:', source.type);
-        });
 
         this.videoPlayer = video;
 
@@ -112,11 +86,8 @@ class LearningInterface {
         // Custom video controls
         const videoContainer = document.querySelector('.video-container');
         if (!videoContainer) {
-            console.log('No video container found');
             return;
         }
-
-        console.log('Video container found:', videoContainer);
 
         // Create custom controls
         const controls = document.createElement('div');
@@ -174,7 +145,9 @@ class LearningInterface {
         progressBar.addEventListener('click', (e) => {
             const rect = progressBar.getBoundingClientRect();
             const percent = (e.clientX - rect.left) / rect.width;
-            video.currentTime = percent * video.duration;
+            if (video.duration && isFinite(video.duration)) {
+                video.currentTime = percent * video.duration;
+            }
         });
 
         // Volume
@@ -199,13 +172,17 @@ class LearningInterface {
 
         // Update controls
         video.addEventListener('timeupdate', () => {
-            const percent = (video.currentTime / video.duration) * 100;
-            progressFill.style.width = percent + '%';
-            currentTimeSpan.textContent = this.formatTime(video.currentTime);
+            if (video.duration && isFinite(video.duration) && video.duration > 0) {
+                const percent = (video.currentTime / video.duration) * 100;
+                progressFill.style.width = percent + '%';
+            }
+            currentTimeSpan.textContent = this.formatTime(video.currentTime || 0);
         });
 
         video.addEventListener('loadedmetadata', () => {
-            totalTimeSpan.textContent = this.formatTime(video.duration);
+            if (video.duration && isFinite(video.duration)) {
+                totalTimeSpan.textContent = this.formatTime(video.duration);
+            }
         });
 
         video.addEventListener('play', () => {
@@ -220,7 +197,7 @@ class LearningInterface {
     trackVideoProgress() {
         if (!this.videoPlayer) return;
 
-        const currentTime = Math.floor(this.videoPlayer.currentTime);
+        const currentTime = Math.floor(this.videoPlayer.currentTime || 0);
 
         // Update watch time every 5 seconds
         if (currentTime - this.lastProgressUpdate >= 5) {
@@ -230,7 +207,7 @@ class LearningInterface {
         }
 
         // Auto-mark as complete when 90% watched
-        if (!this.isCompleted && this.videoPlayer.duration > 0) {
+        if (!this.isCompleted && this.videoPlayer.duration && isFinite(this.videoPlayer.duration) && this.videoPlayer.duration > 0) {
             const progressPercent = (currentTime / this.videoPlayer.duration) * 100;
             if (progressPercent >= 90) {
                 this.markLessonComplete();
@@ -243,7 +220,7 @@ class LearningInterface {
 
     updateVideoProgressBar(currentTime) {
         const progressBar = document.querySelector('.video-progress-bar');
-        if (progressBar && this.videoPlayer.duration > 0) {
+        if (progressBar && this.videoPlayer.duration && isFinite(this.videoPlayer.duration) && this.videoPlayer.duration > 0) {
             const progressPercent = (currentTime / this.videoPlayer.duration) * 100;
             progressBar.style.width = progressPercent + '%';
         }
@@ -319,11 +296,30 @@ class LearningInterface {
     }
 
     loadVideoProgress() {
-        if (!this.videoPlayer || this.watchTime === 0) return;
+        if (!this.videoPlayer || !this.watchTime || this.watchTime <= 0) return;
 
-        // Resume from where user left off (but not too close to the end)
-        const resumeTime = Math.min(this.watchTime, this.videoPlayer.duration - 10);
-        this.videoPlayer.currentTime = resumeTime;
+        const setTime = () => {
+            if (!this.videoPlayer || isNaN(this.videoPlayer.duration) || !isFinite(this.videoPlayer.duration)) {
+                return;
+            }
+
+            const maxTime = Math.max(0, this.videoPlayer.duration - 10);
+            const resumeTime = Math.min(this.watchTime, maxTime);
+
+            if (isFinite(resumeTime) && resumeTime >= 0 && !isNaN(resumeTime)) {
+                try {
+                    this.videoPlayer.currentTime = resumeTime;
+                } catch (e) {
+                    console.warn('Could not set currentTime:', e);
+                }
+            }
+        };
+
+        if (isNaN(this.videoPlayer.duration) || !isFinite(this.videoPlayer.duration) || this.videoPlayer.readyState < 1) {
+            this.videoPlayer.addEventListener('loadedmetadata', setTime, { once: true });
+        } else {
+            setTime();
+        }
     }
 
     async markLessonComplete() {
@@ -397,15 +393,35 @@ class LearningInterface {
             if (progressText) progressText.textContent = Math.round(courseProgress) + '%';
         }
 
+        // Update section progress badges and progress bars first
+        this.updateSectionProgressUI();
+
         // Recalculate completed lessons count from DOM
         const completedCountEl = document.querySelector('.completed-lessons');
         if (completedCountEl) {
-            const totalCompleted = document.querySelectorAll('.curriculum-list .lesson-item.completed').length;
+            let totalCompleted = 0;
+            document.querySelectorAll('.section-item').forEach(sec => {
+                totalCompleted += sec.querySelectorAll('.lesson-item.completed').length;
+            });
             completedCountEl.textContent = totalCompleted;
-        }
 
-        // Update section progress badges and progress bars
-        this.updateSectionProgressUI();
+            // Recalculate overall progress bar percentage dynamically if courseProgress was not explicitly passed
+            if (courseProgress === null) {
+                const totalLessonsEl = document.querySelector('.total-lessons');
+                if (totalLessonsEl) {
+                    const totalLessonsText = totalLessonsEl.textContent.replace(/[^0-9]/g, '');
+                    const totalLessons = parseInt(totalLessonsText);
+                    if (totalLessons > 0) {
+                        const newPercent = Math.round((totalCompleted / totalLessons) * 100);
+                        const progressBar = document.querySelector('.progress-fill');
+                        const progressText = document.querySelector('.progress-percentage');
+
+                        if (progressBar) progressBar.style.width = newPercent + '%';
+                        if (progressText) progressText.textContent = newPercent + '%';
+                    }
+                }
+            }
+        }
     }
 
     updateSectionProgressUI() {
@@ -759,6 +775,7 @@ class LearningInterface {
     }
 
     formatTime(seconds) {
+        if (isNaN(seconds) || !isFinite(seconds) || seconds < 0) return '0:00';
         const minutes = Math.floor(seconds / 60);
         const remainingSeconds = Math.floor(seconds % 60);
         return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
