@@ -1,8 +1,13 @@
 @extends('layouts.app')
 
 @section('title', $course->title)
+@section('meta_title', $course->meta_title ?: $course->title)
+@section('meta_description', $course->meta_description ?: ($course->short_description ?: Str::limit(strip_tags($course->description), 160)))
+@section('og_image', $course->thumbnail_url)
 
 @section('content')
+<x-course-schema :course="$course" />
+
 <div class="course-details-page">
     <!-- Course Hero Section -->
     <section class="course-hero py-5" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">

@@ -64,6 +64,16 @@ class Course extends Model
         });
     }
 
+    /**
+     * Get the route key for the model to enable SEO-friendly slugs in URLs.
+     *
+     * @return string
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
     // Relationships
     public function category()
     {

@@ -14,21 +14,12 @@
             }
         })();
     </script>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <!-- SEO Meta Tags Integration -->
+    @include('partials.seo-head')
 
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     <link rel="shortcut icon" href="{{ asset('favicon.ico') }}">
-
-    <title>
-        @hasSection('title')
-            @yield('title') | {{ $appSettings->platform_name ?? 'منصة التعلم الإلكتروني' }}
-        @else
-            {{ $appSettings->platform_name ?? 'منصة التعلم الإلكتروني' }}
-        @endif
-    </title>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

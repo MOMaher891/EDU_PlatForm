@@ -1,2 +1,50 @@
+# Production Robots.txt for Educational LMS Platform
 User-agent: *
-Disallow:
+
+# Allow Public Indexing
+Allow: /
+Allow: /courses
+Allow: /courses/*
+Allow: /about
+Allow: /contact
+Allow: /terms
+Allow: /terms-and-conditions
+Allow: /privacy
+Allow: /privacy-policy
+Allow: /refund-policy
+Allow: /storage/
+Allow: /media/
+
+# Disallow Private Portals & Administrative Routes
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /dashboard
+Disallow: /dashboard/*
+Disallow: /student
+Disallow: /student/*
+Disallow: /instructor
+Disallow: /instructor/*
+
+# Disallow Authentication & Sensitive Operations
+Disallow: /login
+Disallow: /register
+Disallow: /password/
+Disallow: /password/*
+Disallow: /profile
+Disallow: /profile/*
+Disallow: /danger-page
+
+# Disallow Payment & Checkout Routes
+Disallow: /payment
+Disallow: /payment/*
+Disallow: /checkout
+Disallow: /checkout/*
+Disallow: /test-payment
+Disallow: /debug-payment-table
+
+# Disallow Internal APIs & Ajax Endpoints
+Disallow: /api
+Disallow: /api/*
+
+# Sitemap Reference
+Sitemap: sitemap.xml
