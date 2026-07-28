@@ -35,7 +35,7 @@
                                     <input type="text" name="search" class="form-control"
                                            placeholder="ابحث في الكورسات..."
                                            value="{{ request('search') }}">
-                                    <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                                    <button class="btn btn-outline-secondary" type="button" id="clearSearch" aria-label="مسح البحث">
                                         <i class="fas fa-times"></i>
                                     </button>
                                 </div>
@@ -179,7 +179,7 @@
                     <div class="card course-card h-100 border-0 shadow-sm">
                         <div class="position-relative overflow-hidden">
                             <img src="{{ $course->thumbnail_url }}"
-                                 class="card-img-top" alt="{{ $course->title }}" style="height: 250px; object-fit: cover;">
+                                 class="card-img-top" alt="{{ $course->title }}" loading="lazy" decoding="async" width="400" height="250" style="height: 250px; object-fit: cover;">
 
                             <!-- Course Level Badge -->
                             <span class="badge position-absolute top-0 start-0 m-3
@@ -195,7 +195,7 @@
                             @endif
 
                             <!-- Wishlist Button -->
-                            <button class="btn btn-light btn-sm position-absolute" style="top: 50%; right: 15px; transform: translateY(-50%); opacity: 0; transition: all 0.3s ease;" data-wishlist="{{ $course->id }}">
+                            <button class="btn btn-light btn-sm position-absolute" style="top: 50%; right: 15px; transform: translateY(-50%); opacity: 0; transition: all 0.3s ease;" data-wishlist="{{ $course->id }}" aria-label="إضافة {{ $course->title }} للمفضلة">
                                 <i class="fas fa-heart"></i>
                             </button>
 
@@ -225,7 +225,7 @@
                                 </div>
                             </div>
 
-                            <h5 class="card-title fw-bold mb-3 line-clamp-2">{{ $course->title }}</h5>
+                            <h2 class="h5 card-title fw-bold mb-3 line-clamp-2">{{ $course->title }}</h2>
                             <p class="card-text text-muted mb-3 line-clamp-3">
                                 {{ Str::limit($course->short_description, 120) }}
                             </p>
@@ -233,7 +233,7 @@
                             <div class="course-meta mb-3">
                                 <div class="d-flex align-items-center mb-2">
                                     <img src="https://ui-avatars.com/api/?name={{ urlencode($course->instructor->name) }}&background=6366f1&color=fff"
-                                         class="rounded-circle me-2" width="24" height="24" alt="{{ $course->instructor->name }}">
+                                         class="rounded-circle me-2" width="24" height="24" alt="{{ $course->instructor->name }}" loading="lazy" decoding="async">
                                     <small class="text-muted">{{ $course->instructor->name }}</small>
                                 </div>
                                 <div class="d-flex justify-content-between text-muted small">
@@ -260,10 +260,10 @@
                                     @endif
                                 </div>
                                 <div class="course-actions">
-                                    <button class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="tooltip" title="إضافة للمفضلة">
+                                    <button class="btn btn-sm btn-outline-primary me-1" data-bs-toggle="tooltip" title="إضافة للمفضلة" aria-label="إضافة للمفضلة">
                                         <i class="fas fa-heart"></i>
                                     </button>
-                                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="مشاركة">
+                                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="tooltip" title="مشاركة" aria-label="مشاركة">
                                         <i class="fas fa-share"></i>
                                     </button>
                                 </div>

@@ -5,7 +5,7 @@
 @section('content')
 <!-- Hero Section -->
 <section class="hero-section position-relative overflow-hidden">
-    <div class="container py-5">
+    <div class="container py-5 position-relative" style="z-index: 2;">
         <div class="row align-items-center min-vh-100">
             <div class="col-lg-6" data-aos="fade-right">
                 <div class="hero-content">
@@ -25,19 +25,19 @@
                     <div class="hero-stats row g-3 mb-4">
                         <div class="col-4">
                             <div class="text-center">
-                                <h4 class="fw-bold text-primary mb-0">{{ \App\Models\Course::where('is_published', true)->count() }}+</h4>
+                                <div class="h4 fw-bold text-primary mb-0">{{ \App\Models\Course::where('is_published', true)->count() }}+</div>
                                 <small class="text-muted">كورس</small>
                             </div>
                         </div>
                         <div class="col-4">
                             <div class="text-center">
-                                <h4 class="fw-bold text-success mb-0">{{ \App\Models\User::where('role', 'student')->count() }}+</h4>
+                                <div class="h4 fw-bold text-success mb-0">{{ \App\Models\User::where('role', 'student')->count() }}+</div>
                                 <small class="text-muted">طالب</small>
                             </div>
                         </div>
                         <div class="col-4">
                             <div class="text-center">
-                                <h4 class="fw-bold text-warning mb-0">{{ \App\Models\User::where('role', 'instructor')->count() }}+</h4>
+                                <div class="h4 fw-bold text-warning mb-0">{{ \App\Models\User::where('role', 'instructor')->count() }}+</div>
                                 <small class="text-muted">مدرب</small>
                             </div>
                         </div>
@@ -53,7 +53,8 @@
                                 <span>إنشاء حساب مجاني</span>
                             </a>
                         @endguest
-                        <button class="btn btn-link btn-lg text-decoration-none w-100 w-md-auto d-inline-flex align-items-center justify-content-center" data-bs-toggle="modal" data-bs-target="#videoModal">
+                        <button class="btn btn-link btn-lg text-decoration-none w-100 w-md-auto d-inline-flex align-items-center justify-content-center" 
+                                data-bs-toggle="modal" data-bs-target="#videoModal" aria-label="شاهد الفيديو التعريفي للمنصة">
                             <i class="fas fa-play-circle me-2"></i>
                             <span>شاهد الفيديو التعريفي</span>
                         </button>
@@ -65,35 +66,38 @@
                     <div class="floating-cards">
                         <div class="card glass position-absolute" style="top: 10%; right: 10%; width: 200px;" data-aos="fade-up" data-aos-delay="200">
                             <div class="card-body text-center">
-                                <i class="fas fa-code text-primary fa-2x mb-2"></i>
-                                <h6 class="fw-bold">البرمجة</h6>
+                                <i class="fas fa-atom text-primary fa-2x mb-2"></i>
+                                <div class="h6 fw-bold mb-0">الفيزياء</div>
                                 <small class="text-muted">120+ كورس</small>
                             </div>
                         </div>
                         <div class="card glass position-absolute" style="bottom: 20%; left: 10%; width: 180px;" data-aos="fade-up" data-aos-delay="400">
                             <div class="card-body text-center">
-                                <i class="fas fa-paint-brush text-success fa-2x mb-2"></i>
-                                <h6 class="fw-bold">التصميم</h6>
+                                <i class="fas fa-flask text-success fa-2x mb-2"></i>
+                                <div class="h6 fw-bold mb-0">الكيمياء</div>
                                 <small class="text-muted">85+ كورس</small>
                             </div>
                         </div>
                         <div class="card glass position-absolute" style="top: 40%; left: 30%; width: 160px;" data-aos="fade-up" data-aos-delay="600">
                             <div class="card-body text-center">
-                                <i class="fas fa-chart-line text-warning fa-2x mb-2"></i>
-                                <h6 class="fw-bold">التسويق</h6>
+                                <i class="fas fa-calculator text-warning fa-2x mb-2"></i>
+                                <div class="h6 fw-bold mb-0">الرياضيات</div>
                                 <small class="text-muted">65+ كورس</small>
                             </div>
                         </div>
                     </div>
-                    <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                         alt="التعلم الإلكتروني" class="img-fluid rounded-4 shadow-lg">
+                    <picture>
+                        <source media="(max-width: 991.98px)" srcset="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=380&h=253&q=55&fm=webp">
+                        <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=550&h=367&q=60&fm=webp"
+                             alt="منصة التعلم الإلكتروني والتدريب" class="img-fluid rounded-4 shadow-lg" loading="eager" fetchpriority="high" decoding="async" width="550" height="367">
+                    </picture>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Background Elements -->
-    <div class="position-absolute top-0 start-0 w-100 h-100 overflow-hidden" style="z-index: -1;">
+    <div class="position-absolute top-0 start-0 w-100 h-100 overflow-hidden" style="z-index: 1; pointer-events: none; contain: strict;">
         <div class="position-absolute" style="top: 10%; right: 10%; width: 100px; height: 100px; background: linear-gradient(135deg, #667eea, #764ba2); border-radius: 50%; opacity: 0.1;"></div>
         <div class="position-absolute" style="bottom: 20%; left: 15%; width: 150px; height: 150px; background: linear-gradient(135deg, #f093fb, #f5576c); border-radius: 50%; opacity: 0.1;"></div>
         <div class="position-absolute" style="top: 50%; left: 5%; width: 80px; height: 80px; background: linear-gradient(135deg, #4facfe, #00f2fe); border-radius: 50%; opacity: 0.1;"></div>
@@ -122,7 +126,7 @@
                                 <i class="fas fa-play text-primary fa-2x"></i>
                             </div>
                         </div>
-                        <h4 class="fw-bold mb-3">فيديوهات عالية الجودة</h4>
+                        <h3 class="h4 fw-bold mb-3">فيديوهات عالية الجودة</h3>
                         <p class="text-muted">محتوى مرئي بدقة 4K مع شرح واضح ومفصل لضمان فهم أفضل وتجربة تعليمية ممتازة</p>
                         <div class="feature-stats mt-3">
                             <small class="text-primary fw-bold">
@@ -142,7 +146,7 @@
                                 <i class="fas fa-certificate text-success fa-2x"></i>
                             </div>
                         </div>
-                        <h4 class="fw-bold mb-3">شهادات معتمدة</h4>
+                        <h3 class="h4 fw-bold mb-3">شهادات معتمدة</h3>
                         <p class="text-muted">احصل على شهادات إتمام معتمدة دولياً تضيف قيمة لسيرتك الذاتية وتفتح لك آفاق جديدة</p>
                         <div class="feature-stats mt-3">
                             <small class="text-success fw-bold">
@@ -162,7 +166,7 @@
                                 <i class="fas fa-users text-warning fa-2x"></i>
                             </div>
                         </div>
-                        <h4 class="fw-bold mb-3">مدربين خبراء</h4>
+                        <h3 class="h4 fw-bold mb-3">مدربين خبراء</h3>
                         <p class="text-muted">تعلم من أفضل المتخصصين والخبراء في مجالاتهم مع سنوات من الخبرة العملية والأكاديمية</p>
                         <div class="feature-stats mt-3">
                             <small class="text-warning fw-bold">
@@ -182,7 +186,7 @@
                                 <i class="fas fa-mobile-alt text-info fa-2x"></i>
                             </div>
                         </div>
-                        <h4 class="fw-bold mb-3">تعلم في أي مكان</h4>
+                        <h3 class="h4 fw-bold mb-3">تعلم في أي مكان</h3>
                         <p class="text-muted">منصة متجاوبة تعمل على جميع الأجهزة، تعلم من الهاتف أو الكمبيوتر في أي وقت ومكان</p>
                         <div class="feature-stats mt-3">
                             <small class="text-info fw-bold">
@@ -202,7 +206,7 @@
                                 <i class="fas fa-headset text-danger fa-2x"></i>
                             </div>
                         </div>
-                        <h4 class="fw-bold mb-3">دعم فني متميز</h4>
+                        <h3 class="h4 fw-bold mb-3">دعم فني متميز</h3>
                         <p class="text-muted">فريق دعم فني متخصص متاح على مدار الساعة لمساعدتك في أي استفسار أو مشكلة تقنية</p>
                         <div class="feature-stats mt-3">
                             <small class="text-danger fw-bold">
@@ -222,7 +226,7 @@
                                 <i class="fas fa-infinity text-secondary fa-2x"></i>
                             </div>
                         </div>
-                        <h4 class="fw-bold mb-3">وصول مدى الحياة</h4>
+                        <h3 class="h4 fw-bold mb-3">وصول مدى الحياة</h3>
                         <p class="text-muted">بمجرد شراء الكورس، يمكنك الوصول إليه مدى الحياة مع جميع التحديثات والإضافات الجديدة</p>
                         <div class="feature-stats mt-3">
                             <small class="text-secondary fw-bold">
@@ -265,7 +269,7 @@
                     <div class="card course-card h-100 border-0 shadow-sm">
                         <div class="position-relative overflow-hidden">
                             <img src="{{ $course->thumbnail_url }}"
-                                 class="card-img-top" alt="{{ $course->title }}" style="height: 250px; object-fit: cover;">
+                                 class="card-img-top" alt="{{ $course->title }}" loading="lazy" decoding="async" width="400" height="250" style="height: 250px; object-fit: cover;">
 
                             <!-- Course Level Badge -->
                             <span class="badge position-absolute top-0 start-0 m-3
@@ -294,13 +298,13 @@
                                 <span class="badge bg-primary bg-opacity-10 text-primary">{{ $course->category->name }}</span>
                                 <div class="text-warning">
                                     @for($i = 1; $i <= 5; $i++)
-                                        <i class="fas fa-star{{ $i <= 4 ? '' : ' opacity-25' }}"></i>
+                                        <i class="fas fa-star{{ $i <= 4 ? '' : ' text-secondary opacity-50' }}" aria-hidden="true"></i>
                                     @endfor
                                     <small class="text-muted ms-1">(4.8)</small>
                                 </div>
                             </div>
 
-                            <h5 class="card-title fw-bold mb-3">{{ $course->title }}</h5>
+                            <h3 class="h5 card-title fw-bold mb-3">{{ $course->title }}</h3>
                             <p class="card-text text-muted mb-3">
                                 {{ Str::limit($course->short_description, 100) }}
                             </p>
@@ -323,7 +327,7 @@
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <div class="instructor d-flex align-items-center">
                                     <img src="https://ui-avatars.com/api/?name={{ urlencode($course->instructor->name) }}&background=6366f1&color=fff"
-                                         class="rounded-circle me-2" width="32" height="32" alt="{{ $course->instructor->name }}">
+                                         class="rounded-circle me-2" width="32" height="32" alt="{{ $course->instructor->name }}" loading="lazy" decoding="async">
                                     <small class="text-muted">{{ $course->instructor->name }}</small>
                                 </div>
                                 <div class="price">
@@ -344,8 +348,8 @@
             @empty
                 <div class="col-12 text-center" data-aos="fade-up">
                     <div class="py-5">
-                        <i class="fas fa-book-open fa-3x text-muted mb-3"></i>
-                        <h4>لا توجد كورسات مميزة حالياً</h4>
+                        <i class="fas fa-book-open fa-3x text-muted mb-3" aria-hidden="true"></i>
+                        <h3 class="h4">لا توجد كورسات مميزة حالياً</h3>
                         <p class="text-muted">سيتم إضافة كورسات مميزة قريباً</p>
                     </div>
                 </div>
@@ -355,7 +359,7 @@
         <div class="text-center mt-5" data-aos="fade-up">
             <a href="{{ route('student.courses.index') }}" class="btn btn-outline-primary btn-lg px-5">
                 عرض جميع الكورسات
-                <i class="fas fa-arrow-left ms-2"></i>
+                <i class="fas fa-arrow-left ms-2" aria-hidden="true"></i>
             </a>
         </div>
     </div>
@@ -368,40 +372,40 @@
             <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="100">
                 <div class="stat-item">
                     <div class="stat-icon mb-3">
-                        <i class="fas fa-book fa-3x opacity-75"></i>
+                        <i class="fas fa-book fa-3x opacity-75" aria-hidden="true"></i>
                     </div>
-                    <h2 class="display-4 fw-bold mb-2 counter" data-target="{{ \App\Models\Course::where('is_published', true)->count() }}">0</h2>
-                    <p class="fs-5 mb-0">كورس متاح</p>
+                    <div class="display-4 fw-bold mb-2 counter" data-target="{{ \App\Models\Course::where('is_published', true)->count() }}">0</div>
+                    <p class="fs-5 mb-0 opacity-90">كورس متاح</p>
                 </div>
             </div>
 
             <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="200">
                 <div class="stat-item">
                     <div class="stat-icon mb-3">
-                        <i class="fas fa-users fa-3x opacity-75"></i>
+                        <i class="fas fa-users fa-3x opacity-75" aria-hidden="true"></i>
                     </div>
-                    <h2 class="display-4 fw-bold mb-2 counter" data-target="{{ \App\Models\User::where('role', 'student')->count() }}">0</h2>
-                    <p class="fs-5 mb-0">طالب مسجل</p>
+                    <div class="display-4 fw-bold mb-2 counter" data-target="{{ \App\Models\User::where('role', 'student')->count() }}">0</div>
+                    <p class="fs-5 mb-0 opacity-90">طالب مسجل</p>
                 </div>
             </div>
 
             <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="300">
                 <div class="stat-item">
                     <div class="stat-icon mb-3">
-                        <i class="fas fa-chalkboard-teacher fa-3x opacity-75"></i>
+                        <i class="fas fa-chalkboard-teacher fa-3x opacity-75" aria-hidden="true"></i>
                     </div>
-                    <h2 class="display-4 fw-bold mb-2 counter" data-target="{{ \App\Models\User::where('role', 'instructor')->count() }}">0</h2>
-                    <p class="fs-5 mb-0">مدرب خبير</p>
+                    <div class="display-4 fw-bold mb-2 counter" data-target="{{ \App\Models\User::where('role', 'instructor')->count() }}">0</div>
+                    <p class="fs-5 mb-0 opacity-90">مدرب خبير</p>
                 </div>
             </div>
 
             <div class="col-lg-3 col-md-6 mb-4" data-aos="fade-up" data-aos-delay="400">
                 <div class="stat-item">
                     <div class="stat-icon mb-3">
-                        <i class="fas fa-graduation-cap fa-3x opacity-75"></i>
+                        <i class="fas fa-graduation-cap fa-3x opacity-75" aria-hidden="true"></i>
                     </div>
-                    <h2 class="display-4 fw-bold mb-2 counter" data-target="{{ \App\Models\CourseEnrollment::count() }}">0</h2>
-                    <p class="fs-5 mb-0">تسجيل في الكورسات</p>
+                    <div class="display-4 fw-bold mb-2 counter" data-target="{{ \App\Models\CourseEnrollment::count() }}">0</div>
+                    <p class="fs-5 mb-0 opacity-90">تسجيل في الكورسات</p>
                 </div>
             </div>
         </div>
@@ -427,12 +431,12 @@
                     </p>
                     <div class="cta-actions d-flex flex-column flex-md-row justify-content-center gap-3">
                         <a href="{{ route('student.courses.index') }}" class="btn btn-primary btn-lg px-5 py-3 w-100 w-md-auto d-inline-flex align-items-center justify-content-center">
-                            <i class="fas fa-rocket me-2"></i>
+                            <i class="fas fa-rocket me-2" aria-hidden="true"></i>
                             <span>ابدأ التعلم الآن</span>
                         </a>
                         @guest
                             <a href="{{ route('register') }}" class="btn btn-outline-primary btn-lg px-5 py-3 w-100 w-md-auto d-inline-flex align-items-center justify-content-center">
-                                <i class="fas fa-user-plus me-2"></i>
+                                <i class="fas fa-user-plus me-2" aria-hidden="true"></i>
                                 <span>إنشاء حساب مجاني</span>
                             </a>
                         @endguest
@@ -441,19 +445,19 @@
                         <div class="row g-3 justify-content-center">
                             <div class="col-auto">
                                 <small class="text-muted">
-                                    <i class="fas fa-check text-success me-1"></i>
+                                    <i class="fas fa-check text-success me-1" aria-hidden="true"></i>
                                     بدون رسوم اشتراك
                                 </small>
                             </div>
                             <div class="col-auto">
                                 <small class="text-muted">
-                                    <i class="fas fa-check text-success me-1"></i>
+                                    <i class="fas fa-check text-success me-1" aria-hidden="true"></i>
                                     شهادات معتمدة
                                 </small>
                             </div>
                             <div class="col-auto">
                                 <small class="text-muted">
-                                    <i class="fas fa-check text-success me-1"></i>
+                                    <i class="fas fa-check text-success me-1" aria-hidden="true"></i>
                                     دعم فني مجاني
                                 </small>
                             </div>
@@ -470,12 +474,12 @@
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content border-0">
             <div class="modal-header border-0">
-                <h5 class="modal-title">فيديو تعريفي عن المنصة</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <h2 class="h5 modal-title mb-0">فيديو تعريفي عن المنصة</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="إغلاق"></button>
             </div>
             <div class="modal-body p-0">
                 <div class="ratio ratio-16x9">
-                    <iframe src="https://www.youtube.com/embed/ScMzIvxBSi4" allowfullscreen></iframe>
+                    <iframe id="youtubeVideoIframe" data-src="https://www.youtube-nocookie.com/embed/ScMzIvxBSi4?autoplay=1" allowfullscreen allow="autoplay" loading="lazy" title="فيديو تعريفي عن المنصة"></iframe>
                 </div>
             </div>
         </div>
@@ -483,6 +487,8 @@
 </div>
 
 @push('styles')
+<link rel="preload" as="image" href="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=380&h=253&q=55&fm=webp" media="(max-width: 991.98px)" fetchpriority="high">
+<link rel="preload" as="image" href="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=550&h=367&q=60&fm=webp" media="(min-width: 992px)" fetchpriority="high">
 <style>
     .hero-section {
         background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.9));
@@ -551,9 +557,18 @@
         });
     });
 
-    const statsSection = document.querySelector('.counter').closest('section');
-    if (statsSection) {
-        observer.observe(statsSection);
+    // Dynamic YouTube Modal Lazy Loader (No third-party cookies on initial page load)
+    const videoModal = document.getElementById('videoModal');
+    const youtubeIframe = document.getElementById('youtubeVideoIframe');
+    if (videoModal && youtubeIframe) {
+        videoModal.addEventListener('show.bs.modal', function () {
+            if (youtubeIframe.dataset.src) {
+                youtubeIframe.src = youtubeIframe.dataset.src;
+            }
+        });
+        videoModal.addEventListener('hide.bs.modal', function () {
+            youtubeIframe.src = '';
+        });
     }
 </script>
 @endpush

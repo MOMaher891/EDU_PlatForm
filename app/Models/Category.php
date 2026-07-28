@@ -38,6 +38,14 @@ class Category extends Model
                 $category->slug = Str::slug($category->name);
             }
         });
+
+        static::saved(function () {
+            \Illuminate\Support\Facades\Cache::forget('public_all_categories');
+        });
+
+        static::deleted(function () {
+            \Illuminate\Support\Facades\Cache::forget('public_all_categories');
+        });
     }
 
     public function courses()

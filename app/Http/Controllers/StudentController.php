@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class StudentController extends Controller
 {
@@ -148,8 +149,10 @@ class StudentController extends Controller
         try {
             $user = Auth::user();
 
-            // Get all categories for filtering
-            $categories = Category::all();
+            // Get all categories for filtering (cached for TTFB optimization)
+            $categories = Cache::remember('public_all_categories', 86400, function () {
+                return Category::all();
+            });
 
             // Build query for courses
             $query = Course::where('is_published', true)
