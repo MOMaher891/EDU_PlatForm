@@ -371,7 +371,16 @@
             <!-- Progress Overview -->
             @php
                 $totalAccessibleLessons = isset($accessibleSections) ? $accessibleSections->sum(fn($sec) => $sec->lessons->count()) : $course->getTotalLessons();
-                $totalCompletedLessons = isset($lessonProgress) ? count(array_filter($lessonProgress)) : 0;
+                $totalCompletedLessons = 0;
+                if (isset($accessibleSections) && isset($lessonProgress)) {
+                    foreach ($accessibleSections as $sec) {
+                        foreach ($sec->lessons as $l) {
+                            if (!empty($lessonProgress[$l->id])) {
+                                $totalCompletedLessons++;
+                            }
+                        }
+                    }
+                }
                 $calculatedProgress = $totalAccessibleLessons > 0 ? round(($totalCompletedLessons / $totalAccessibleLessons) * 100) : 0;
                 $displayProgress = ($enrollment && $enrollment->progress > 0) ? round($enrollment->progress) : $calculatedProgress;
             @endphp
@@ -405,11 +414,14 @@
                         @php
                             $isCurrentSection = $currentLesson && $section->lessons->contains('id', $currentLesson->id);
                             $sectionLessons = $section->lessons;
-                            $sectionLessonIds = $sectionLessons->pluck('id')->toArray();
-                            $completedInSection = array_intersect_key($lessonProgress, array_flip($sectionLessonIds));
-                            $totalCount = count($sectionLessonIds);
-                            $completedCount = count($completedInSection);
-                            $sectionProgress = $totalCount > 0 ? ($completedCount / $totalCount) * 100 : 0;
+                            $totalCount = $sectionLessons->count();
+                            $completedCount = 0;
+                            foreach ($sectionLessons as $sl) {
+                                if (!empty($lessonProgress[$sl->id])) {
+                                    $completedCount++;
+                                }
+                            }
+                            $sectionProgress = $totalCount > 0 ? round(($completedCount / $totalCount) * 100) : 0;
                         @endphp
                         <div class="section-item">
                             <div class="section-header {{ $isCurrentSection ? '' : 'collapsed' }}" 

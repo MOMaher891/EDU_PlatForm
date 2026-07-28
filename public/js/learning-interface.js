@@ -373,19 +373,22 @@ class LearningInterface {
     }
 
     updateProgressUI(courseProgress = null) {
-        // Update lesson completion status
+        // Update lesson completion status in sidebar
         const lessonItem = document.querySelector(`[data-lesson-id="${this.currentLesson}"]`);
         if (lessonItem) {
+            const playBtn = lessonItem.querySelector('.lesson-play-btn');
             if (this.isCompleted) {
                 lessonItem.classList.add('completed');
                 lessonItem.classList.remove('in-progress');
+                if (playBtn) playBtn.innerHTML = '<i class="fas fa-check-circle text-success fs-5"></i>';
             } else {
                 lessonItem.classList.remove('completed');
                 lessonItem.classList.add('in-progress');
+                if (playBtn) playBtn.innerHTML = '<i class="fas fa-play-circle fs-5"></i>';
             }
         }
 
-        // Update course progress
+        // Update overall course progress percentage bar
         if (courseProgress !== null) {
             const progressBar = document.querySelector('.progress-fill');
             const progressText = document.querySelector('.progress-percentage');
@@ -394,16 +397,34 @@ class LearningInterface {
             if (progressText) progressText.textContent = Math.round(courseProgress) + '%';
         }
 
-        // Update completed lessons count
-        const completedCount = document.querySelector('.completed-lessons');
-        if (completedCount) {
-            const currentCount = parseInt(completedCount.textContent);
-            if (this.isCompleted) {
-                completedCount.textContent = currentCount + 1;
-            } else {
-                completedCount.textContent = Math.max(0, currentCount - 1);
-            }
+        // Recalculate completed lessons count from DOM
+        const completedCountEl = document.querySelector('.completed-lessons');
+        if (completedCountEl) {
+            const totalCompleted = document.querySelectorAll('.curriculum-list .lesson-item.completed').length;
+            completedCountEl.textContent = totalCompleted;
         }
+
+        // Update section progress badges and progress bars
+        this.updateSectionProgressUI();
+    }
+
+    updateSectionProgressUI() {
+        document.querySelectorAll('.section-item').forEach(sectionItem => {
+            const sectionLessons = sectionItem.querySelectorAll('.lesson-item');
+            const totalLessons = sectionLessons.length;
+            const completedLessons = sectionItem.querySelectorAll('.lesson-item.completed').length;
+            
+            const progressText = sectionItem.querySelector('.progress-text');
+            if (progressText) {
+                progressText.textContent = `${completedLessons}/${totalLessons}`;
+            }
+            
+            const miniProgressFill = sectionItem.querySelector('.mini-progress-fill');
+            if (miniProgressFill) {
+                const percent = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
+                miniProgressFill.style.width = percent + '%';
+            }
+        });
     }
 
     updateLessonUI() {
