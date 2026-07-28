@@ -50,7 +50,7 @@
                                 1x
                             </button>
                         @endif
-                        <button class="action-btn fullscreen-btn" title="ملء الشاشة">
+                        <button class="action-btn fullscreen-btn" title="ملء الشاشة" onclick="toggleFullscreen()">
                             <i class="fas fa-expand"></i>
                         </button>
                     </div>
@@ -283,7 +283,7 @@
                                         1x
                                     </button>
                                 @endif
-                                <button class="action-btn fullscreen-btn" title="ملء الشاشة">
+                                <button class="action-btn fullscreen-btn" title="ملء الشاشة" onclick="toggleFullscreen()">
                                     <i class="fas fa-expand"></i>
                                 </button>
                             </div>
@@ -398,67 +398,68 @@
                     @foreach($accessibleSections as $section)
                         @php
                             $isCurrentSection = $currentLesson && $section->lessons->contains('id', $currentLesson->id);
+                            $sectionLessons = $section->lessons;
+                            $sectionLessonIds = $sectionLessons->pluck('id')->toArray();
+                            $completedInSection = array_intersect_key($lessonProgress, array_flip($sectionLessonIds));
+                            $totalCount = count($sectionLessonIds);
+                            $completedCount = count($completedInSection);
+                            $sectionProgress = $totalCount > 0 ? ($completedCount / $totalCount) * 100 : 0;
                         @endphp
                         <div class="section-item">
                             <div class="section-header {{ $isCurrentSection ? '' : 'collapsed' }}" 
                                  data-bs-toggle="collapse" 
                                  data-bs-target="#section-{{ $section->id }}"
                                  aria-expanded="{{ $isCurrentSection ? 'true' : 'false' }}">
+                                
+                                <!-- Right Side in RTL: Section Title & Lesson Count -->
                                 <div class="section-info">
                                     <h6 class="section-title">{{ $section->title }}</h6>
-                                    <span class="section-lessons-count">{{ $section->lessons->count() }} درس</span>
+                                    <span class="section-lessons-count">{{ $totalCount }} درس</span>
                                 </div>
-                                <div class="section-progress">
-                                    @php
-                                        $sectionLessons = $section->lessons->pluck('id')->toArray();
-                                        $completedInSection = array_intersect_key($lessonProgress, array_flip($sectionLessons));
-                                        $sectionProgress = count($sectionLessons) > 0 ? (count($completedInSection) / count($sectionLessons)) * 100 : 0;
-                                    @endphp
-                                    <span class="progress-text">{{ count($completedInSection) }}/{{ count($sectionLessons) }}</span>
+
+                                <!-- Left Side in RTL: Progress & Chevron -->
+                                <div class="section-left">
+                                    <span class="progress-text">{{ $completedCount }}/{{ $totalCount }}</span>
                                     <div class="mini-progress-bar">
                                         <div class="mini-progress-fill" style="width: {{ $sectionProgress }}%"></div>
                                     </div>
+                                    <i class="fas fa-chevron-up section-toggle"></i>
                                 </div>
-                                <i class="fas fa-chevron-down section-toggle"></i>
                             </div>
 
                             <div class="section-lessons collapse {{ $isCurrentSection ? 'show' : '' }}" id="section-{{ $section->id }}">
                                 <div class="lessons-list">
-                                    @foreach($section->lessons as $lesson)
+                                    @foreach($sectionLessons as $lesson)
+                                        @php
+                                            $isActive = $currentLesson && $currentLesson->id == $lesson->id;
+                                            $isCompleted = isset($lessonProgress[$lesson->id]) && $lessonProgress[$lesson->id];
+                                        @endphp
                                         <a href="{{ route('student.courses.learn', ['course' => $course, 'lesson' => $lesson->id]) }}"
-                                           class="lesson-item {{ $currentLesson && $currentLesson->id == $lesson->id ? 'active' : '' }} {{ isset($lessonProgress[$lesson->id]) && $lessonProgress[$lesson->id] ? 'completed' : '' }} text-decoration-none"
-                                           data-lesson-id="{{ $lesson->id }}"
-                                           style="color: inherit; text-decoration: none;">
-                                            <div class="lesson-content">
-                                                <div class="lesson-icon">
-                                                    @if(isset($lessonProgress[$lesson->id]) && $lessonProgress[$lesson->id])
-                                                        <i class="fas fa-check-circle text-success"></i>
-                                                    @elseif($lesson->file_type == 'video')
-                                                        <i class="fas fa-play-circle"></i>
-                                                    @elseif($lesson->file_type == 'pdf')
-                                                        <i class="fas fa-file-pdf text-danger"></i>
-                                                    @else
-                                                        <i class="fas fa-file-alt"></i>
-                                                    @endif
-                                                </div>
-
-                                                <div class="lesson-info">
-                                                    <h6 class="lesson-title">{{ $lesson->title }}</h6>
-                                                    <div class="lesson-meta">
-                                                        @if($lesson->video_duration)
-                                                            <span class="duration">{{ gmdate('H:i:s', $lesson->video_duration) }}</span>
-                                                        @endif
-                                                        @if(isset($lessonWatchTimes[$lesson->id]) && $lessonWatchTimes[$lesson->id] > 0)
-                                                            <span class="watch-progress">
-                                                                <i class="fas fa-clock"></i>
-                                                                {{ gmdate('H:i:s', $lessonWatchTimes[$lesson->id]) }}
-                                                            </span>
-                                                        @endif
-                                                    </div>
-                                                </div>
+                                           class="lesson-item {{ $isActive ? 'active' : '' }} {{ $isCompleted ? 'completed' : '' }} text-decoration-none"
+                                           data-lesson-id="{{ $lesson->id }}">
+                                            
+                                            <!-- Right Side in RTL: Play / Completed Icon -->
+                                            <div class="lesson-play-btn">
+                                                @if($isCompleted)
+                                                    <i class="fas fa-check-circle text-success fs-5"></i>
+                                                @else
+                                                    <i class="fas fa-play-circle fs-5"></i>
+                                                @endif
                                             </div>
 
-                                            <div class="lesson-link">
+                                            <!-- Middle: Title & Duration Badge -->
+                                            <div class="lesson-info-box">
+                                                <div class="lesson-title">{{ $lesson->title }}</div>
+                                                @if($lesson->video_duration)
+                                                    <div class="lesson-duration-pill">
+                                                        <span>{{ gmdate('H:i:s', $lesson->video_duration) }}</span>
+                                                        <i class="far fa-clock"></i>
+                                                    </div>
+                                                @endif
+                                            </div>
+
+                                            <!-- Left Side in RTL: External Link Icon -->
+                                            <div class="lesson-link-icon">
                                                 <i class="fas fa-external-link-alt"></i>
                                             </div>
                                         </a>
@@ -738,14 +739,48 @@ function showKeyboardShortcuts() {
 
 // Fullscreen toggle function
 function toggleFullscreen() {
-    const video = document.getElementById('lessonVideo');
-    if (video) {
-        if (document.fullscreenElement) {
+    if (window.learningInterface && typeof window.learningInterface.toggleFullscreen === 'function') {
+        window.learningInterface.toggleFullscreen();
+        return;
+    }
+
+    const target = document.querySelector('.enhanced-video-player') ||
+                   document.querySelector('.external-video-container') ||
+                   document.querySelector('.video-container') ||
+                   document.querySelector('.content-section') ||
+                   document.getElementById('lessonVideo');
+
+    if (!target) return;
+
+    const isFullscreen = document.fullscreenElement || 
+                         document.webkitFullscreenElement || 
+                         document.mozFullScreenElement || 
+                         document.msFullscreenElement;
+
+    if (isFullscreen) {
+        if (document.exitFullscreen) {
             document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        } else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen();
+        } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+        }
+    } else {
+        if (target.requestFullscreen) {
+            target.requestFullscreen();
+        } else if (target.webkitRequestFullscreen) {
+            target.webkitRequestFullscreen();
+        } else if (target.mozRequestFullScreen) {
+            target.mozRequestFullScreen();
+        } else if (target.msRequestFullscreen) {
+            target.msRequestFullscreen();
         } else {
-            video.requestFullscreen().catch(err => {
-                console.error('Error attempting to enable fullscreen:', err);
-            });
+            const video = target.querySelector('video') || document.getElementById('lessonVideo');
+            if (video && video.webkitEnterFullscreen) {
+                video.webkitEnterFullscreen();
+            }
         }
     }
 }
@@ -802,6 +837,203 @@ function testSecuritySystem() {
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/learning-interface.css') }}">
 <style>
+/* Custom Curriculum Dark Theme matching user screenshot design */
+.curriculum-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    direction: rtl !important;
+}
+
+.section-item {
+    background: #171d2c !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 16px !important;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    margin-bottom: 14px;
+    direction: rtl !important;
+}
+
+.section-header {
+    display: flex !important;
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 16px 20px !important;
+    background: #171d2c !important;
+    cursor: pointer;
+    border: none !important;
+    user-select: none;
+    direction: rtl !important;
+}
+
+.section-header:hover {
+    background: #1e263a !important;
+}
+
+.section-info {
+    text-align: right !important;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.section-title {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #ffffff !important;
+}
+
+.section-lessons-count {
+    font-size: 0.82rem;
+    color: #94a3b8;
+    margin-top: 2px;
+    display: block;
+}
+
+.section-left {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 12px !important;
+    direction: rtl !important;
+}
+
+.section-toggle {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    transition: transform 0.3s ease;
+}
+
+.section-header.collapsed .section-toggle {
+    transform: rotate(180deg);
+}
+
+.mini-progress-bar {
+    width: 65px;
+    height: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.mini-progress-fill {
+    height: 100%;
+    background: #22c55e;
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    color: #cbd5e1;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.section-lessons {
+    padding: 0 16px 16px 16px;
+    direction: rtl !important;
+}
+
+.lessons-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    direction: rtl !important;
+}
+
+.lesson-item {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 14px 18px !important;
+    border-radius: 12px !important;
+    background: transparent;
+    color: #e2e8f0 !important;
+    transition: all 0.2s ease-in-out;
+    position: relative;
+    border: 1px solid transparent;
+    direction: rtl !important;
+}
+
+.lesson-item:hover {
+    background: rgba(255, 255, 255, 0.04) !important;
+    color: #ffffff !important;
+}
+
+.lesson-item.active {
+    background: #28324e !important;
+    border-right: 4px solid #6366f1 !important;
+    border-left: none !important;
+    border-radius: 12px !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.25);
+}
+
+.lesson-play-btn {
+    color: #ffffff;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 12px;
+}
+
+.lesson-play-btn i {
+    transition: transform 0.2s ease;
+}
+
+.lesson-item:hover .lesson-play-btn i {
+    transform: scale(1.1);
+}
+
+.lesson-info-box {
+    text-align: center;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.lesson-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #ffffff !important;
+    margin-bottom: 2px;
+}
+
+.lesson-duration-pill {
+    background: #141a29;
+    color: #94a3b8;
+    border-radius: 20px;
+    padding: 3px 12px;
+    font-size: 0.78rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.lesson-duration-pill i {
+    font-size: 0.75rem;
+}
+
+.lesson-link-icon {
+    color: #94a3b8;
+    font-size: 0.95rem;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+    margin-right: 12px;
+}
+
+.lesson-item:hover .lesson-link-icon {
+    opacity: 1;
+    color: #6366f1;
+}
 /* Enhanced Video Player Styles */
 .enhanced-video-player {
     position: relative;
@@ -818,35 +1050,129 @@ function testSecuritySystem() {
     display: block;
 }
 
-/* Security Overlay */
+/* Security Overlay - Clean Floating Badge */
 .security-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    background: linear-gradient(180deg, rgba(220, 53, 69, 0.9) 0%, transparent 30%);
-    padding: 15px;
-    z-index: 10;
-    opacity: 0.8;
-    transition: opacity 0.3s ease;
-}
-
-.security-overlay:hover {
-    opacity: 1;
+    position: absolute !important;
+    top: 10px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    right: auto !important;
+    background: none !important;
+    padding: 0 !important;
+    z-index: 20 !important;
+    pointer-events: none !important;
+    width: auto !important;
+    max-width: 90% !important;
 }
 
 .security-warning {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #fff;
-    font-weight: 600;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    background: rgba(15, 23, 42, 0.88) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(239, 68, 68, 0.4) !important;
+    color: #f8fafc !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    padding: 5px 14px !important;
+    border-radius: 20px !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
+    white-space: nowrap !important;
 }
 
 .security-warning i {
-    font-size: 1.2em;
-    color: #ffc107;
+    font-size: 0.85rem !important;
+    color: #ef4444 !important;
+}
+
+/* Responsive Mobile Layout Adjustments */
+@media (max-width: 768px) {
+    .learning-interface {
+        padding: 8px !important;
+    }
+
+    .learning-content {
+        gap: 15px !important;
+    }
+
+    .lesson-header {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 12px !important;
+        text-align: center !important;
+        padding: 12px 15px !important;
+    }
+
+    .lesson-actions {
+        width: 100% !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        flex-wrap: wrap !important;
+    }
+
+    .action-btn {
+        padding: 8px 14px !important;
+        font-size: 0.85rem !important;
+        border-radius: 8px !important;
+        min-width: unset !important;
+    }
+
+    .enhanced-video-player .video-player,
+    .video-player {
+        min-height: 220px !important;
+        max-height: 50vh !important;
+        width: 100% !important;
+    }
+
+    .watermark-overlay .watermark-text {
+        font-size: 0.7rem !important;
+        opacity: 0.4 !important;
+    }
+
+    .course-sidebar {
+        width: 100% !important;
+        margin: 15px 0 0 0 !important;
+        height: auto !important;
+        max-height: none !important;
+    }
+
+    .curriculum-list {
+        gap: 12px !important;
+    }
+
+    .section-header {
+        padding: 12px 16px !important;
+    }
+
+    .section-title {
+        font-size: 0.95rem !important;
+    }
+
+    .lesson-item {
+        padding: 12px 14px !important;
+    }
+
+    .lesson-title {
+        font-size: 0.88rem !important;
+    }
+
+    .progress-controls-unified {
+        padding: 15px !important;
+    }
+
+    .simple-navigation .nav-controls {
+        display: flex !important;
+        gap: 10px !important;
+        width: 100% !important;
+    }
+
+    .simple-navigation .btn {
+        flex: 1 !important;
+        padding: 10px !important;
+        font-size: 0.88rem !important;
+    }
 }
 
 /* Enhanced Security Alerts */

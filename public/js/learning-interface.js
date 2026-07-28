@@ -558,18 +558,55 @@ class LearningInterface {
     }
 
     setupFullscreen() {
-        const fullscreenBtn = document.querySelector('.fullscreen-btn');
-        if (!fullscreenBtn) return;
-
-        fullscreenBtn.addEventListener('click', () => {
-            const contentSection = document.querySelector('.content-section');
-
-            if (document.fullscreenElement) {
-                document.exitFullscreen();
-            } else {
-                contentSection.requestFullscreen();
-            }
+        const fullscreenBtns = document.querySelectorAll('.fullscreen-btn');
+        fullscreenBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.toggleFullscreen();
+            });
         });
+    }
+
+    toggleFullscreen() {
+        const target = document.querySelector('.enhanced-video-player') ||
+                       document.querySelector('.external-video-container') ||
+                       document.querySelector('.video-container') ||
+                       document.querySelector('.content-section') ||
+                       document.getElementById('lessonVideo');
+
+        if (!target) return;
+
+        const isFullscreen = document.fullscreenElement || 
+                             document.webkitFullscreenElement || 
+                             document.mozFullScreenElement || 
+                             document.msFullscreenElement;
+
+        if (isFullscreen) {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        } else {
+            if (target.requestFullscreen) {
+                target.requestFullscreen();
+            } else if (target.webkitRequestFullscreen) {
+                target.webkitRequestFullscreen();
+            } else if (target.mozRequestFullScreen) {
+                target.mozRequestFullScreen();
+            } else if (target.msRequestFullscreen) {
+                target.msRequestFullscreen();
+            } else {
+                const video = target.querySelector('video') || document.getElementById('lessonVideo');
+                if (video && video.webkitEnterFullscreen) {
+                    video.webkitEnterFullscreen();
+                }
+            }
+        }
     }
 
     setupSpeedControls() {
