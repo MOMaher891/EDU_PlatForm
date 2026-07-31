@@ -82,6 +82,28 @@ class Course extends Model
         return 'slug';
     }
 
+    /**
+     * Retrieve the model for a bound value.
+     * Allows resolving by numeric ID or slug.
+     *
+     * @param  mixed  $value
+     * @param  string|null  $field
+     * @return \Illuminate\Database\Eloquent\Model|null
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        $field = $field ?? $this->getRouteKeyName();
+
+        if (is_numeric($value)) {
+            $course = static::where('id', $value)->first();
+            if ($course) {
+                return $course;
+            }
+        }
+
+        return static::where($field, $value)->firstOrFail();
+    }
+
     // Relationships
     public function category()
     {
