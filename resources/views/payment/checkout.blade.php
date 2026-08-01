@@ -4,6 +4,7 @@
     $stripeConfig = config('payment.gateways.stripe');
     $paypalConfig = config('payment.gateways.paypal');
     $paymobConfig = config('payment.gateways.paymob');
+    $kashierConfig = config('payment.gateways.kashier');
     
     // Get effective price and calculate tax
     $effectivePrice = $course->getEffectivePrice();
@@ -88,6 +89,20 @@
                                         <p>Visa / Mastercard</p>
                                     </div>
                                     <span class="currency-tag">USD</span>
+                                </div>
+                                @endif
+
+                                @if(!empty($kashierConfig['enabled']))
+                                <div class="payment-method-card" data-method="kashier" data-gateway="kashier" data-currency="EGP">
+                                    <div class="method-check-dot"></div>
+                                    <div class="method-icon-wrap">
+                                        <i class="fas fa-shield-alt text-emerald-500"></i>
+                                    </div>
+                                    <div class="method-details">
+                                        <h6>بوابة Kashier</h6>
+                                        <p>بطاقات بنكية ومحفظة إلكترونية</p>
+                                    </div>
+                                    <span class="currency-tag local">EGP</span>
                                 </div>
                                 @endif
 
@@ -1006,6 +1021,9 @@ document.querySelectorAll('.payment-method-card').forEach(card => {
                 if (gateway === 'paymob') {
                     submitBtnText.innerHTML = '<i class="fas fa-mobile-alt me-1"></i> ادفع الآن عبر PayMob بالعملة المحلية';
                     submitBtn.className = "btn btn-violet-custom btn-lg w-100 py-3 d-flex align-items-center justify-content-center gap-2";
+                } else if (gateway === 'kashier') {
+                    submitBtnText.innerHTML = '<i class="fas fa-shield-alt me-1"></i> ادفع الآن عبر بوابة Kashier المشفرة';
+                    submitBtn.className = "btn btn-emerald-custom btn-lg w-100 py-3 d-flex align-items-center justify-content-center gap-2";
                 } else {
                     submitBtnText.innerHTML = '<i class="fas fa-lock me-1"></i> إتمام الدفع بالبطاقة الائتمانية';
                     submitBtn.className = "btn btn-indigo btn-lg w-100 py-3 d-flex align-items-center justify-content-center gap-2";
@@ -1085,17 +1103,35 @@ function initiatePayMobPayment() {
     processPayment('paymob', {});
 }
 
-// Payment form submission interceptor (primarily for Stripe)
+let isSubmitting = false;
+
+// Payment form submission interceptor (primarily for Stripe, Paymob, Kashier)
 document.getElementById('paymentForm').addEventListener('submit', function(e) {
     e.preventDefault();
 
+    if (isSubmitting) {
+        console.warn('Checkout submission already in progress, ignoring double click.');
+        return false;
+    }
+
     const gateway = document.getElementById('selectedGateway').value;
+    const submitBtn = document.getElementById('submitPaymentBtn');
+
+    if (!validateForm()) {
+        return false;
+    }
+
+    isSubmitting = true;
+    toggleBtnLoading(submitBtn, true);
+
     console.log('Payment form request initiated:', gateway);
 
     if (gateway === 'stripe') {
         processStripePayment();
     } else if (gateway === 'paymob') {
         initiatePayMobPayment();
+    } else if (gateway === 'kashier') {
+        processPayment('kashier', {});
     } else {
         processPayment(gateway, {});
     }
@@ -1260,16 +1296,20 @@ function validateForm() {
 }
 
 function toggleBtnLoading(btn, isLoading) {
+    if (!btn) return;
     if (isLoading) {
         btn.classList.add('loading');
         btn.disabled = true;
-        btn.querySelector('.btn-text').classList.add('d-none');
-        btn.querySelector('.btn-loader').classList.remove('d-none');
+        btn.setAttribute('disabled', 'disabled');
+        btn.querySelector('.btn-text')?.classList.add('d-none');
+        btn.querySelector('.btn-loader')?.classList.remove('d-none');
     } else {
+        isSubmitting = false;
         btn.classList.remove('loading');
         btn.disabled = false;
-        btn.querySelector('.btn-text').classList.remove('d-none');
-        btn.querySelector('.btn-loader').classList.add('d-none');
+        btn.removeAttribute('disabled');
+        btn.querySelector('.btn-text')?.classList.remove('d-none');
+        btn.querySelector('.btn-loader')?.classList.add('d-none');
     }
 }
 

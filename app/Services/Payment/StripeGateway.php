@@ -3,6 +3,7 @@
 namespace App\Services\Payment;
 
 use App\Contracts\PaymentGatewayInterface;
+use App\Models\Order;
 use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -12,6 +13,15 @@ use Stripe\Exception\ApiErrorException;
 
 class StripeGateway implements PaymentGatewayInterface
 {
+    public function charge(Order $order): array
+    {
+        return ['success' => false, 'message' => 'Stripe charge not implemented for Order yet.'];
+    }
+
+    public function verify(array $payload): bool
+    {
+        return false;
+    }
     protected $secretKey;
     protected $publicKey;
     protected $webhookSecret;

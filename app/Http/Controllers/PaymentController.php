@@ -5,13 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\Course;
 use App\Models\CourseSection;
 use App\Models\Payment;
+use App\Models\Order;
 use App\Models\CourseEnrollment;
+use App\Services\Payment\Drivers\KashierDriver;
 use App\Services\SectionAccessService;
 use App\Services\PaymentGatewayService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class PaymentController extends Controller
@@ -119,7 +122,7 @@ class PaymentController extends Controller
     {
         try {
             $request->validate([
-                'gateway' => 'required|in:stripe,paypal,paymob',
+                'gateway' => 'required|in:stripe,paypal,paymob,kashier',
             ]);
 
             Log::info('Payment request received', [
@@ -128,7 +131,12 @@ class PaymentController extends Controller
                 'user_id' => auth()->id()
             ]);
 
-            $user = Auth::user();
+            $user = $request->user() ?? Auth::user();
+            $payable = $section ?: $course;
+
+            if ($request->gateway === 'kashier') {
+                return $this->processKashierPayment($request, $payable, $user);
+            }
 
             if ($section) {
                 return $this->processSectionPayment($request, $course, $section, $user);
@@ -144,6 +152,67 @@ class PaymentController extends Controller
             ]);
 
             return redirect()->back()->with('error', 'حدث خطأ أثناء معالجة الدفع. يرجى المحاولة مرة أخرى.');
+        }
+    }
+
+    /**
+     * Process Kashier Payment with Double-Click & Race Condition Prevention
+     */
+    private function processKashierPayment(Request $request, $payable, $user)
+    {
+        $lockKey = "checkout_kashier_user_{$user->id}_" . md5(get_class($payable) . '_' . $payable->id);
+        $lock = Cache::lock($lockKey, 10);
+
+        if (!$lock->get()) {
+            sleep(1);
+            $existingOrder = Order::where('user_id', $user->id)
+                ->where('payable_type', get_class($payable))
+                ->where('payable_id', $payable->id)
+                ->where('status', 'PENDING')
+                ->latest()
+                ->first();
+
+            if ($existingOrder) {
+                $result = app(KashierDriver::class)->charge($existingOrder);
+                return response()->json($result);
+            }
+        }
+
+        try {
+            // Prevent duplicate pending orders created within last 3 minutes
+            $order = Order::where('user_id', $user->id)
+                ->where('payable_type', get_class($payable))
+                ->where('payable_id', $payable->id)
+                ->where('status', 'PENDING')
+                ->where('created_at', '>=', now()->subMinutes(3))
+                ->latest()
+                ->first();
+
+            if (!$order) {
+                $order = Order::create([
+                    'user_id' => $user->id,
+                    'order_number' => 'ORD-' . strtoupper(Str::random(10)),
+                    'total_amount' => $payable->getEffectivePrice(),
+                    'currency' => 'EGP',
+                    'status' => 'PENDING',
+                    'payable_type' => get_class($payable),
+                    'payable_id' => $payable->id,
+                ]);
+            }
+
+            $result = app(KashierDriver::class)->charge($order);
+
+            if ($request->wantsJson() || $request->ajax()) {
+                return response()->json($result);
+            }
+
+            if (!empty($result['redirect_url'])) {
+                return redirect($result['redirect_url']);
+            }
+
+            return redirect()->back()->with('error', $result['message'] ?? 'فشل في تشغيل بوابة Kashier.');
+        } finally {
+            optional($lock)->release();
         }
     }
 

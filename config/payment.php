@@ -40,6 +40,15 @@ return [
             'hmac_secret' => env('PAYMOB_HMAC_SECRET'),
             'currency' => env('PAYMOB_CURRENCY', 'EGP'),
         ],
+
+        'kashier' => [
+            'enabled' => env('KASHIER_ENABLED', true),
+            'merchant_id' => env('KASHIER_MERCHANT_ID'),
+            'api_key' => env('KASHIER_API_KEY'),
+            'secret_key' => env('KASHIER_SECRET_KEY'),
+            'mode' => env('KASHIER_MODE', 'sandbox'),
+            'currency' => env('KASHIER_CURRENCY', 'EGP'),
+        ],
     ],
 
     'currencies' => [
