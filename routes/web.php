@@ -133,6 +133,20 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Payments Management
     Route::get('/payments', [AdminController::class, 'payments'])->name('payments.index');
     Route::get('/payments/{payment}', [AdminController::class, 'showPayment'])->name('payments.show');
+
+    // Payment Gateways Management
+    Route::get('/payment-gateways', [\App\Http\Controllers\PaymentGatewayAdminController::class, 'index'])->name('payment-gateways.index');
+    Route::put('/payment-gateways/{gateway}', [\App\Http\Controllers\PaymentGatewayAdminController::class, 'update'])->name('payment-gateways.update');
+    Route::post('/payment-gateways/{gateway}/toggle', [\App\Http\Controllers\PaymentGatewayAdminController::class, 'toggleStatus'])->name('payment-gateways.toggle');
+    Route::post('/payment-gateways/{gateway}/mode', [\App\Http\Controllers\PaymentGatewayAdminController::class, 'toggleMode'])->name('payment-gateways.mode');
+    Route::post('/payment-gateways/update-order', [\App\Http\Controllers\PaymentGatewayAdminController::class, 'updateOrder'])->name('payment-gateways.update-order');
+
+    // Payment Transactions Ledger Management
+    Route::get('/transactions', [\App\Http\Controllers\TransactionAdminController::class, 'index'])->name('transactions.index');
+    Route::get('/transactions/export', [\App\Http\Controllers\TransactionAdminController::class, 'export'])->name('transactions.export');
+    Route::get('/transactions/{transaction}', [\App\Http\Controllers\TransactionAdminController::class, 'show'])->name('transactions.show');
+    Route::post('/transactions/{transaction}/sync', [\App\Http\Controllers\TransactionAdminController::class, 'syncStatus'])->name('transactions.sync');
+
     // Lesson payments status update (accept/reject)
     Route::post('/lesson-payments/{payment}/status', [LessonPaymentController::class, 'updateStatus'])->name('lesson-payments.status');
     // Lesson payments listing/show for admin
@@ -312,8 +326,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/payment/{course}/process', [PaymentController::class, 'process'])->name('payment.process');
     Route::post('/payment/{course}/section/{section}/process', [PaymentController::class, 'process'])->name('payment.section.process');
     Route::post('/payment/confirm-stripe', [PaymentController::class, 'confirmStripePayment'])->name('payment.confirm.stripe');
-    Route::get('/payment/success', [PaymentController::class, 'success'])->name('payment.success');
-    Route::get('/payment/cancel', [PaymentController::class, 'cancel'])->name('payment.cancel');
+    Route::get('/payment/success/{order?}', [PaymentController::class, 'paymentSuccess'])->name('payment.success.order');
+    Route::get('/payment/failed', [PaymentController::class, 'paymentFailed'])->name('payment.failed');
+    Route::get('/payment/success', [PaymentController::class, 'paymentSuccess'])->name('payment.success');
+    Route::get('/payment/cancel', [PaymentController::class, 'paymentFailed'])->name('payment.cancel');
     Route::get('/payment/callback/{gateway}', [PaymentController::class, 'callback'])->name('payment.callback');
 });
 

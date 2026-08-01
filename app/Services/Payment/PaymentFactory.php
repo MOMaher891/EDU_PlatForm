@@ -17,6 +17,8 @@ class PaymentFactory
     public function make(string $gateway): PaymentGatewayInterface
     {
         switch (strtolower($gateway)) {
+            case 'kashier':
+                return app(KashierDriver::class);
             case 'paymob':
                 return app(PaymobGateway::class);
             case 'stripe':

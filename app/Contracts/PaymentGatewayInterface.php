@@ -2,30 +2,29 @@
 
 namespace App\Contracts;
 
-use App\Models\Payment;
+use App\Models\Order;
 use Illuminate\Http\Request;
 
 interface PaymentGatewayInterface
 {
     /**
-     * Initiate payment and return response data (redirect URL or payload).
+     * Charge an order and return gateway response (e.g. redirect URL, form payload, status).
      *
-     * @param Payment $payment
-     * @param Request $request
+     * @param Order $order
      * @return array
      */
-    public function initiatePayment(Payment $payment, Request $request): array;
+    public function charge(Order $order): array;
 
     /**
-     * Handle the redirect callback from the payment gateway.
+     * Verify payment status using response payload.
      *
-     * @param Request $request
-     * @return array
+     * @param array $payload
+     * @return bool
      */
-    public function handleCallback(Request $request): array;
+    public function verify(array $payload): bool;
 
     /**
-     * Process the webhook (IPN) from the payment gateway.
+     * Handle incoming payment gateway webhooks.
      *
      * @param Request $request
      * @return array

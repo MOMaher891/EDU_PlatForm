@@ -3,6 +3,7 @@
 namespace App\Services\Payment;
 
 use App\Contracts\PaymentGatewayInterface;
+use App\Models\Order;
 use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -11,6 +12,15 @@ use Exception;
 
 class PaymobGateway implements PaymentGatewayInterface
 {
+    public function charge(Order $order): array
+    {
+        return ['success' => false, 'message' => 'Paymob charge not implemented for Order yet.'];
+    }
+
+    public function verify(array $payload): bool
+    {
+        return false;
+    }
     protected $apiKey;
     protected $integrationId;
     protected $iframeId;
