@@ -953,6 +953,7 @@
 @push('scripts')
 <script src="https://js.stripe.com/v3/"></script>
 <script src="https://www.paypal.com/sdk/js?client-id={{ $paypalConfig['client_id'] ?? 'test' }}&currency={{ $paypalConfig['currency'] ?? 'USD' }}"></script>
+<script src="https://checkout.kashier.io/kashier-checkout.js"></script>
 <script>
 // Exchange rate configuration simulator (1 USD = 50 EGP)
 const EGP_EXCHANGE_RATE = 50.0;
@@ -1259,8 +1260,38 @@ async function processPayment(gateway, data) {
         console.log('AJAX Payment response resolved:', result);
 
         if (result.success) {
-            if (result.data && result.data.redirect_url) {
-                // Redirect user to Gateway interface (Paymob Accept page or PayPal portal)
+            const kashierData = result.data || result;
+            if (gateway === 'kashier') {
+                if (typeof Kashier !== 'undefined' && typeof Kashier.checkout === 'function') {
+                    console.log('Launching Kashier Embedded Checkout SDK Modal');
+                    Kashier.checkout({
+                        merchantId: kashierData.merchant_id,
+                        orderId: kashierData.order_id,
+                        amount: kashierData.amount,
+                        currency: kashierData.currency || 'EGP',
+                        hash: kashierData.hash,
+                        mode: kashierData.mode || 'sandbox',
+                        type: 'external',
+                        onSuccess: function(res) {
+                            console.log('Kashier Payment Success Callback:', res);
+                            window.location.href = '{{ url("/payment/success") }}/' + kashierData.order_id;
+                        },
+                        onFailure: function(err) {
+                            console.error('Kashier Payment Failure Callback:', err);
+                            toggleBtnLoading(submitBtn, false);
+                            showError('عذراً، تعذرت عملية الدفع عبر بوابة Kashier. يرجى المحاولة مرة أخرى.');
+                        },
+                        onDismiss: function() {
+                            console.log('Kashier Checkout Modal Dismissed');
+                            toggleBtnLoading(submitBtn, false);
+                        }
+                    });
+                } else if (kashierData.redirect_url) {
+                    window.location.href = kashierData.redirect_url;
+                } else {
+                    window.location.href = '{{ url("/payment/success") }}/' + (kashierData.order_id || '');
+                }
+            } else if (result.data && result.data.redirect_url) {
                 window.location.href = result.data.redirect_url;
             } else {
                 window.location.href = '{{ route("payment.success") }}';

@@ -326,8 +326,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/payment/{course}/process', [PaymentController::class, 'process'])->name('payment.process');
     Route::post('/payment/{course}/section/{section}/process', [PaymentController::class, 'process'])->name('payment.section.process');
     Route::post('/payment/confirm-stripe', [PaymentController::class, 'confirmStripePayment'])->name('payment.confirm.stripe');
-    Route::get('/payment/success', [PaymentController::class, 'success'])->name('payment.success');
-    Route::get('/payment/cancel', [PaymentController::class, 'cancel'])->name('payment.cancel');
+    Route::get('/payment/success/{order?}', [PaymentController::class, 'paymentSuccess'])->name('payment.success.order');
+    Route::get('/payment/failed', [PaymentController::class, 'paymentFailed'])->name('payment.failed');
+    Route::get('/payment/success', [PaymentController::class, 'paymentSuccess'])->name('payment.success');
+    Route::get('/payment/cancel', [PaymentController::class, 'paymentFailed'])->name('payment.cancel');
     Route::get('/payment/callback/{gateway}', [PaymentController::class, 'callback'])->name('payment.callback');
 });
 

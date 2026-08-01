@@ -568,6 +568,43 @@ class PaymentController extends Controller
             ->with('warning', 'تم إلغاء عملية الدفع.');
     }
 
+    /**
+     * Dedicated Payment Success Page.
+     */
+    public function paymentSuccess(Request $request, $orderParam = null)
+    {
+        $user = Auth::user();
+        $orderQuery = Order::with(['user', 'transactions', 'payable']);
+
+        if ($orderParam) {
+            if (is_numeric($orderParam)) {
+                $orderQuery->where('id', $orderParam);
+            } else {
+                $orderQuery->where('order_number', $orderParam);
+            }
+        } elseif ($request->filled('order_id')) {
+            $orderIdInput = $request->input('order_id');
+            $orderQuery->where('order_number', $orderIdInput)->orWhere('id', $orderIdInput);
+        } elseif ($request->filled('merchantOrderId')) {
+            $orderQuery->where('order_number', $request->input('merchantOrderId'));
+        } else {
+            $orderQuery->where('user_id', $user->id ?? 0)->latest();
+        }
+
+        $order = $orderQuery->first();
+
+        return view('payment.success', compact('order'));
+    }
+
+    /**
+     * Dedicated Payment Failed Page.
+     */
+    public function paymentFailed(Request $request)
+    {
+        $message = $request->input('error', 'تعذر استكمال عملية الدفع عبر البوابة. يرجى المحاولة مرة أخرى.');
+        return view('payment.failed', compact('message'));
+    }
+
     private function enrollFree(Course $course)
     {
         $user = Auth::user();
