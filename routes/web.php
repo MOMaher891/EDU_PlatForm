@@ -133,6 +133,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Payments Management
     Route::get('/payments', [AdminController::class, 'payments'])->name('payments.index');
     Route::get('/payments/{payment}', [AdminController::class, 'showPayment'])->name('payments.show');
+
+    // Payment Gateways Management
+    Route::get('/payment-gateways', [\App\Http\Controllers\PaymentGatewayAdminController::class, 'index'])->name('payment-gateways.index');
+    Route::put('/payment-gateways/{gateway}', [\App\Http\Controllers\PaymentGatewayAdminController::class, 'update'])->name('payment-gateways.update');
+    Route::post('/payment-gateways/{gateway}/toggle', [\App\Http\Controllers\PaymentGatewayAdminController::class, 'toggleStatus'])->name('payment-gateways.toggle');
+    Route::post('/payment-gateways/{gateway}/mode', [\App\Http\Controllers\PaymentGatewayAdminController::class, 'toggleMode'])->name('payment-gateways.mode');
+    Route::post('/payment-gateways/update-order', [\App\Http\Controllers\PaymentGatewayAdminController::class, 'updateOrder'])->name('payment-gateways.update-order');
+
     // Lesson payments status update (accept/reject)
     Route::post('/lesson-payments/{payment}/status', [LessonPaymentController::class, 'updateStatus'])->name('lesson-payments.status');
     // Lesson payments listing/show for admin

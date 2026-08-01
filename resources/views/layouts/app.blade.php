@@ -501,6 +501,7 @@
                                 @endif
                                 @if(auth()->user()->isAdmin())
                                 <li><a class="dropdown-item" href="{{ route('admin.settings.index') }}"><i class="fas fa-cog me-2"></i>إعدادات النظام</a></li>
+                                <li><a class="dropdown-item" href="{{ route('admin.payment-gateways.index') }}"><i class="fas fa-wallet me-2"></i>بوابات الدفع الإلكتروني</a></li>
                                 @endif
                                 <li><hr class="dropdown-divider"></li>
                                 <li>

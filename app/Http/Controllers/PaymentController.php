@@ -6,6 +6,7 @@ use App\Models\Course;
 use App\Models\CourseSection;
 use App\Models\Payment;
 use App\Models\Order;
+use App\Models\PaymentGateway;
 use App\Models\CourseEnrollment;
 use App\Services\Payment\Drivers\KashierDriver;
 use App\Services\SectionAccessService;
@@ -70,7 +71,8 @@ class PaymentController extends Controller
                 return $this->enrollFree($course);
             }
 
-            return view('payment.checkout', compact('course'));
+            $activeGateways = PaymentGateway::where('is_active', true)->orderBy('sort_order', 'asc')->get();
+            return view('payment.checkout', compact('course', 'activeGateways'));
         } catch (\Exception $e) {
             Log::error('Error in checkout course: ' , [
                 'user_id' => $user->id ?? null,
@@ -102,7 +104,8 @@ class PaymentController extends Controller
                 return $this->grantFreeSectionAccess($course, $section);
             }
 
-            return view('payment.checkout', compact('course', 'section'));
+            $activeGateways = PaymentGateway::where('is_active', true)->orderBy('sort_order', 'asc')->get();
+            return view('payment.checkout', compact('course', 'section', 'activeGateways'));
         } catch (\Exception $e) {
             Log::error('Error in checkout section: ' , [
                 'user_id' => $user->id ?? null,
