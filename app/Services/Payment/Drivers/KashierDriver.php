@@ -140,8 +140,10 @@ class KashierDriver implements PaymentGatewayInterface
 
             $hash = $this->generateHash($orderId, $amount, $currency);
             $modeParam = strtolower($this->mode) === 'live' ? 'live' : 'test';
+            $merchantRedirect = route('payment.success.order', ['order' => $orderId]);
+            $encodedRedirect = urlencode($merchantRedirect);
 
-            $checkoutUrl = "{$this->baseUrl}/?merchantId={$this->merchantId}&orderId={$orderId}&amount={$amount}&currency={$currency}&hash={$hash}&mode={$modeParam}";
+            $checkoutUrl = "{$this->baseUrl}/?merchantId={$this->merchantId}&orderId={$orderId}&amount={$amount}&currency={$currency}&hash={$hash}&mode={$modeParam}&merchantRedirect={$encodedRedirect}";
 
             $transaction = Transaction::where('order_id', $order->id)
                 ->where('gateway_code', 'kashier')
@@ -176,8 +178,10 @@ class KashierDriver implements PaymentGatewayInterface
                 'hash' => $hash,
                 'merchant_id' => $this->merchantId,
                 'order_id' => $orderId,
+                'merchant_redirect' => $merchantRedirect,
                 'amount' => $amount,
                 'currency' => $currency,
+                'mode' => strtolower($this->mode) === 'live' ? 'live' : 'test',
                 'transaction_id' => $transaction->id,
             ];
         } catch (\Exception $e) {

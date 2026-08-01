@@ -1,6 +1,10 @@
 @extends('layouts.app')
 
 @php
+    if (!isset($activeGateways)) {
+        $activeGateways = \App\Models\PaymentGateway::where('is_active', true)->orderBy('sort_order', 'asc')->get();
+    }
+
     $stripeConfig = config('payment.gateways.stripe');
     $paypalConfig = config('payment.gateways.paypal');
     $paymobConfig = config('payment.gateways.paymob');
@@ -78,61 +82,51 @@
                         </div>
                         <div class="card-body">
                             <div class="payment-methods-grid">
-                                @if($stripeConfig['enabled'])
-                                <div class="payment-method-card active" data-method="stripe" data-gateway="stripe" data-currency="USD">
+                                @forelse($activeGateways as $index => $gw)
+                                <div class="payment-method-card {{ $index === 0 ? 'active' : '' }}"
+                                     data-method="{{ $gw->code }}"
+                                     data-gateway="{{ $gw->code }}"
+                                     data-currency="{{ $gw->credentials['currency'] ?? (in_array($gw->code, ['stripe', 'paypal']) ? 'USD' : 'EGP') }}">
                                     <div class="method-check-dot"></div>
                                     <div class="method-icon-wrap">
-                                        <i class="fab fa-stripe-s"></i>
+                                        @if($gw->code === 'kashier')
+                                            <i class="fas fa-shield-alt text-emerald-500"></i>
+                                        @elseif($gw->code === 'paymob')
+                                            <i class="fas fa-mobile-alt text-violet-500"></i>
+                                        @elseif($gw->code === 'stripe')
+                                            <i class="fab fa-stripe-s text-indigo-600"></i>
+                                        @elseif($gw->code === 'paypal')
+                                            <i class="fab fa-paypal text-blue-500"></i>
+                                        @else
+                                            <i class="fas fa-credit-card text-slate-500"></i>
+                                        @endif
                                     </div>
                                     <div class="method-details">
-                                        <h6>البطاقة الائتمانية</h6>
-                                        <p>Visa / Mastercard</p>
+                                        <h6>{{ $gw->name }}</h6>
+                                        <p>
+                                            @if($gw->code === 'kashier')
+                                                بطاقات بنكية ومحفظة إلكترونية
+                                            @elseif($gw->code === 'paymob')
+                                                محافظ إلكترونية وبطاقات محلية
+                                            @elseif($gw->code === 'stripe')
+                                                Visa / MasterCard / AMEX
+                                            @elseif($gw->code === 'paypal')
+                                                دفع آمن وسريع عبر حساب PayPal
+                                            @else
+                                                دفع إلكتروني مباشر
+                                            @endif
+                                        </p>
                                     </div>
-                                    <span class="currency-tag">USD</span>
+                                    <span class="currency-tag {{ in_array($gw->code, ['kashier', 'paymob', 'fawry']) ? 'local' : '' }}">
+                                        {{ $gw->credentials['currency'] ?? (in_array($gw->code, ['stripe', 'paypal']) ? 'USD' : 'EGP') }}
+                                    </span>
                                 </div>
-                                @endif
-
-                                @if(!empty($kashierConfig['enabled']))
-                                <div class="payment-method-card" data-method="kashier" data-gateway="kashier" data-currency="EGP">
-                                    <div class="method-check-dot"></div>
-                                    <div class="method-icon-wrap">
-                                        <i class="fas fa-shield-alt text-emerald-500"></i>
-                                    </div>
-                                    <div class="method-details">
-                                        <h6>بوابة Kashier</h6>
-                                        <p>بطاقات بنكية ومحفظة إلكترونية</p>
-                                    </div>
-                                    <span class="currency-tag local">EGP</span>
+                                @empty
+                                <div class="alert alert-warning border-0 rounded-3 w-100 py-3 text-center my-2">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    عذراً، لا توجد بوابات دفع مفعلة حالياً في المنصة. يرجى تفعيل البوابات من لوحة التحكم.
                                 </div>
-                                @endif
-
-                                @if($paypalConfig['enabled'])
-                                <div class="payment-method-card" data-method="paypal" data-gateway="paypal" data-currency="USD">
-                                    <div class="method-check-dot"></div>
-                                    <div class="method-icon-wrap">
-                                        <i class="fab fa-paypal text-blue-500"></i>
-                                    </div>
-                                    <div class="method-details">
-                                        <h6>حساب PayPal</h6>
-                                        <p>دفع آمن وسريع</p>
-                                    </div>
-                                    <span class="currency-tag">USD</span>
-                                </div>
-                                @endif
-
-                                @if($paymobConfig['enabled'])
-                                <div class="payment-method-card" data-method="paymob" data-gateway="paymob" data-currency="EGP">
-                                    <div class="method-check-dot"></div>
-                                    <div class="method-icon-wrap">
-                                        <i class="fas fa-mobile-alt text-violet-500"></i>
-                                    </div>
-                                    <div class="method-details">
-                                        <h6>بوابة PayMob</h6>
-                                        <p>محافظ إلكترونية وبطاقات محلية</p>
-                                    </div>
-                                    <span class="currency-tag local">EGP</span>
-                                </div>
-                                @endif
+                                @endforelse
                             </div>
                         </div>
                     </div>
@@ -140,16 +134,17 @@
                     <!-- Payment Details Input Form Wrapper -->
                     <form id="paymentForm" method="POST" action="{{ route('payment.process', $course) }}">
                         @csrf
-                        <input type="hidden" name="gateway" id="selectedGateway" value="stripe">
-                        <input type="hidden" name="payment_method" id="selectedPaymentMethod" value="stripe">
+                        @php $firstGw = $activeGateways->first(); @endphp
+                        <input type="hidden" name="gateway" id="selectedGateway" value="{{ $firstGw->code ?? '' }}">
+                        <input type="hidden" name="payment_method" id="selectedPaymentMethod" value="{{ $firstGw->code ?? '' }}">
 
                         <!-- Stripe Credit Card Form -->
-                        <div class="payment-form-box active" id="stripeForm">
+                        <div class="payment-form-box {{ ($firstGw->code ?? '') === 'stripe' ? 'active' : '' }}" id="stripeForm">
                             <div class="card border-0 shadow-sm">
                                 <div class="card-header">
                                     <h5 class="card-title mb-0">
-                                        <i class="fas fa-shield-alt text-indigo-600"></i>
-                                        تفاصيل بطاقة الدفع
+                                        <i class="fas fa-credit-card text-indigo-600"></i>
+                                        تفاصيل بطاقة الدفع (Stripe)
                                     </h5>
                                 </div>
                                 <div class="card-body">
@@ -166,7 +161,34 @@
                                         <div class="input-group-custom">
                                             <span class="input-icon"><i class="fas fa-user-circle"></i></span>
                                             <input type="text" class="form-control-custom" name="card_holder"
-                                                   placeholder="الاسم الكامل كما هو مكتوب على البطاقة" required>
+                                                   placeholder="الاسم الكامل كما هو مكتوب على البطاقة">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Kashier Form Panel -->
+                        <div class="payment-form-box {{ ($firstGw->code ?? '') === 'kashier' ? 'active' : '' }}" id="kashierForm">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-shield-alt text-emerald-600 me-2"></i>
+                                        الدفع الإلكتروني عبر بوابة Kashier
+                                    </h5>
+                                </div>
+                                <div class="card-body text-center py-5">
+                                    <div class="kashier-info-panel">
+                                        <div class="kashier-badge-icon mb-4" style="width:72px; height:72px; background:rgba(16, 185, 129, 0.1); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto;">
+                                            <i class="fas fa-shield-alt text-emerald-600 fa-2x"></i>
+                                        </div>
+                                        <h5 class="fw-bold mb-2">نافذة Kashier للدفع الإلكتروني الآمنة</h5>
+                                        <p class="text-slate-500 max-w-md mx-auto mb-4">
+                                            عند النقر على "إتمام الدفع عبر بوابة Kashier"، ستُفتح نافذة Kashier الرسمية الآمنة لإدخال بيانات بطاقتك البنكية (Visa / MasterCard / Meeza) أو محفظتك المحمولة بأمان تام.
+                                        </p>
+                                        <div class="alert alert-emerald border-0 rounded-3 max-w-md mx-auto py-2.5 text-start small bg-emerald-50 text-emerald-800">
+                                            <i class="fas fa-lock text-emerald-600 me-1"></i>
+                                            المعاملة مشفرة بتقنية HMAC-SHA256 ومعتمدة من البنك المركزي المصري.
                                         </div>
                                     </div>
                                 </div>
@@ -174,7 +196,7 @@
                         </div>
 
                         <!-- PayPal Checkout Form -->
-                        <div class="payment-form-box" id="paypalForm">
+                        <div class="payment-form-box {{ ($firstGw->code ?? '') === 'paypal' ? 'active' : '' }}" id="paypalForm">
                             <div class="card border-0 shadow-sm">
                                 <div class="card-body text-center py-5">
                                     <div class="paypal-info-panel">
@@ -193,7 +215,7 @@
                         </div>
 
                         <!-- PayMob Gateway Form -->
-                        <div class="payment-form-box" id="paymobForm">
+                        <div class="payment-form-box {{ ($firstGw->code ?? '') === 'paymob' ? 'active' : '' }}" id="paymobForm">
                             <div class="card border-0 shadow-sm">
                                 <div class="card-header">
                                     <h5 class="card-title mb-0">
@@ -264,14 +286,30 @@
                         
                         <!-- Submit Button under form -->
                         <div class="mt-4" id="leftSubmitBtnContainer">
-                            <button type="submit" class="btn btn-indigo btn-lg w-100 py-3 d-flex align-items-center justify-content-center gap-2" id="submitPaymentBtn">
-                                <i class="fas fa-lock me-1"></i>
-                                <span class="btn-text">إتمام الدفع بالبطاقة الائتمانية</span>
-                                <div class="btn-loader d-none">
-                                    <div class="spinner-border spinner-border-sm text-white"></div>
-                                    جاري توجيهك بأمان...
-                                </div>
-                            </button>
+                            @if($activeGateways->count() > 0)
+                                <button type="submit" class="{{ ($firstGw->code ?? '') === 'kashier' ? 'btn btn-emerald-custom' : (($firstGw->code ?? '') === 'paymob' ? 'btn btn-violet-custom' : 'btn btn-indigo') }} btn-lg w-100 py-3 d-flex align-items-center justify-content-center gap-2" id="submitPaymentBtn">
+                                    <i class="fas fa-lock me-1"></i>
+                                    <span class="btn-text">
+                                        @if(($firstGw->code ?? '') === 'kashier')
+                                            ادفع الآن عبر بوابة Kashier المشفرة
+                                        @elseif(($firstGw->code ?? '') === 'paymob')
+                                            ادفع الآن عبر PayMob بالعملة المحلية
+                                        @elseif(($firstGw->code ?? '') === 'paypal')
+                                            ادفع الآن عبر حساب PayPal
+                                        @else
+                                            إتمام الدفع بالبطاقة الائتمانية
+                                        @endif
+                                    </span>
+                                    <div class="btn-loader d-none">
+                                        <div class="spinner-border spinner-border-sm text-white"></div>
+                                        جاري توجيهك بأمان...
+                                    </div>
+                                </button>
+                            @else
+                                <button type="button" class="btn btn-secondary btn-lg w-100 py-3 text-white" disabled>
+                                    <i class="fas fa-ban me-1"></i> لا توجد وسائل دفع متاحة حالياً
+                                </button>
+                            @endif
                         </div>
                     </form>
                 </div>
@@ -376,6 +414,20 @@
                         </div>
                     </div>
                 </div>
+            </div>
+<!-- Kashier Embedded iFrame Modal (Keep Student Inside Platform) -->
+<div class="modal fade" id="kashierIframeModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header bg-slate-900 text-white p-3">
+                <h5 class="modal-title fw-bold fs-6 d-flex align-items-center gap-2">
+                    <i class="fas fa-shield-alt text-emerald-400"></i>
+                    الدفع الإلكتروني الآمن عبر بوابة Kashier
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" onclick="toggleBtnLoading(document.getElementById('submitPaymentBtn'), false)"></button>
+            </div>
+            <div class="modal-body p-0" style="min-height: 540px; background: #ffffff;">
+                <iframe id="kashierIframeContainer" src="" style="width: 100%; height: 560px; border: none;" allow="payment"></iframe>
             </div>
         </div>
     </div>
@@ -908,6 +960,29 @@
     cursor: not-allowed;
 }
 
+.btn-emerald-custom {
+    background-color: #10b981;
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-weight: 700;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+}
+
+.btn-emerald-custom:hover {
+    background-color: #059669;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 20px -4px rgba(16, 185, 129, 0.35);
+}
+
+.btn-emerald-custom:disabled {
+    background-color: #6ee7b7;
+    color: rgba(255, 255, 255, 0.8);
+    cursor: not-allowed;
+}
+
 .spinner-border-sm {
     width: 1.1rem;
     height: 1.1rem;
@@ -947,6 +1022,190 @@
         grid-template-columns: 1fr;
     }
 }
+
+#card-element {
+    direction: ltr !important;
+    text-align: left !important;
+}
+
+/* =========================================================
+   DARK MODE OVERRIDES FOR STUDENT CHECKOUT PAGE
+   ========================================================= */
+[data-bs-theme="dark"] .checkout-page {
+    background-color: #0f172a !important;
+    color: #f8fafc !important;
+}
+
+[data-bs-theme="dark"] .checkout-header {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+[data-bs-theme="dark"] .checkout-title {
+    color: #f8fafc !important;
+}
+
+[data-bs-theme="dark"] .checkout-subtitle {
+    color: #cbd5e1 !important;
+}
+
+[data-bs-theme="dark"] .security-badge {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    color: #cbd5e1 !important;
+}
+
+[data-bs-theme="dark"] .payment-steps::before {
+    background: #334155 !important;
+}
+
+[data-bs-theme="dark"] .step {
+    background: transparent !important;
+}
+
+[data-bs-theme="dark"] .step-number {
+    background: #1e293b !important;
+    border-color: #475569 !important;
+    color: #94a3b8 !important;
+}
+
+[data-bs-theme="dark"] .step.active .step-number {
+    background: #6366f1 !important;
+    border-color: #6366f1 !important;
+    color: #ffffff !important;
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.25) !important;
+}
+
+[data-bs-theme="dark"] .step-label {
+    color: #94a3b8 !important;
+}
+
+[data-bs-theme="dark"] .step.active .step-label {
+    color: #818cf8 !important;
+}
+
+[data-bs-theme="dark"] .payment-method-card {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+[data-bs-theme="dark"] .payment-method-card:hover {
+    border-color: #475569 !important;
+    background: #334155 !important;
+}
+
+[data-bs-theme="dark"] .payment-method-card.active {
+    background: #312e81 !important;
+    border-color: #6366f1 !important;
+    box-shadow: 0 12px 24px -8px rgba(99, 102, 241, 0.4) !important;
+}
+
+[data-bs-theme="dark"] .payment-method-card .method-details h6 {
+    color: #f8fafc !important;
+}
+
+[data-bs-theme="dark"] .payment-method-card .method-details p {
+    color: #cbd5e1 !important;
+}
+
+[data-bs-theme="dark"] .method-icon-wrap {
+    background: #0f172a !important;
+    color: #94a3b8 !important;
+}
+
+[data-bs-theme="dark"] .payment-method-card.active .method-icon-wrap {
+    background: #6366f1 !important;
+    color: #ffffff !important;
+}
+
+[data-bs-theme="dark"] .currency-tag {
+    background: #0f172a !important;
+    color: #cbd5e1 !important;
+}
+
+[data-bs-theme="dark"] .currency-tag.local {
+    background: rgba(139, 92, 246, 0.2) !important;
+    color: #c084fc !important;
+}
+
+[data-bs-theme="dark"] .card {
+    background: #1e293b !important;
+    border-color: #334155 !important;
+}
+
+[data-bs-theme="dark"] .card-header {
+    background: #0f172a !important;
+    border-bottom-color: #334155 !important;
+}
+
+[data-bs-theme="dark"] .card-title {
+    color: #f8fafc !important;
+}
+
+[data-bs-theme="dark"] .form-label {
+    color: #cbd5e1 !important;
+}
+
+[data-bs-theme="dark"] .form-control,
+[data-bs-theme="dark"] .form-select,
+[data-bs-theme="dark"] .form-control-custom,
+[data-bs-theme="dark"] #card-element {
+    background-color: #0f172a !important;
+    color: #f8fafc !important;
+    border-color: #475569 !important;
+}
+
+[data-bs-theme="dark"] .receipt-breakdown {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+}
+
+[data-bs-theme="dark"] .receipt-row {
+    color: #cbd5e1 !important;
+}
+
+[data-bs-theme="dark"] .receipt-row.total {
+    border-top-color: #334155 !important;
+}
+
+[data-bs-theme="dark"] .receipt-row.total span {
+    color: #f8fafc !important;
+}
+
+[data-bs-theme="dark"] .course-brief h6 {
+    color: #f8fafc !important;
+}
+
+[data-bs-theme="dark"] .course-brief p {
+    color: #94a3b8 !important;
+}
+
+[data-bs-theme="dark"] .course-badges .badge {
+    background-color: #0f172a !important;
+    color: #cbd5e1 !important;
+}
+
+[data-bs-theme="dark"] .benefits-check-list li {
+    color: #cbd5e1 !important;
+}
+
+[data-bs-theme="dark"] .guarantee-box {
+    background: rgba(16, 185, 129, 0.1) !important;
+    border-color: rgba(16, 185, 129, 0.2) !important;
+}
+
+[data-bs-theme="dark"] .guarantee-box h6 {
+    color: #34d399 !important;
+}
+
+[data-bs-theme="dark"] .guarantee-box p {
+    color: #a7f3d0 !important;
+}
+
+[data-bs-theme="dark"] .card-footer {
+    background-color: #0f172a !important;
+    border-top-color: #334155 !important;
+}
 </style>
 @endpush
 
@@ -962,15 +1221,17 @@ const EGP_EXCHANGE_RATE = 50.0;
 const stripe = Stripe('{{ $stripeConfig['public_key'] ?? 'pk_test_placeholder' }}');
 const elements = stripe.elements();
 
+const isDarkMode = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+
 // Create premium styled card element
 const cardElement = elements.create('card', {
     style: {
         base: {
             fontSize: '16px',
-            color: '#1e293b',
-            fontFamily: 'system-ui, -apple-system, sans-serif',
+            color: isDarkMode ? '#f8fafc' : '#1e293b',
+            fontFamily: 'Cairo, Outfit, system-ui, -apple-system, sans-serif',
             '::placeholder': {
-                color: '#94a3b8',
+                color: isDarkMode ? '#64748b' : '#94a3b8',
             },
         },
         invalid: {
@@ -1262,30 +1523,61 @@ async function processPayment(gateway, data) {
         if (result.success) {
             const kashierData = result.data || result;
             if (gateway === 'kashier') {
+                const kashierModalEl = document.getElementById('kashierIframeModal');
+                const iframeEl = document.getElementById('kashierIframeContainer');
+
                 if (typeof Kashier !== 'undefined' && typeof Kashier.checkout === 'function') {
                     console.log('Launching Kashier Embedded Checkout SDK Modal');
-                    Kashier.checkout({
-                        merchantId: kashierData.merchant_id,
-                        orderId: kashierData.order_id,
-                        amount: kashierData.amount,
-                        currency: kashierData.currency || 'EGP',
-                        hash: kashierData.hash,
-                        mode: kashierData.mode || 'sandbox',
-                        type: 'external',
-                        onSuccess: function(res) {
-                            console.log('Kashier Payment Success Callback:', res);
-                            window.location.href = '{{ url("/payment/success") }}/' + kashierData.order_id;
-                        },
-                        onFailure: function(err) {
-                            console.error('Kashier Payment Failure Callback:', err);
-                            toggleBtnLoading(submitBtn, false);
-                            showError('عذراً، تعذرت عملية الدفع عبر بوابة Kashier. يرجى المحاولة مرة أخرى.');
-                        },
-                        onDismiss: function() {
-                            console.log('Kashier Checkout Modal Dismissed');
-                            toggleBtnLoading(submitBtn, false);
+                    try {
+                        Kashier.checkout({
+                            merchantId: kashierData.merchant_id,
+                            orderId: kashierData.order_id,
+                            amount: kashierData.amount,
+                            currency: kashierData.currency || 'EGP',
+                            hash: kashierData.hash,
+                            mode: kashierData.mode || 'sandbox',
+                            merchantRedirect: kashierData.merchant_redirect || '{{ url("/payment/success") }}/' + kashierData.order_id,
+                            type: 'external',
+                            display: 'ar',
+                            onSuccess: function(res) {
+                                console.log('Kashier Payment Success Callback:', res);
+                                window.location.href = '{{ url("/payment/success") }}/' + kashierData.order_id;
+                            },
+                            onFailure: function(err) {
+                                console.error('Kashier Payment Failure Callback:', err);
+                                toggleBtnLoading(submitBtn, false);
+                                showError('عذراً، تعذرت عملية الدفع عبر بوابة Kashier. يرجى المحاولة مرة أخرى.');
+                            },
+                            onDismiss: function() {
+                                console.log('Kashier Checkout Modal Dismissed');
+                                toggleBtnLoading(submitBtn, false);
+                            }
+                        });
+                        return;
+                    } catch (e) {
+                        console.warn('Kashier SDK popup launch fallback to embedded modal:', e);
+                    }
+                }
+
+                // Embedded iFrame Modal directly in the platform (Keeps student inside platform)
+                if (kashierData.redirect_url && iframeEl && kashierModalEl) {
+                    iframeEl.src = kashierData.redirect_url;
+                    
+                    // Direct parent redirect on success/failed page loaded inside iframe
+                    iframeEl.onload = function() {
+                        try {
+                            const iframeUrl = iframeEl.contentWindow.location.href;
+                            if (iframeUrl.includes('/payment/success') || iframeUrl.includes('/payment/failed')) {
+                                window.location.href = iframeUrl;
+                            }
+                        } catch (e) {
+                            console.log('Iframe is currently on external domain (kashier.io)');
                         }
-                    });
+                    };
+
+                    const bsModal = new bootstrap.Modal(kashierModalEl);
+                    bsModal.show();
+                    toggleBtnLoading(submitBtn, false);
                 } else if (kashierData.redirect_url) {
                     window.location.href = kashierData.redirect_url;
                 } else {
