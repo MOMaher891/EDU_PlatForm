@@ -332,6 +332,37 @@
             transform: scale(1.15) rotate(15deg);
         }
 
+        .dropdown-menu {
+            border: 1px solid #e2e8f0 !important;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1) !important;
+            background-color: #ffffff;
+        }
+
+        [data-bs-theme="dark"] .dropdown-menu {
+            background-color: #1e293b !important;
+            border-color: #334155 !important;
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .dropdown-item {
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .dropdown-item:hover {
+            background-color: #334155 !important;
+            color: #818cf8 !important;
+        }
+
+        [data-bs-theme="dark"] .dropdown-header .text-dark,
+        [data-bs-theme="dark"] .dropdown-header div {
+            color: #f8fafc !important;
+        }
+
+        [data-bs-theme="dark"] .dropdown-divider {
+            border-top-color: #334155 !important;
+        }
+
     </style>
 
     <!-- Asynchronous Extended Theme & Component Styles (Reduces HTML Document Size from 68KB to <15KB) -->
@@ -373,7 +404,7 @@
                             <img src="https://ui-avatars.com/api/?name={{ urlencode(auth()->user()->name) }}&background=6366f1&color=fff"
                                  class="rounded-circle border border-primary" width="32" height="32" alt="صورة المستخدم">
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end mt-2 shadow border-0" style="position: absolute; left: 0; right: auto; min-width: 200px;">
+                        <ul class="dropdown-menu dropdown-menu-end mt-2 shadow border-0">
                             <li class="dropdown-header text-start py-2 px-3">
                                 <div class="fw-bold text-dark">{{ auth()->user()->name }}</div>
                                 <small class="text-muted">{{ auth()->user()->email }}</small>
@@ -524,23 +555,25 @@
     </nav>
 
     <!-- Alert Messages -->
-    <div class="position-fixed top-0 end-0 p-3" style="z-index: 1050; margin-top: 80px;">
-        @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="fas fa-check-circle me-2"></i>
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="إغلاق التنبيه"></button>
-            </div>
-        @endif
+    @if(session('success') || session('error'))
+        <div class="position-fixed bottom-0 start-0 p-4" style="z-index: 99999;">
+            @if(session('success'))
+                <div class="alert alert-success alert-dismissible fade show border-0 shadow-lg rounded-3 text-white mb-0" role="alert" style="background-color: #059669 !important; font-family: 'Cairo', sans-serif;">
+                    <i class="fas fa-check-circle me-2"></i>
+                    {{ session('success') }}
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="إغلاق التنبيه"></button>
+                </div>
+            @endif
 
-        @if(session('error'))
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="fas fa-exclamation-circle me-2"></i>
-                {{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="إغلاق التنبيه"></button>
-            </div>
-        @endif
-    </div>
+            @if(session('error'))
+                <div class="alert alert-danger alert-dismissible fade show border-0 shadow-lg rounded-3 text-white mb-0" role="alert" style="background-color: #dc2626 !important; font-family: 'Cairo', sans-serif;">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    {{ session('error') }}
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="إغلاق التنبيه"></button>
+                </div>
+            @endif
+        </div>
+    @endif
 
     <!-- Main Content -->
     <main class="main-content">

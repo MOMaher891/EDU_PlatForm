@@ -1346,13 +1346,13 @@ function toggleBtnLoading(btn, isLoading) {
 
 function showError(message) {
     const errorDiv = document.createElement('div');
-    errorDiv.className = 'alert alert-danger alert-dismissible fade show position-fixed top-0 end-0 m-3';
-    errorDiv.style.zIndex = '1090';
+    errorDiv.className = 'alert alert-danger alert-dismissible fade show position-fixed bottom-0 start-0 m-4 rounded-3 shadow-lg text-white';
+    errorDiv.style.cssText = 'z-index: 99999; background-color: #dc2626 !important; font-family: "Cairo", sans-serif; min-width: 280px;';
     errorDiv.innerHTML = `
         <div class="d-flex align-items-center gap-2">
-            <i class="fas fa-exclamation-circle"></i>
+            <i class="fas fa-exclamation-circle fs-5"></i>
             <div><strong>تنبيه:</strong> ${message}</div>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <button type="button" class="btn-close btn-close-white me-auto" data-bs-dismiss="alert" aria-label="إغلاق"></button>
         </div>
     `;
 
@@ -1360,9 +1360,9 @@ function showError(message) {
 
     setTimeout(() => {
         if (document.body.contains(errorDiv)) {
-            bootstrap.Alert.getOrCreateInstance(errorDiv).close();
+            errorDiv.remove();
         }
-    }, 8000);
+    }, 7000);
 }
 </script>
 @endpush
