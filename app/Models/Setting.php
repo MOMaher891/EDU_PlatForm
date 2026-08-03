@@ -93,6 +93,70 @@ class Setting extends Model
 				return $currency . ' ' . number_format($amount, 2);
 		}
 	}
+
+	/**
+	 * Get the latest exchange rates relative to USD (1 USD = X Currency)
+	 * with local caching for 12 hours.
+	 *
+	 * @return array
+	 */
+	public static function getRates(): array
+	{
+		$defaultRates = [
+			'USD' => 1.0,
+			'EGP' => 50.0,
+			'SAR' => 3.75,
+			'EUR' => 0.92,
+			'GBP' => 0.79,
+		];
+
+		try {
+			$rates = cache()->remember('currency_exchange_rates', 43200, function () use ($defaultRates) {
+				$response = \Illuminate\Support\Facades\Http::timeout(5)->get('https://open.er-api.com/v6/latest/USD');
+				if ($response->successful()) {
+					$fetchedRates = $response->json('rates');
+					if (is_array($fetchedRates)) {
+						return array_intersect_key($fetchedRates, $defaultRates) + $defaultRates;
+					}
+				}
+				return $defaultRates;
+			});
+			return is_array($rates) ? $rates : $defaultRates;
+		} catch (\Throwable $e) {
+			\Illuminate\Support\Facades\Log::error('Currency API fetch failed, using defaults: ' . $e->getMessage());
+			return $defaultRates;
+		}
+	}
+
+	/**
+	 * Convert an amount from one currency to another using dynamic rates.
+	 *
+	 * @param float|int $amount
+	 * @param string $from
+	 * @param string $to
+	 * @return float
+	 */
+	public static function convert($amount, string $from, string $to): float
+	{
+		$from = strtoupper(trim($from));
+		$to = strtoupper(trim($to));
+
+		if ($from === $to) {
+			return (float) $amount;
+		}
+
+		$rates = self::getRates();
+
+		if (!isset($rates[$from]) || !isset($rates[$to])) {
+			return (float) $amount;
+		}
+
+		// Convert to base USD
+		$amountInUSD = (float) $amount / $rates[$from];
+
+		// Convert from USD to target
+		return (float) ($amountInUSD * $rates[$to]);
+	}
 }
 
 

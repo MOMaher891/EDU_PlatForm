@@ -195,18 +195,25 @@ class PaymentController extends Controller
             $currency = $gatewayModel ? ($gatewayModel->credentials['currency'] ?? 'EGP') : 'EGP';
 
             $settings = \App\Models\Setting::getCached();
+            $platformCurrency = $settings->default_currency ?? 'USD';
             $commissionRate = (float) ($settings->commission_rate ?? 0) / 100;
-            $totalAmount = $payable->getEffectivePrice() * (1 + $commissionRate);
+            $totalAmountPlatform = $payable->getEffectivePrice() * (1 + $commissionRate);
+            $convertedAmount = \App\Models\Setting::convert($totalAmountPlatform, $platformCurrency, $currency);
 
             if (!$order) {
                 $order = Order::create([
                     'user_id' => $user->id,
                     'order_number' => 'ORD-' . strtoupper(Str::random(10)),
-                    'total_amount' => $totalAmount,
+                    'total_amount' => $convertedAmount,
                     'currency' => $currency,
                     'status' => 'PENDING',
                     'payable_type' => get_class($payable),
                     'payable_id' => $payable->id,
+                ]);
+            } else {
+                $order->update([
+                    'total_amount' => $convertedAmount,
+                    'currency' => $currency,
                 ]);
             }
 
@@ -234,13 +241,15 @@ class PaymentController extends Controller
             $currency = $gatewayModel ? ($gatewayModel->credentials['currency'] ?? \App\Models\Setting::getCached()->default_currency ?? 'USD') : (\App\Models\Setting::getCached()->default_currency ?? 'USD');
 
             $settings = \App\Models\Setting::getCached();
+            $platformCurrency = $settings->default_currency ?? 'USD';
             $commissionRate = (float) ($settings->commission_rate ?? 0) / 100;
-            $totalAmount = $course->getEffectivePrice() * (1 + $commissionRate);
+            $totalAmountPlatform = $course->getEffectivePrice() * (1 + $commissionRate);
+            $convertedAmount = \App\Models\Setting::convert($totalAmountPlatform, $platformCurrency, $currency);
 
             $payment = Payment::create([
                 'user_id' => $user->id,
                 'course_id' => $course->id,
-                'amount' => $totalAmount,
+                'amount' => $convertedAmount,
                 'currency' => $currency,
                 'payment_method' => $request->gateway,
                 'payment_id' => 'PAY-' . Str::random(10),
@@ -249,7 +258,9 @@ class PaymentController extends Controller
                     'course_title' => $course->title,
                     'original_price' => $course->price,
                     'discount_price' => $course->discount_price,
-                    'effective_price' => $course->getEffectivePrice()
+                    'effective_price' => $course->getEffectivePrice(),
+                    'platform_currency' => $platformCurrency,
+                    'original_amount' => $totalAmountPlatform,
                 ]
             ]);
 
@@ -300,13 +311,15 @@ class PaymentController extends Controller
             $currency = $gatewayModel ? ($gatewayModel->credentials['currency'] ?? \App\Models\Setting::getCached()->default_currency ?? 'USD') : (\App\Models\Setting::getCached()->default_currency ?? 'USD');
 
             $settings = \App\Models\Setting::getCached();
+            $platformCurrency = $settings->default_currency ?? 'USD';
             $commissionRate = (float) ($settings->commission_rate ?? 0) / 100;
-            $totalAmount = $section->getEffectivePrice() * (1 + $commissionRate);
+            $totalAmountPlatform = $section->getEffectivePrice() * (1 + $commissionRate);
+            $convertedAmount = \App\Models\Setting::convert($totalAmountPlatform, $platformCurrency, $currency);
 
             $payment = Payment::create([
                 'user_id' => $user->id,
                 'course_id' => $course->id,
-                'amount' => $totalAmount,
+                'amount' => $convertedAmount,
                 'currency' => $currency,
                 'payment_method' => $request->gateway,
                 'payment_id' => 'PAY-' . Str::random(10),
@@ -317,7 +330,9 @@ class PaymentController extends Controller
                     'section_id' => $section->id,
                     'original_price' => $section->price,
                     'discount_price' => $section->discount_price,
-                    'effective_price' => $section->getEffectivePrice()
+                    'effective_price' => $section->getEffectivePrice(),
+                    'platform_currency' => $platformCurrency,
+                    'original_amount' => $totalAmountPlatform,
                 ]
             ]);
 
