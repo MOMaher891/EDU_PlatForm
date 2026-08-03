@@ -11,3 +11,4 @@ use Illuminate\Support\Facades\Route;
 
 Route::match(['POST', 'GET'], '/webhooks/kashier', [KashierWebhookController::class, 'handle'])
     ->name('api.webhooks.kashier');
+`
