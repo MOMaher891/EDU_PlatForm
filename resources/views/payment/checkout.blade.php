@@ -14,8 +14,11 @@
     $settings = \App\Models\Setting::getCached();
     $defaultCurrency = $settings->default_currency ?? 'EGP';
 
+    // Handle course vs section
+    $payable = isset($section) ? $section : $course;
+
     // Get effective price and calculate tax & commission
-    $effectivePrice = $course->getEffectivePrice();
+    $effectivePrice = $payable->getEffectivePrice();
     $taxRate = 0.00; // 0% VAT
     $taxAmount = $effectivePrice * $taxRate;
     
@@ -23,10 +26,12 @@
     $commissionAmount = $effectivePrice * $commissionRate;
     
     $totalAmount = $effectivePrice * (1 + $taxRate + $commissionRate);
-    
-    // Exchange rate conversion simulator if default currency is USD and target is EGP
-    $egpRate = 50.0;
-    $totalEGP = $totalAmount * $egpRate;
+
+    // Get dynamic exchange rates
+    $exchangeRates = \App\Models\Setting::getRates();
+
+    // Define process payment route dynamically
+    $processRoute = isset($section) ? route('payment.section.process', [$course, $section]) : route('payment.process', $course);
 @endphp
 
 @section('title', 'إتمام الشراء - ' . $course->title)
@@ -91,10 +96,15 @@
                         <div class="card-body">
                             <div class="payment-methods-grid">
                                 @forelse($activeGateways as $index => $gw)
+                                @php
+                                     $gwCurrency = $gw->credentials['currency'] ?? (in_array($gw->code, ['stripe', 'paypal']) ? 'USD' : 'EGP');
+                                     $gwAmount = \App\Models\Setting::convert($totalAmount, $defaultCurrency, $gwCurrency);
+                                @endphp
                                 <div class="payment-method-card {{ $index === 0 ? 'active' : '' }}"
                                      data-method="{{ $gw->code }}"
                                      data-gateway="{{ $gw->code }}"
-                                     data-currency="{{ $gw->credentials['currency'] ?? (in_array($gw->code, ['stripe', 'paypal']) ? 'USD' : 'EGP') }}">
+                                     data-currency="{{ $gwCurrency }}"
+                                     data-amount="{{ number_format($gwAmount, 2, '.', '') }}">
                                     <div class="method-check-dot"></div>
                                     <div class="method-icon-wrap">
                                         @if($gw->code === 'kashier')
@@ -140,7 +150,7 @@
                     </div>
 
                     <!-- Payment Details Input Form Wrapper -->
-                    <form id="paymentForm" method="POST" action="{{ route('payment.process', $course) }}">
+                    <form id="paymentForm" method="POST" action="{{ $processRoute }}">
                         @csrf
                         @php $firstGw = $activeGateways->first(); @endphp
                         <input type="hidden" name="gateway" id="selectedGateway" value="{{ $firstGw->code ?? '' }}">
@@ -364,14 +374,14 @@
                             <!-- Receipt Breakdown Table -->
                             <div class="receipt-breakdown mb-4">
                                 <div class="receipt-row">
-                                    <span>قيمة الدورة التدريبية</span>
-                                    <span class="price-val" data-base-amount="{{ $course->price }}">{{ \App\Models\Setting::formatPrice($course->price) }}</span>
+                                    <span>{{ isset($section) ? 'قيمة القسم: ' . $section->title : 'قيمة الدورة التدريبية' }}</span>
+                                    <span class="price-val" data-base-amount="{{ $payable->price }}">{{ \App\Models\Setting::formatPrice($payable->price) }}</span>
                                 </div>
 
-                                @if($course->discount_price)
+                                @if($payable->discount_price)
                                 <div class="receipt-row discount">
                                     <span>الخصم والتخفيض</span>
-                                    <span class="price-val text-emerald-600" data-base-amount="-{{ $course->price - $course->discount_price }}">-{{ \App\Models\Setting::formatPrice($course->price - $course->discount_price) }}</span>
+                                    <span class="price-val text-emerald-600" data-base-amount="-{{ $payable->price - $payable->discount_price }}">-{{ \App\Models\Setting::formatPrice($payable->price - $payable->discount_price) }}</span>
                                 </div>
                                 @endif
 
@@ -1233,8 +1243,8 @@
 <script src="https://www.paypal.com/sdk/js?client-id={{ $paypalConfig['client_id'] ?? 'test' }}&currency={{ $paypalConfig['currency'] ?? 'USD' }}"></script>
 <script src="https://checkout.kashier.io/kashier-checkout.js"></script>
 <script>
-// Exchange rate configuration simulator (1 USD = 50 EGP)
-const EGP_EXCHANGE_RATE = 50.0;
+// Dynamic exchange rate configuration
+const EXCHANGE_RATES = @json($exchangeRates);
 
 // Initialize Stripe
 const stripe = Stripe('{{ $stripeConfig['public_key'] ?? 'pk_test_placeholder' }}');
@@ -1336,22 +1346,23 @@ function updateCurrencyDisplay(currency) {
     const exchangeRateTip = document.getElementById('exchangeRateTip');
     const baseAmount = parseFloat(totalPriceDisplay.dataset.baseAmount);
 
+    const activeCard = document.querySelector('.payment-method-card.active');
+    if (!activeCard) return;
+    
+    const convertedAmount = parseFloat(activeCard.dataset.amount);
+
     if (currency !== defaultCurrency) {
-        if (defaultCurrency === 'USD' && currency === 'EGP') {
-            const calculatedEGP = baseAmount * EGP_EXCHANGE_RATE;
-            totalPriceDisplay.textContent = formatPriceJs(baseAmount, defaultCurrency);
-            exchangeDisplay.textContent = `(${formatPriceJs(calculatedEGP, 'EGP')})`;
-            exchangeDisplay.classList.remove('d-none');
-            exchangeRateTip.classList.remove('d-none');
-        } else if (defaultCurrency === 'EGP' && currency === 'USD') {
-            const calculatedUSD = baseAmount / EGP_EXCHANGE_RATE;
-            totalPriceDisplay.textContent = formatPriceJs(baseAmount, defaultCurrency);
-            exchangeDisplay.textContent = `(${formatPriceJs(calculatedUSD, 'USD')})`;
-            exchangeDisplay.classList.remove('d-none');
+        totalPriceDisplay.textContent = formatPriceJs(baseAmount, defaultCurrency);
+        exchangeDisplay.textContent = `(${formatPriceJs(convertedAmount, currency)})`;
+        exchangeDisplay.classList.remove('d-none');
+        
+        const fromRate = EXCHANGE_RATES[defaultCurrency];
+        const toRate = EXCHANGE_RATES[currency];
+        if (fromRate && toRate) {
+            const oneFromInTo = (1 / fromRate) * toRate;
+            exchangeRateTip.innerHTML = `<i class="fas fa-info-circle text-violet-600 me-1"></i> تم حساب السعر بعملة الدفع ${currency} (معدل الصرف تقريباً 1 ${defaultCurrency} = ${oneFromInTo.toFixed(4)} ${currency})`;
             exchangeRateTip.classList.remove('d-none');
         } else {
-            totalPriceDisplay.textContent = formatPriceJs(baseAmount, defaultCurrency);
-            exchangeDisplay.classList.add('d-none');
             exchangeRateTip.classList.add('d-none');
         }
     } else {
@@ -1378,10 +1389,12 @@ function initializePayPal() {
 
     paypal.Buttons({
         createOrder: function(data, actions) {
+            const activeCard = document.querySelector('.payment-method-card[data-gateway="paypal"]');
+            const paypalAmount = activeCard ? activeCard.dataset.amount : '{{ $totalAmount }}';
             return actions.order.create({
                 purchase_units: [{
                     amount: {
-                        value: '{{ $course->getEffectivePrice() }}'
+                        value: paypalAmount
                     },
                     description: '{{ $course->title }}'
                 }]
@@ -1456,7 +1469,7 @@ async function processStripePayment() {
         formData.append('payment_method', 'stripe');
         formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
 
-        const response = await fetch('{{ route("payment.process", $course) }}', {
+        const response = await fetch('{{ $processRoute }}', {
             method: 'POST',
             headers: {
                 'Accept': 'application/json'
@@ -1546,7 +1559,7 @@ async function processPayment(gateway, data) {
             formData.append(key, data[key]);
         });
 
-        const response = await fetch('{{ route("payment.process", $course) }}', {
+        const response = await fetch('{{ $processRoute }}', {
             method: 'POST',
             headers: {
                 'Accept': 'application/json'
