@@ -228,13 +228,13 @@
                                             <td class="text-center">
                                                 @if($course->discount_price)
                                                     <div class="price-info">
-                                                        <span class="text-decoration-line-through text-muted small">{{ $course->price }} ريال</span>
+                                                        <span class="text-decoration-line-through text-muted small">{{ \App\Models\Setting::formatPrice($course->price) }}</span>
                                                         <br>
-                                                        <span class="text-success fw-bold">{{ $course->discount_price }} ريال</span>
+                                                        <span class="text-success fw-bold">{{ \App\Models\Setting::formatPrice($course->discount_price) }}</span>
                                                         <span class="badge bg-danger ms-1 small">{{ $course->getDiscountPercentage() }}%</span>
                                                     </div>
                                                 @else
-                                                    <span class="fw-bold">{{ $course->price }} ريال</span>
+                                                    <span class="fw-bold">{{ \App\Models\Setting::formatPrice($course->price) }}</span>
                                                 @endif
                                             </td>
                                             <td class="text-center">

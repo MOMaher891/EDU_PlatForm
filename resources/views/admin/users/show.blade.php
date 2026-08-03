@@ -251,11 +251,11 @@
                                                     <td>{{ $course->category->name }}</td>
                                                     <td>
                                                         @if($course->discount_price)
-                                                            <span class="text-decoration-line-through text-muted">{{ $course->price }} ريال</span>
+                                                            <span class="text-decoration-line-through text-muted">{{ \App\Models\Setting::formatPrice($course->price) }}</span>
                                                             <br>
-                                                            <span class="text-success fw-bold">{{ $course->discount_price }} ريال</span>
+                                                            <span class="text-success fw-bold">{{ \App\Models\Setting::formatPrice($course->discount_price) }}</span>
                                                         @else
-                                                            <span class="fw-bold">{{ $course->price }} ريال</span>
+                                                            <span class="fw-bold">{{ \App\Models\Setting::formatPrice($course->price) }}</span>
                                                         @endif
                                                     </td>
                                                     <td>
@@ -313,7 +313,7 @@
                                                         </div>
                                                     </td>
                                                     <td>
-                                                        <span class="fw-bold">{{ $payment->amount }} ريال</span>
+                                                        <span class="fw-bold">{{ \App\Models\Setting::formatPrice($payment->amount) }}</span>
                                                     </td>
                                                     <td>{{ $payment->payment_method }}</td>
                                                     <td>

@@ -113,6 +113,28 @@ class KashierDriver implements PaymentGatewayInterface
             return false;
         }
 
+        // Webhook signature verification (passed via signature header or if it's a POST request)
+        if (!empty($signatureHeader)) {
+            $rawContent = request()->getContent();
+            $expectedSecret = hash_hmac('sha256', $rawContent, $this->secretKey);
+            if (hash_equals($expectedSecret, trim($sig))) {
+                return true;
+            }
+            $expectedApi = hash_hmac('sha256', $rawContent, $this->apiKey);
+            if (hash_equals($expectedApi, trim($sig))) {
+                return true;
+            }
+
+            Log::warning('Kashier webhook signature verification failed', [
+                'received_signature' => $sig,
+                'expected_with_secret_key' => $expectedSecret,
+                'expected_with_api_key' => $expectedApi,
+                'raw_content' => $rawContent,
+            ]);
+            return false;
+        }
+
+        // Query parameters / redirect signature verification
         $orderId = $payload['data']['merchantOrderId'] ?? $payload['merchantOrderId'] ?? $payload['orderId'] ?? null;
         $amount = $payload['data']['amount'] ?? $payload['amount'] ?? null;
         $currency = $payload['data']['currency'] ?? $payload['currency'] ?? $this->currency;
@@ -124,6 +146,7 @@ class KashierDriver implements PaymentGatewayInterface
         $expected = $this->generateHash((string) $orderId, $amount, (string) $currency);
         return hash_equals($expected, trim($sig));
     }
+
 
     /**
      * Charge an order using Kashier driver.

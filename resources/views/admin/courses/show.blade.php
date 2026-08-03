@@ -287,17 +287,17 @@
                         <div class="pricing-info">
                             @if($course->discount_price)
                                 <div class="original-price text-decoration-line-through text-muted">
-                                    {{ $course->price }} ريال
+                                    {{ \App\Models\Setting::formatPrice($course->price) }}
                                 </div>
                                 <div class="discount-price text-success fw-bold fs-4">
-                                    {{ $course->discount_price }} ريال
+                                    {{ \App\Models\Setting::formatPrice($course->discount_price) }}
                                 </div>
                                 <div class="discount-badge">
                                     <span class="badge bg-danger">{{ $course->getDiscountPercentage() }}% خصم</span>
                                 </div>
                             @else
                                 <div class="price fw-bold fs-4">
-                                    {{ $course->price }} ريال
+                                    {{ \App\Models\Setting::formatPrice($course->price) }}
                                 </div>
                             @endif
                         </div>
