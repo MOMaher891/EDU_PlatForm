@@ -10,15 +10,23 @@
     $paymobConfig = config('payment.gateways.paymob');
     $kashierConfig = config('payment.gateways.kashier');
     
-    // Get effective price and calculate tax
+    // Get default currency
+    $settings = \App\Models\Setting::getCached();
+    $defaultCurrency = $settings->default_currency ?? 'EGP';
+
+    // Get effective price and calculate tax & commission
     $effectivePrice = $course->getEffectivePrice();
-    $taxRate = 0.15; // 15% VAT
+    $taxRate = 0.00; // 0% VAT
     $taxAmount = $effectivePrice * $taxRate;
-    $totalUSD = $effectivePrice * (1 + $taxRate);
     
-    // EGP exchange rate conversion for Paymob display (1 USD = 50 EGP simulator)
+    $commissionRate = (float) ($settings->commission_rate ?? 0) / 100;
+    $commissionAmount = $effectivePrice * $commissionRate;
+    
+    $totalAmount = $effectivePrice * (1 + $taxRate + $commissionRate);
+    
+    // Exchange rate conversion simulator if default currency is USD and target is EGP
     $egpRate = 50.0;
-    $totalEGP = $totalUSD * $egpRate;
+    $totalEGP = $totalAmount * $egpRate;
 @endphp
 
 @section('title', 'إتمام الشراء - ' . $course->title)
@@ -357,26 +365,35 @@
                             <div class="receipt-breakdown mb-4">
                                 <div class="receipt-row">
                                     <span>قيمة الدورة التدريبية</span>
-                                    <span class="price-val" data-usd="{{ $course->price }}">${{ number_format($course->price, 2) }}</span>
+                                    <span class="price-val" data-base-amount="{{ $course->price }}">{{ \App\Models\Setting::formatPrice($course->price) }}</span>
                                 </div>
 
                                 @if($course->discount_price)
                                 <div class="receipt-row discount">
                                     <span>الخصم والتخفيض</span>
-                                    <span class="price-val text-emerald-600" data-usd="-{{ $course->price - $course->discount_price }}">-${{ number_format($course->price - $course->discount_price, 2) }}</span>
+                                    <span class="price-val text-emerald-600" data-base-amount="-{{ $course->price - $course->discount_price }}">-{{ \App\Models\Setting::formatPrice($course->price - $course->discount_price) }}</span>
                                 </div>
                                 @endif
 
+                                @if($taxRate > 0)
                                 <div class="receipt-row">
-                                    <span>ضريبة القيمة المضافة (15%)</span>
-                                    <span class="price-val" data-usd="{{ $taxAmount }}">${{ number_format($taxAmount, 2) }}</span>
+                                    <span>ضريبة القيمة المضافة ({{ $taxRate * 100 }}%)</span>
+                                    <span class="price-val" data-base-amount="{{ $taxAmount }}">{{ \App\Models\Setting::formatPrice($taxAmount) }}</span>
                                 </div>
+                                @endif
+
+                                @if($commissionRate > 0)
+                                <div class="receipt-row">
+                                    <span>رسوم إضافية ({{ $commissionRate * 100 }}%)</span>
+                                    <span class="price-val" data-base-amount="{{ $commissionAmount }}">{{ \App\Models\Setting::formatPrice($commissionAmount) }}</span>
+                                </div>
+                                @endif
 
                                 <div class="receipt-row total mt-3 pt-3">
                                     <span>المبلغ المستحق للدفع</span>
                                     <div class="d-flex flex-column align-items-end">
-                                        <span class="total-val" data-usd="{{ $totalUSD }}" id="totalPriceDisplay">${{ number_format($totalUSD, 2) }}</span>
-                                        <span class="exchange-notice d-none" id="exchangeDisplay">({{ number_format($totalEGP, 2) }} EGP)</span>
+                                        <span class="total-val" data-base-amount="{{ $totalAmount }}" data-default-currency="{{ $defaultCurrency }}" id="totalPriceDisplay">{{ \App\Models\Setting::formatPrice($totalAmount) }}</span>
+                                        <span class="exchange-notice d-none" id="exchangeDisplay"></span>
                                     </div>
                                 </div>
                             </div>
@@ -1204,8 +1221,10 @@
 
 [data-bs-theme="dark"] .card-footer {
     background-color: #0f172a !important;
-    border-top-color: #334155 !important;
-}
+    .card-footer {
+        background-color: #0f172a !important;
+        border-top-color: #334155 !important;
+    }
 </style>
 @endpush
 
@@ -1300,26 +1319,48 @@ document.querySelectorAll('.payment-method-card').forEach(card => {
 });
 
 // Live exchange rate display handler
+const defaultCurrency = "{{ $defaultCurrency }}";
+
+function formatPriceJs(amount, currency) {
+    if (currency === 'USD') return '$' + amount.toFixed(2);
+    if (currency === 'EGP') return amount.toFixed(2) + ' ج.م';
+    if (currency === 'SAR') return amount.toFixed(2) + ' ر.س';
+    if (currency === 'EUR') return '€' + amount.toFixed(2);
+    if (currency === 'GBP') return '£' + amount.toFixed(2);
+    return currency + ' ' + amount.toFixed(2);
+}
+
 function updateCurrencyDisplay(currency) {
     const totalPriceDisplay = document.getElementById('totalPriceDisplay');
     const exchangeDisplay = document.getElementById('exchangeDisplay');
     const exchangeRateTip = document.getElementById('exchangeRateTip');
-    const baseUSD = parseFloat(totalPriceDisplay.dataset.usd);
+    const baseAmount = parseFloat(totalPriceDisplay.dataset.baseAmount);
 
-    if (currency === 'EGP') {
-        // Show EGP calculated pricing
-        const calculatedEGP = baseUSD * EGP_EXCHANGE_RATE;
-        totalPriceDisplay.textContent = `$${baseUSD.toFixed(2)}`;
-        exchangeDisplay.textContent = `(${calculatedEGP.toLocaleString('ar-EG', { style: 'currency', currency: 'EGP' })})`;
-        exchangeDisplay.classList.remove('d-none');
-        exchangeRateTip.classList.remove('d-none');
+    if (currency !== defaultCurrency) {
+        if (defaultCurrency === 'USD' && currency === 'EGP') {
+            const calculatedEGP = baseAmount * EGP_EXCHANGE_RATE;
+            totalPriceDisplay.textContent = formatPriceJs(baseAmount, defaultCurrency);
+            exchangeDisplay.textContent = `(${formatPriceJs(calculatedEGP, 'EGP')})`;
+            exchangeDisplay.classList.remove('d-none');
+            exchangeRateTip.classList.remove('d-none');
+        } else if (defaultCurrency === 'EGP' && currency === 'USD') {
+            const calculatedUSD = baseAmount / EGP_EXCHANGE_RATE;
+            totalPriceDisplay.textContent = formatPriceJs(baseAmount, defaultCurrency);
+            exchangeDisplay.textContent = `(${formatPriceJs(calculatedUSD, 'USD')})`;
+            exchangeDisplay.classList.remove('d-none');
+            exchangeRateTip.classList.remove('d-none');
+        } else {
+            totalPriceDisplay.textContent = formatPriceJs(baseAmount, defaultCurrency);
+            exchangeDisplay.classList.add('d-none');
+            exchangeRateTip.classList.add('d-none');
+        }
     } else {
-        // Revert back to absolute USD pricing
-        totalPriceDisplay.textContent = `$${baseUSD.toFixed(2)}`;
+        totalPriceDisplay.textContent = formatPriceJs(baseAmount, defaultCurrency);
         exchangeDisplay.classList.add('d-none');
         exchangeRateTip.classList.add('d-none');
     }
 }
+
 
 // Set initial currency view
 document.addEventListener('DOMContentLoaded', () => {
@@ -1525,39 +1566,7 @@ async function processPayment(gateway, data) {
             if (gateway === 'kashier') {
                 const kashierModalEl = document.getElementById('kashierIframeModal');
                 const iframeEl = document.getElementById('kashierIframeContainer');
-
-                if (typeof Kashier !== 'undefined' && typeof Kashier.checkout === 'function') {
-                    console.log('Launching Kashier Embedded Checkout SDK Modal');
-                    try {
-                        Kashier.checkout({
-                            merchantId: kashierData.merchant_id,
-                            orderId: kashierData.order_id,
-                            amount: kashierData.amount,
-                            currency: kashierData.currency || 'EGP',
-                            hash: kashierData.hash,
-                            mode: kashierData.mode || 'sandbox',
-                            merchantRedirect: kashierData.merchant_redirect || '{{ url("/payment/success") }}/' + kashierData.order_id,
-                            type: 'external',
-                            display: 'ar',
-                            onSuccess: function(res) {
-                                console.log('Kashier Payment Success Callback:', res);
-                                window.location.href = '{{ url("/payment/success") }}/' + kashierData.order_id;
-                            },
-                            onFailure: function(err) {
-                                console.error('Kashier Payment Failure Callback:', err);
-                                toggleBtnLoading(submitBtn, false);
-                                showError('عذراً، تعذرت عملية الدفع عبر بوابة Kashier. يرجى المحاولة مرة أخرى.');
-                            },
-                            onDismiss: function() {
-                                console.log('Kashier Checkout Modal Dismissed');
-                                toggleBtnLoading(submitBtn, false);
-                            }
-                        });
-                        return;
-                    } catch (e) {
-                        console.warn('Kashier SDK popup launch fallback to embedded modal:', e);
-                    }
-                }
+                // Always load Kashier payment session in the secure embedded iframe modal to keep the student on the platform
 
                 // Embedded iFrame Modal directly in the platform (Keeps student inside platform)
                 if (kashierData.redirect_url && iframeEl && kashierModalEl) {

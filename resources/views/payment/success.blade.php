@@ -3,6 +3,11 @@
 @section('title', 'تمت عملية الدفع بنجاح')
 
 @section('content')
+<script>
+    if (window.self !== window.top) {
+        window.top.location.href = window.self.location.href;
+    }
+</script>
 <div class="payment-success-page py-5">
     <div class="container">
         <div class="row justify-content-center">

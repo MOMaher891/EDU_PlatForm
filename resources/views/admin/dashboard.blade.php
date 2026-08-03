@@ -3,6 +3,13 @@
 @section('title', 'لوحة تحكم الإدارة')
 
 @section('content')
+@php
+    try {
+        $currency = \App\Models\Setting::getCached()->default_currency ?? 'USD';
+    } catch (\Throwable $e) {
+        $currency = 'USD';
+    }
+@endphp
 <div class="admin-dashboard">
     <!-- Header Section -->
     <div class="dashboard-header py-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
@@ -44,11 +51,11 @@
                                 <i class="fas fa-users fa-2x text-primary"></i>
                             </div>
                             <div class="flex-grow-1">
-                                <h3 class="fw-bold mb-1 counter" data-target="{{ \App\Models\User::count() }}">0</h3>
+                                <h3 class="fw-bold mb-1 counter" data-target="{{ $totalUsers }}">0</h3>
                                 <p class="text-muted mb-0">إجمالي المستخدمين</p>
                                 <small class="text-success">
                                     <i class="fas fa-arrow-up me-1"></i>
-                                    +12% هذا الشهر
+                                    +{{ $monthlyStats['users'] }} هذا الشهر
                                 </small>
                             </div>
                         </div>
@@ -64,11 +71,11 @@
                                 <i class="fas fa-book fa-2x text-success"></i>
                             </div>
                             <div class="flex-grow-1">
-                                <h3 class="fw-bold mb-1 counter" data-target="{{ \App\Models\Course::count() }}">0</h3>
+                                <h3 class="fw-bold mb-1 counter" data-target="{{ $totalCourses }}">0</h3>
                                 <p class="text-muted mb-0">إجمالي الكورسات</p>
                                 <small class="text-success">
                                     <i class="fas fa-arrow-up me-1"></i>
-                                    +8% هذا الشهر
+                                    +{{ $monthlyStats['courses'] }} هذا الشهر
                                 </small>
                             </div>
                         </div>
@@ -84,11 +91,11 @@
                                 <i class="fas fa-graduation-cap fa-2x text-warning"></i>
                             </div>
                             <div class="flex-grow-1">
-                                <h3 class="fw-bold mb-1 counter" data-target="{{ \App\Models\CourseEnrollment::count() }}">0</h3>
+                                <h3 class="fw-bold mb-1 counter" data-target="{{ $totalEnrollments }}">0</h3>
                                 <p class="text-muted mb-0">التسجيلات</p>
                                 <small class="text-success">
                                     <i class="fas fa-arrow-up me-1"></i>
-                                    +25% هذا الشهر
+                                    +{{ $monthlyStats['enrollments'] }} هذا الشهر
                                 </small>
                             </div>
                         </div>
@@ -104,11 +111,21 @@
                                 <i class="fas fa-dollar-sign fa-2x text-info"></i>
                             </div>
                             <div class="flex-grow-1">
-                                <h3 class="fw-bold mb-1">$<span class="counter" data-target="{{ \App\Models\Payment::where('status', 'completed')->sum('amount') }}">0</span></h3>
+                                <h3 class="fw-bold mb-1">
+                                    @if($currency === 'USD')
+                                        $<span class="counter" data-target="{{ $totalRevenue }}">0</span>
+                                    @elseif($currency === 'EUR')
+                                        €<span class="counter" data-target="{{ $totalRevenue }}">0</span>
+                                    @elseif($currency === 'GBP')
+                                        £<span class="counter" data-target="{{ $totalRevenue }}">0</span>
+                                    @else
+                                        <span class="counter" data-target="{{ $totalRevenue }}">0</span> <small class="fs-6 fw-normal">{{ $currency === 'EGP' ? 'ج.م' : ($currency === 'SAR' ? 'ر.س' : $currency) }}</small>
+                                    @endif
+                                </h3>
                                 <p class="text-muted mb-0">إجمالي الإيرادات</p>
                                 <small class="text-success">
                                     <i class="fas fa-arrow-up me-1"></i>
-                                    +18% هذا الشهر
+                                    +{{ \App\Models\Setting::formatPrice($monthlyStats['revenue']) }} هذا الشهر
                                 </small>
                             </div>
                         </div>

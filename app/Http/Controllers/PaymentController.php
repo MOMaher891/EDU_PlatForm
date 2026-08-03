@@ -191,12 +191,19 @@ class PaymentController extends Controller
                 ->latest()
                 ->first();
 
+            $gatewayModel = PaymentGateway::where('code', 'kashier')->first();
+            $currency = $gatewayModel ? ($gatewayModel->credentials['currency'] ?? 'EGP') : 'EGP';
+
+            $settings = \App\Models\Setting::getCached();
+            $commissionRate = (float) ($settings->commission_rate ?? 0) / 100;
+            $totalAmount = $payable->getEffectivePrice() * (1 + $commissionRate);
+
             if (!$order) {
                 $order = Order::create([
                     'user_id' => $user->id,
                     'order_number' => 'ORD-' . strtoupper(Str::random(10)),
-                    'total_amount' => $payable->getEffectivePrice(),
-                    'currency' => 'EGP',
+                    'total_amount' => $totalAmount,
+                    'currency' => $currency,
                     'status' => 'PENDING',
                     'payable_type' => get_class($payable),
                     'payable_id' => $payable->id,
@@ -223,11 +230,18 @@ class PaymentController extends Controller
     {
         try {
             // Create pending payment record
+            $gatewayModel = PaymentGateway::where('code', $request->gateway)->first();
+            $currency = $gatewayModel ? ($gatewayModel->credentials['currency'] ?? \App\Models\Setting::getCached()->default_currency ?? 'USD') : (\App\Models\Setting::getCached()->default_currency ?? 'USD');
+
+            $settings = \App\Models\Setting::getCached();
+            $commissionRate = (float) ($settings->commission_rate ?? 0) / 100;
+            $totalAmount = $course->getEffectivePrice() * (1 + $commissionRate);
+
             $payment = Payment::create([
                 'user_id' => $user->id,
                 'course_id' => $course->id,
-                'amount' => $course->getEffectivePrice(),
-                'currency' => $request->gateway === 'paymob' ? 'EGP' : 'USD',
+                'amount' => $totalAmount,
+                'currency' => $currency,
                 'payment_method' => $request->gateway,
                 'payment_id' => 'PAY-' . Str::random(10),
                 'status' => 'pending',
@@ -282,11 +296,18 @@ class PaymentController extends Controller
     {
         try {
             // Create pending payment record
+            $gatewayModel = PaymentGateway::where('code', $request->gateway)->first();
+            $currency = $gatewayModel ? ($gatewayModel->credentials['currency'] ?? \App\Models\Setting::getCached()->default_currency ?? 'USD') : (\App\Models\Setting::getCached()->default_currency ?? 'USD');
+
+            $settings = \App\Models\Setting::getCached();
+            $commissionRate = (float) ($settings->commission_rate ?? 0) / 100;
+            $totalAmount = $section->getEffectivePrice() * (1 + $commissionRate);
+
             $payment = Payment::create([
                 'user_id' => $user->id,
                 'course_id' => $course->id,
-                'amount' => $section->getEffectivePrice(),
-                'currency' => $request->gateway === 'paymob' ? 'EGP' : 'USD',
+                'amount' => $totalAmount,
+                'currency' => $currency,
                 'payment_method' => $request->gateway,
                 'payment_id' => 'PAY-' . Str::random(10),
                 'status' => 'pending',

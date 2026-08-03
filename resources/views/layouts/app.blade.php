@@ -413,6 +413,8 @@
                             @if(auth()->user()->isAdmin())
                                 <li><a class="dropdown-item py-2 text-start" href="{{ route('admin.profile') }}"><i class="fas fa-user me-2 text-primary"></i>الملف الشخصي</a></li>
                                 <li><a class="dropdown-item py-2 text-start" href="{{ route('admin.settings.index') }}"><i class="fas fa-cog me-2 text-secondary"></i>إعدادات النظام</a></li>
+                                <li><a class="dropdown-item py-2 text-start" href="{{ route('admin.payment-gateways.index') }}"><i class="fas fa-wallet me-2 text-warning"></i>بوابات الدفع الإلكتروني</a></li>
+                                <li><a class="dropdown-item py-2 text-start" href="{{ route('admin.transactions.index') }}"><i class="fas fa-file-invoice-dollar me-2 text-info"></i>سجل المعاملات والمدفوعات</a></li>
                             @else
                                 <li><a class="dropdown-item py-2 text-start" href="#"><i class="fas fa-user me-2 text-primary"></i>الملف الشخصي</a></li>
                             @endif
