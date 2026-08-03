@@ -26,13 +26,21 @@ class KashierWebhookController extends Controller
     }
 
     /**
-     * Handle incoming Kashier webhook (POST /api/webhooks/kashier).
+     * Handle incoming Kashier webhook (POST/GET /api/webhooks/kashier).
      *
      * @param Request $request
      * @return JsonResponse
      */
     public function handle(Request $request): JsonResponse
     {
+        // 0. Handle GET requests (e.g. Browser check / Health checks)
+        if ($request->isMethod('get') && !$request->hasHeader('x-kashier-signature')) {
+            return response()->json([
+                'status' => 'active',
+                'message' => 'Kashier Webhook Endpoint is running smoothly.'
+            ], 200);
+        }
+
         $payload = $request->all();
         $signatureHeader = $request->header('x-kashier-signature');
 
