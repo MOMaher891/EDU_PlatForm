@@ -137,13 +137,58 @@ class KashierDriver implements PaymentGatewayInterface
             $amount = number_format((float) $order->total_amount, 2, '.', '');
             $currency = $order->currency ?? $this->currency;
             $orderId = (string) $order->order_number;
+            $uniqueMerchantOrderId = $orderId . '-' . time();
 
-            $hash = $this->generateHash($orderId, $amount, $currency);
+            $hash = $this->generateHash($uniqueMerchantOrderId, $amount, $currency);
             $modeParam = strtolower($this->mode) === 'live' ? 'live' : 'test';
             $merchantRedirect = route('payment.success.order', ['order' => $orderId]);
-            $encodedRedirect = urlencode($merchantRedirect);
+            $apiRedirect = $merchantRedirect;
+            if (str_contains($apiRedirect, '127.0.0.1') || str_contains($apiRedirect, 'localhost')) {
+                $apiRedirect = str_replace(
+                    ['http://127.0.0.1:8000', 'https://127.0.0.1:8000', 'http://localhost:8000', 'https://localhost:8000', 'http://127.0.0.1', 'http://localhost'],
+                    'https://scigatemsa.com',
+                    $apiRedirect
+                );
+            }
 
-            $checkoutUrl = "{$this->baseUrl}/?merchantId={$this->merchantId}&orderId={$orderId}&amount={$amount}&currency={$currency}&hash={$hash}&mode={$modeParam}&merchantRedirect={$encodedRedirect}";
+            // Call Kashier v3 Payment Sessions API
+            $apiUrl = $modeParam === 'live'
+                ? 'https://api.kashier.io/v3/payment/sessions'
+                : 'https://test-api.kashier.io/v3/payment/sessions';
+
+            $user = $order->user;
+            $fullName = $user->name ?? 'Student User';
+            $nameParts = explode(' ', $fullName);
+            $firstName = $nameParts[0] ?? 'Student';
+            $lastName = $nameParts[1] ?? 'User';
+
+            $response = \Illuminate\Support\Facades\Http::withHeaders([
+                'Authorization' => $this->secretKey,
+                'api-key' => $this->apiKey,
+                'Content-Type' => 'application/json',
+            ])->post($apiUrl, [
+                'merchantId' => $this->merchantId,
+                'merchantOrderId' => $uniqueMerchantOrderId,
+                'amount' => $amount,
+                'currency' => $currency,
+                'merchantRedirect' => $apiRedirect,
+                'customer' => [
+                    'reference' => 'user_' . $user->id,
+                    'firstName' => $firstName,
+                    'lastName' => $lastName,
+                    'email' => $user->email ?? 'student@mail.com',
+                    'phone' => $user->phone ?? '+201113050567',
+                ]
+            ]);
+
+            if (!$response->successful()) {
+                throw new \Exception('Kashier API returned error status ' . $response->status() . ': ' . $response->body());
+            }
+
+            $sessionData = $response->json();
+            $checkoutUrl = $sessionData['sessionUrl'] ?? '';
+            // If the response returns an internal hash from kashier, use it, otherwise fallback to generated hash
+            $hash = $sessionData['paymentParams']['hash'] ?? $hash;
 
             $transaction = Transaction::where('order_id', $order->id)
                 ->where('gateway_code', 'kashier')
@@ -168,6 +213,7 @@ class KashierDriver implements PaymentGatewayInterface
                         'hash' => $hash,
                         'checkout_url' => $checkoutUrl,
                         'mode' => $this->mode,
+                        'session_id' => $sessionData['_id'] ?? '',
                     ],
                 ]);
             }
@@ -177,11 +223,11 @@ class KashierDriver implements PaymentGatewayInterface
                 'redirect_url' => $checkoutUrl,
                 'hash' => $hash,
                 'merchant_id' => $this->merchantId,
-                'order_id' => $orderId,
+                'order_id' => $uniqueMerchantOrderId,
                 'merchant_redirect' => $merchantRedirect,
                 'amount' => $amount,
                 'currency' => $currency,
-                'mode' => strtolower($this->mode) === 'live' ? 'live' : 'test',
+                'mode' => $modeParam,
                 'transaction_id' => $transaction->id,
             ];
         } catch (\Exception $e) {

@@ -32,7 +32,8 @@ class AdminController extends Controller
             $totalUsers = User::count();
             $totalCourses = Course::count();
             $totalEnrollments = CourseEnrollment::count();
-            $totalRevenue = Payment::where('status', 'completed')->sum('amount');
+            $totalRevenue = (float) Payment::where('status', 'completed')->sum('amount')
+                + (float) \App\Models\Order::where('status', 'PAID')->sum('total_amount');
 
             // Recent activities
             $recentUsers = User::latest()->take(5)->get();
@@ -46,11 +47,13 @@ class AdminController extends Controller
 
             // Monthly statistics
             $monthlyStats = [
-                'users' => User::whereMonth('created_at', now()->month)->count(),
-                'courses' => Course::whereMonth('created_at', now()->month)->count(),
-                'enrollments' => CourseEnrollment::whereMonth('created_at', now()->month)->count(),
-                'revenue' => Payment::where('status', 'completed')
-                    ->whereMonth('created_at', now()->month)->sum('amount')
+                'users' => User::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count(),
+                'courses' => Course::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count(),
+                'enrollments' => CourseEnrollment::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count(),
+                'revenue' => (float) Payment::where('status', 'completed')
+                    ->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->sum('amount')
+                    + (float) \App\Models\Order::where('status', 'PAID')
+                    ->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->sum('total_amount')
             ];
 
             // Top courses
@@ -1181,12 +1184,31 @@ public function updateCourse(Request $request, Course $course)
     {
         try {
             // Revenue statistics
-            $monthlyRevenue = Payment::where('status', 'completed')
+            $monthlyPayments = Payment::where('status', 'completed')
                 ->whereYear('created_at', now()->year)
                 ->selectRaw('MONTH(created_at) as month, SUM(amount) as total')
                 ->groupBy('month')
-                ->orderBy('month')
-                ->get();
+                ->get()
+                ->pluck('total', 'month');
+
+            $monthlyOrders = \App\Models\Order::where('status', 'PAID')
+                ->whereYear('created_at', now()->year)
+                ->selectRaw('MONTH(created_at) as month, SUM(total_amount) as total')
+                ->groupBy('month')
+                ->get()
+                ->pluck('total', 'month');
+
+            $monthlyRevenue = collect();
+            for ($m = 1; $m <= 12; $m++) {
+                $payTotal = (float) $monthlyPayments->get($m, 0);
+                $orderTotal = (float) $monthlyOrders->get($m, 0);
+                if ($payTotal > 0 || $orderTotal > 0) {
+                    $monthlyRevenue->push((object)[
+                        'month' => $m,
+                        'total' => $payTotal + $orderTotal
+                    ]);
+                }
+            }
 
             // Course statistics
             $topCourses = Course::withCount('enrollments')
@@ -1202,7 +1224,23 @@ public function updateCourse(Request $request, Course $course)
                 'admins' => User::where('role', 'admin')->count()
             ];
 
-            return view('admin.reports.index', compact('monthlyRevenue', 'topCourses', 'userStats'));
+            // Aggregated statistics for reports view
+            $stats = [
+                'total_users' => User::count(),
+                'monthly_users' => User::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count(),
+                'total_courses' => Course::count(),
+                'monthly_courses' => Course::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count(),
+                'total_enrollments' => CourseEnrollment::count(),
+                'monthly_enrollments' => CourseEnrollment::whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->count(),
+                'total_revenue' => (float) Payment::where('status', 'completed')->sum('amount')
+                    + (float) \App\Models\Order::where('status', 'PAID')->sum('total_amount'),
+                'monthly_revenue' => (float) Payment::where('status', 'completed')
+                    ->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->sum('amount')
+                    + (float) \App\Models\Order::where('status', 'PAID')
+                    ->whereMonth('created_at', now()->month)->whereYear('created_at', now()->year)->sum('total_amount')
+            ];
+
+            return view('admin.reports.index', compact('monthlyRevenue', 'topCourses', 'userStats', 'stats'));
         } catch (\Exception $e) {
             Log::error('Error in admin reports: ' , [
                 'user_id' => auth()->id(),

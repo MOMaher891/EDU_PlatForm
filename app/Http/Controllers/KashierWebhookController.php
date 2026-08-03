@@ -81,13 +81,20 @@ class KashierWebhookController extends Controller
             ], 400);
         }
 
-        // Find associated Transaction record
+        // Extract base order number if it has a unique attempt suffix (e.g. ORD-XXXXX-1725600000)
+        $baseOrderNumber = $orderNumber;
+        if (preg_match('/^(ORD-[A-Z0-9]+)-\d+$/i', $orderNumber, $matches)) {
+            $baseOrderNumber = $matches[1];
+        }
+
+        // Find associated Transaction record using the base order number
         $transaction = Transaction::where('gateway_code', 'kashier')
-            ->where(function ($query) use ($orderNumber) {
-                $query->whereHas('order', function ($orderQuery) use ($orderNumber) {
-                    $orderQuery->where('order_number', $orderNumber);
-                })->orWhere('order_id', $orderNumber)
-                  ->orWhere('id', $orderNumber);
+            ->where(function ($query) use ($baseOrderNumber, $orderNumber) {
+                $query->whereHas('order', function ($orderQuery) use ($baseOrderNumber) {
+                    $orderQuery->where('order_number', $baseOrderNumber);
+                })->orWhere('order_id', $baseOrderNumber)
+                  ->orWhere('id', $baseOrderNumber)
+                  ->orWhere('order_id', $orderNumber);
             })->first();
 
         if (!$transaction) {
